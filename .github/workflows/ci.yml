@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-lint:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: write
 
