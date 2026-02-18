@@ -88,11 +88,13 @@ h1 {
 h2 {
   font-size: var(--text-2xl);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
 }
 
 h3 {
   font-size: var(--text-xl);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-normal);
 }
 
 code,
