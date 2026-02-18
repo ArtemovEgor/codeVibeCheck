@@ -1,1 +1,25 @@
+// =============================================================
+//  codeVibeCheck — SCSS Barrel (mixins only)
+// =============================================================
+//
+//  This file is auto-injected into every .scss file via Vite:
+//
+//    // vite.config.ts
+//    css: {
+//      preprocessorOptions: {
+//        scss: {
+//          additionalData: `@use "@/styles/index.scss" as *;`,
+//        },
+//      },
+//    }
+//
+//  ⚠️ Do NOT @forward _variables or _reset here!
+//  They output real CSS and would be duplicated in every component.
+//  Import them once in main.ts instead:
+//
+//    import './styles/variables.scss';
+//    import './styles/reset.scss';
+//
+// =============================================================
+
 @forward "mixins";
