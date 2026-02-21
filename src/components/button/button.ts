@@ -1,13 +1,6 @@
-import type { IBaseComponentConfig } from "@/types/types";
+import type { IClickableConfig } from "@/types/types";
 import BaseComponent from "../base/base-component";
 import "./button.scss";
-
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-
-interface IButtonConfig extends Omit<IBaseComponentConfig, "tag"> {
-  onClick?: (event: MouseEvent) => void;
-  variant?: ButtonVariant;
-}
 
 export class Button extends BaseComponent<HTMLButtonElement> {
   constructor({
@@ -16,7 +9,7 @@ export class Button extends BaseComponent<HTMLButtonElement> {
     variant = "primary",
     className = "",
     ...rest
-  }: IButtonConfig) {
+  }: IClickableConfig) {
     super({
       ...rest,
       tag: "button",

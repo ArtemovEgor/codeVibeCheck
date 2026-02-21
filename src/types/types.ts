@@ -8,3 +8,15 @@ export interface IBaseComponentConfig {
   parent?: HTMLElement | BaseComponent<HTMLElement>;
   children?: (HTMLElement | BaseComponent<HTMLElement> | null)[];
 }
+
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+
+export interface IClickableConfig extends Omit<IBaseComponentConfig, "tag"> {
+  onClick?: (event: MouseEvent) => void;
+  variant?: ButtonVariant;
+}
+
+export interface ILinkConfig extends IClickableConfig {
+  href: string;
+  isExternal?: boolean;
+}

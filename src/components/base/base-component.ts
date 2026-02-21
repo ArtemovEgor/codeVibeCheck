@@ -67,6 +67,10 @@ export default class BaseComponent<T extends HTMLElement = HTMLElement> {
     return this;
   }
 
+  public getNode(): T {
+    return this.node;
+  }
+
   public destroy(): void {
     for (const child of this.children) {
       child.destroy();
