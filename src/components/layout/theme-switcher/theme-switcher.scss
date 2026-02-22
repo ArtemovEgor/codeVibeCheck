@@ -6,6 +6,10 @@
   border-radius: var(--radius-full);
   padding: var(--space-1) var(--space-2);
 
+  @media (max-width: 400px) {
+    transform: scale(0.9);
+  }
+
   &__btn {
     font-size: var(--text-sm);
     padding: 2px var(--space-2);

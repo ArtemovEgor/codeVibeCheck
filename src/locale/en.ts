@@ -16,7 +16,6 @@ export const EN = {
       },
       subtitle:
         "Interactive widgets and AI-powered feedback to boost your technical skills.",
-      btn: "Get Started Now",
     },
     features: {
       title: "Everything you need to succeed",

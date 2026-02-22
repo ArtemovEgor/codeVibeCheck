@@ -1,5 +1,4 @@
 import BaseComponent from "@/components/base/base-component";
-import { Button } from "@/components/button/button";
 import Link from "@/components/link/link";
 import "./landing-page.scss";
 import { Header } from "@/components/layout/header/header";
@@ -88,12 +87,7 @@ export class LandingPage extends BaseComponent {
       parent: container,
     });
 
-    new Link({
-      text: EN.landing.hero.btn,
-      variant: "primary",
-      className: "hero__btn",
-      href: "#register",
-    }).addTo(container);
+    this.renderCTAAction(container);
   }
 
   // SECTION: Features
@@ -197,10 +191,11 @@ export class LandingPage extends BaseComponent {
   }
 
   private renderCTAAction(parent: BaseComponent): void {
-    new Button({
+    new Link({
       text: EN.landing.cta.button,
       variant: "primary",
-      className: "cta__btn",
+      className: "action__btn",
+      href: "#register",
       parent,
     });
   }
