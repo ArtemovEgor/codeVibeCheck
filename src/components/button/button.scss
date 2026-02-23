@@ -1,0 +1,19 @@
+.btn {
+  @include btn-base;
+
+  &-primary {
+    @include btn-primary;
+  }
+
+  &-secondary {
+    @include btn-secondary;
+  }
+
+  &-ghost {
+    @include btn-ghost;
+  }
+
+  &-danger {
+    @include btn-danger;
+  }
+}
