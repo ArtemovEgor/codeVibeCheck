@@ -21,7 +21,7 @@ export class Button extends BaseComponent<HTMLButtonElement> {
   }
 
   public setDisabled(disabled: boolean): this {
-    this.node.disabled = disabled;
+    this.getNode().disabled = disabled;
     return this;
   }
 }
