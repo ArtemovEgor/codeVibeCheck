@@ -9,7 +9,6 @@ export default tseslint.config(
     ignores: ["dist", "node_modules", "public", "backend/dist"],
   },
 
-
   js.configs.recommended,
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
@@ -20,7 +19,7 @@ export default tseslint.config(
     files: ["src/**/*.{ts,tsx,js,mjs}"],
     languageOptions: {
       globals: {
-        ...globals.browser,             // Only for front
+        ...globals.browser, // Only for front
       },
       parserOptions: {
         projectService: {
@@ -50,17 +49,17 @@ export default tseslint.config(
     files: ["backend/src/**/*.{ts,js}"],
     languageOptions: {
       globals: {
-        ...globals.node,                // node instead of browser
+        ...globals.node, // node instead of browser
       },
       parserOptions: {
-        projectService: true,           // Use backend/tsconfig.json
+        projectService: true, // Use backend/tsconfig.json
         tsconfigRootDir: "./backend",
       },
     },
     rules: {
-      "no-console": "off",              // Enable console.log
-      "unicorn/no-null": "off",         // Enable null
-      "max-lines-per-function": "off",  // Optional
+      "no-console": "off", // Enable console.log
+      "unicorn/no-null": "off", // Enable null
+      "max-lines-per-function": "off", // Optional
     },
   },
 
