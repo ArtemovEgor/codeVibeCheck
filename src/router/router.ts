@@ -22,7 +22,7 @@ export default class Router {
 
   constructor() {
     globalThis.addEventListener("hashchange", () => this.handlePathChange());
-    window.addEventListener("load", () => this.handlePathChange());
+    globalThis.addEventListener("load", () => this.handlePathChange());
   }
 
   public setAuthCheck(authCheck: () => boolean): void {
