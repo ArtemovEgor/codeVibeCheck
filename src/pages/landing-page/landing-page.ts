@@ -4,14 +4,16 @@ import "./landing-page.scss";
 import { Header } from "@/components/layout/header/header";
 import { EN } from "@/locale/en";
 import { ICONS } from "@/assets/icons";
+import type Page from "../page";
 
-export class LandingPage extends BaseComponent {
+export class LandingPage extends BaseComponent implements Page {
   constructor() {
     super({ tag: "div", className: "landing" });
+
     this.init();
   }
 
-  private init(): void {
+  public init(): void {
     this.addChildren([
       new Header(),
       this.createHero(),
