@@ -51,6 +51,10 @@ export default class Router {
   }
 
   private handlePathChange(): void {
+    if (!globalThis.location.hash) {
+      this.navigate(ROUTES.LANDING);
+      return;
+    }
     const currentPath = globalThis.location.hash.slice(1) || "/";
     const parameters: Record<string, string> = {};
 
