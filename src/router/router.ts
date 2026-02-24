@@ -121,16 +121,41 @@ export default class Router {
 
   private render(route: Route, parameters: Record<string, string>): void {
     if (!this.rootContainer) return;
-
     const component = route.component(parameters);
-
     if (route.isModal && component instanceof Modal) {
-      this.closeCurrentModal();
-      this.currentModal = component;
-      component.addTo(this.rootContainer);
-      component.showModal();
+      this.renderModal(component);
+    } else if (component instanceof BaseComponent) {
+      this.renderPage(component, route.path);
+    }
+  }
 
-      component.getNode().addEventListener(
+  private renderPage(component: BaseComponent, path: string): void {
+    this.closeCurrentModal();
+    if (this.previousPagePath === path && this.currentPage) return;
+    this.currentPage?.destroy();
+    this.currentPage = component as unknown as Page;
+    this.previousPagePath = path;
+    this.rootContainer?.replaceChildren(component.getNode());
+  }
+
+  private renderModal(modal: Modal): void {
+    if (!this.currentPage) {
+      const pagePath = this.previousPagePath ?? ROUTES.LANDING;
+      const parameters: Record<string, string> = {};
+      const route = this.findRoute(pagePath, parameters);
+      if (route && !route.isModal) {
+        const page = route.component(parameters);
+        if (page instanceof BaseComponent) {
+          this.renderPage(page, route.path);
+        }
+      }
+    }
+    this.closeCurrentModal();
+    this.currentModal = modal;
+    if (this.rootContainer) {
+      modal.addTo(this.rootContainer);
+      modal.showModal();
+      modal.getNode().addEventListener(
         "close",
         () => {
           this.currentModal?.destroy();
@@ -139,13 +164,6 @@ export default class Router {
         },
         { once: true },
       );
-    } else if (component instanceof BaseComponent) {
-      this.closeCurrentModal();
-      if (this.previousPagePath === route.path && this.currentPage) return;
-      this.currentPage?.destroy();
-      this.currentPage = component as unknown as Page;
-      this.previousPagePath = route.path;
-      this.rootContainer.replaceChildren(component.getNode());
     }
   }
 
