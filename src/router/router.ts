@@ -63,19 +63,19 @@ export default class Router {
     const route = this.findRoute(currentPath, parameters);
 
     if (!route) {
-      this.navigate(ROUTES.NOT_FOUND || "/404");
+      this.navigate(ROUTES.NOT_FOUND);
       return;
     }
 
     const isLogged = this.authCheck();
 
     if (route.isProtected && !isLogged) {
-      this.navigate(ROUTES.LOGIN || "/login");
+      this.navigate(ROUTES.LOGIN);
       return;
     }
 
     if (route.isGuestOnly && isLogged) {
-      this.navigate(ROUTES.DASHBOARD || "/dashboard");
+      this.navigate(ROUTES.DASHBOARD);
       return;
     }
 
