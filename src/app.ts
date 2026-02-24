@@ -1,4 +1,5 @@
 import { ROUTES } from "./constants/routes";
+import { DashboardPage } from "./pages/dashboard/dashboard-page";
 import { LandingPage } from "./pages/landing-page/landing-page";
 import { router } from "./router/router";
 
@@ -14,6 +15,9 @@ export default class App {
     router.setRootContainer(this.parentNode);
     router.register(ROUTES.LANDING, () => new LandingPage(), {
       isGuestOnly: true,
+    });
+    router.register(ROUTES.DASHBOARD, () => new DashboardPage(), {
+      isProtected: true,
     });
   }
 }
