@@ -1,0 +1,21 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-primary);
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: var(--space-6) var(--space-8);
+
+    @include tablet-down {
+      padding: var(--space-4);
+    }
+
+    @include mobile {
+      padding: var(--space-3);
+    }
+  }
+}

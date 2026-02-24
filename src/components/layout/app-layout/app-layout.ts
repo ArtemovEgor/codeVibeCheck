@@ -1,5 +1,6 @@
 import BaseComponent from "@/components/base/base-component";
 import { Sidebar } from "../sidebar/sidebar";
+import "./app-layout.scss";
 
 export class AppLayout extends BaseComponent {
   private contentArea: BaseComponent;

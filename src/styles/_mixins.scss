@@ -53,6 +53,12 @@
   flex-direction: column;
 }
 
+@mixin flex-column-between {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 @mixin container {
   width: 100%;
   max-width: var(--max-content-width);
