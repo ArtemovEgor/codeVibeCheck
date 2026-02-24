@@ -5,6 +5,7 @@ import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 import { DEFAULT_THEME, THEME_STORAGE_KEY } from "@/constants/app";
 import { SCROLL_THRESHOLD } from "./header.constants";
 import "./header.scss";
+import { ROUTES } from "@/constants/routes";
 
 export class Header extends BaseComponent {
   constructor() {
@@ -26,7 +27,7 @@ export class Header extends BaseComponent {
     });
 
     const logoLink = new Link({
-      href: "#",
+      href: `#${ROUTES.LANDING}`,
       className: "logo",
       parent: container,
     });
@@ -66,13 +67,13 @@ export class Header extends BaseComponent {
 
     new Link({
       text: EN.common.auth.login,
-      href: "#login",
+      href: `#${ROUTES.LOGIN}`,
       variant: "ghost",
       parent: actions,
     });
     new Link({
       text: EN.common.auth.signup,
-      href: "#register",
+      href: `#${ROUTES.REGISTER}`,
       variant: "primary",
       parent: actions,
     });
