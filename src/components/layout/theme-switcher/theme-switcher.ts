@@ -1,6 +1,14 @@
 import BaseComponent from "@/components/base/base-component";
 import { Button } from "@/components/button/button";
 import "./theme-switcher.scss";
+import { DEFAULT_THEME, THEME_STORAGE_KEY } from "@/constants/app";
+
+type Theme = "light" | "dark";
+
+const THEMES = {
+  LIGHT: "light",
+  DARK: "dark",
+} as const;
 
 export class ThemeSwitcher extends BaseComponent {
   private lightBtn!: Button;
@@ -36,28 +44,34 @@ export class ThemeSwitcher extends BaseComponent {
   }
 
   private initEvents(): void {
-    const current = localStorage.getItem("app-theme") ?? "dark";
-    (current === "light" ? this.lightBtn : this.darkBtn).toggleClass(
+    const current =
+      (localStorage.getItem(THEME_STORAGE_KEY) as Theme) ?? DEFAULT_THEME;
+
+    (current === THEMES.LIGHT ? this.lightBtn : this.darkBtn).toggleClass(
       "theme-switcher__btn--active",
       true,
     );
 
     this.lightBtn.on("click", () =>
-      this.handleThemeSwitch("light", this.lightBtn, this.darkBtn),
+      this.handleThemeSwitch(THEMES.LIGHT, this.lightBtn, this.darkBtn),
     );
     this.darkBtn.on("click", () =>
-      this.handleThemeSwitch("dark", this.darkBtn, this.lightBtn),
+      this.handleThemeSwitch(THEMES.DARK, this.darkBtn, this.lightBtn),
     );
   }
 
   private handleThemeSwitch(
-    theme: "light" | "dark",
+    theme: Theme,
     activeButton: Button,
     inactiveButton: Button,
   ): void {
-    document.documentElement.dataset.theme = theme;
+    this.applyTheme(theme);
     localStorage.setItem("app-theme", theme);
     activeButton.toggleClass("theme-switcher__btn--active", true);
     inactiveButton.toggleClass("theme-switcher__btn--active", false);
+  }
+
+  private applyTheme(theme: Theme): void {
+    document.documentElement.dataset.theme = theme;
   }
 }
