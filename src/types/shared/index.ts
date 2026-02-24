@@ -6,10 +6,10 @@
  */
 
 export type {
-  User,
-  LoginCredentials,
-  RegisterCredentials,
-  AuthResponse,
+  IUser,
+  ILoginCredentials,
+  IRegisterCredentials,
+  IAuthResponse,
 } from "./user.types";
 
-export type { ApiResponse, PaginatedResponse, ApiError } from "./api.types";
+export type { IApiResponse, IApiError } from "./api.types";

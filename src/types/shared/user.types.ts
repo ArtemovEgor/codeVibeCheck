@@ -8,7 +8,7 @@
 // ── User ────────────────────────────────────────────────────────────────────
 
 /** Authenticated user profile returned by the API */
-export interface User {
+export interface IUser {
   readonly id: string;
   readonly name: string;
   readonly email: string;
@@ -21,21 +21,21 @@ export interface User {
 // ── Auth ────────────────────────────────────────────────────────────────────
 
 /** Credentials sent to POST /api/auth/login */
-export interface LoginCredentials {
+export interface ILoginCredentials {
   readonly email: string;
   readonly password: string;
 }
 
 /** Payload sent to POST /api/auth/register */
-export interface RegisterCredentials {
+export interface IRegisterCredentials {
   readonly name: string;
   readonly email: string;
   readonly password: string;
 }
 
 /** Successful authentication response from the server */
-export interface AuthResponse {
-  readonly user: User;
+export interface IAuthResponse {
+  readonly user: IUser;
   /** JWT access token */
   readonly token: string;
 }
