@@ -7,6 +7,7 @@ export interface IBaseComponentConfig {
   text?: string;
   parent?: HTMLElement | BaseComponent<HTMLElement>;
   children?: (HTMLElement | BaseComponent<HTMLElement> | null)[];
+  attributes?: Record<string, string>;
 }
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
