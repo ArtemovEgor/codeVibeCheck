@@ -1,4 +1,5 @@
 .app-layout__sidebar {
+  @include flex-column-between;
   width: var(--sidebar-width);
   height: 100vh;
   position: sticky;
@@ -6,7 +7,6 @@
   flex-shrink: 0;
   background: var(--bg-surface);
   border-right: 1px solid var(--border);
-  @include flex-column-between;
   overflow: hidden;
 
   @include tablet-down {
@@ -14,7 +14,7 @@
     top: 0;
     left: 0;
     height: 100vh;
-    z-index: calc(var(--z-header) + 1);
+    z-index: calc(var(--z-sticky) + 1);
     transform: translateX(-100%);
     transition: transform var(--transition-base);
 
@@ -65,7 +65,7 @@
 }
 
 .nav-link {
-  @include flex-center;
+  @include flex-start;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
@@ -76,9 +76,7 @@
   transition: var(--transition-base);
 
   &__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    @include flex-center;
     width: 20px;
     height: 20px;
     flex-shrink: 0;
@@ -148,6 +146,14 @@
     font-weight: var(--weight-bold);
     font-size: var(--text-sm);
     flex-shrink: 0;
+    overflow: hidden;
+    user-select: none;
+
+    &-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   &__username {

@@ -170,6 +170,12 @@ export class Sidebar extends BaseComponent {
     }
   }
 
+  public onNavLinkClick(callback: () => void): void {
+    for (const node of this.navLinks) {
+      node.addEventListener("click", callback);
+    }
+  }
+
   private updateActive = (): void => {
     const currentPath = globalThis.location.hash.slice(1) || "/";
     for (let index = 0; index < this.navLinks.length; index++) {

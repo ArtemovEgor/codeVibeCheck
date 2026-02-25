@@ -35,7 +35,7 @@
       padding-inline: var(--space-4);
       background-color: var(--bg-surface);
       border-bottom: 1px solid var(--border);
-      z-index: var(--z-sticky);
+      z-index: calc(var(--z-sticky) + 10);
       box-shadow: var(--shadow-sm);
     }
 
@@ -45,45 +45,65 @@
       font-size: var(--text-xl);
       color: var(--accent-primary);
     }
+
+    .burger {
+      display: none;
+
+      @include tablet-down {
+        @include flex-column-between;
+        width: 30px;
+        height: 27px;
+        padding: var(--space-1);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        transition: var(--transition-base);
+
+        &:hover {
+          background: var(--bg-surface-hover);
+        }
+      }
+
+      &-line {
+        width: 100%;
+        height: 3px;
+        background-color: var(--text-primary);
+        border-radius: var(--radius-full);
+        transition: var(--transition-slow);
+      }
+
+      &--active {
+        .burger-line:nth-child(1) {
+          transform: translateY(8px) rotate(45deg);
+        }
+        .burger-line:nth-child(2) {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        .burger-line:nth-child(3) {
+          transform: translateY(-8px) rotate(-45deg);
+        }
+      }
+    }
   }
 
-  .burger {
+  .sidebar-overlay {
     display: none;
 
     @include tablet-down {
-      @include flex-column-between;
-      width: 30px;
-      height: 27px;
-      padding: var(--space-1);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      border-radius: var(--radius-sm);
-      transition: var(--transition-base);
+      display: block;
+      position: fixed;
+      inset: 0;
+      background-color: var(--bg-overlay);
+      z-index: var(--z-sticky);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-base);
 
-      &:hover {
-        background: var(--bg-surface-hover);
-      }
-    }
-
-    &-line {
-      width: 100%;
-      height: 3px;
-      background-color: var(--text-primary);
-      border-radius: var(--radius-full);
-      transition: var(--transition-slow);
-    }
-
-    &--active {
-      .burger-line:nth-child(1) {
-        transform: translateY(8px) rotate(45deg);
-      }
-      .burger-line:nth-child(2) {
-        opacity: 0;
-        transform: translateX(-10px);
-      }
-      .burger-line:nth-child(3) {
-        transform: translateY(-8px) rotate(-45deg);
+      &--visible {
+        opacity: 1;
+        pointer-events: auto;
       }
     }
   }

@@ -5,6 +5,8 @@ import "./app-layout.scss";
 export class AppLayout extends BaseComponent {
   private contentArea: BaseComponent;
   private sidebar: Sidebar;
+  private overlay: BaseComponent;
+  private burger!: BaseComponent;
 
   constructor() {
     super({ tag: "div", className: "app-layout" });
@@ -16,11 +18,29 @@ export class AppLayout extends BaseComponent {
       className: "app-layout__content",
     });
 
+    this.overlay = new BaseComponent({ className: "sidebar-overlay" });
+
     this.addChildren([
       this.createMobileHeader(),
       this.sidebar,
+      this.overlay,
       this.contentArea,
     ]);
+
+    this.initEvents();
+  }
+
+  private initEvents() {
+    this.sidebar.onNavLinkClick(() => this.closeSidebar());
+
+    this.burger.on("click", () => {
+      const isOpen = this.sidebar.getNode().classList.contains("sidebar--open");
+      this.sidebar.toggleClass("sidebar--open", !isOpen);
+      this.overlay.toggleClass("sidebar-overlay--visible", !isOpen);
+      this.burger.toggleClass("burger--active", !isOpen);
+    });
+
+    this.overlay.on("click", () => this.closeSidebar());
   }
 
   private createMobileHeader(): BaseComponent {
@@ -33,7 +53,7 @@ export class AppLayout extends BaseComponent {
       parent: bar,
     });
 
-    const burger = new BaseComponent({
+    this.burger = new BaseComponent({
       tag: "button",
       className: "burger",
       parent: bar,
@@ -44,12 +64,13 @@ export class AppLayout extends BaseComponent {
       ],
     });
 
-    burger.on("click", () => {
-      this.sidebar.toggleClass("sidebar--open");
-      burger.toggleClass("burger--active");
-    });
-
     return bar;
+  }
+
+  private closeSidebar(): void {
+    this.sidebar.toggleClass("sidebar--open", false);
+    this.overlay.toggleClass("sidebar-overlay--visible", false);
+    this.burger.toggleClass("burger--active", false);
   }
 
   public setPage(page: BaseComponent): void {
