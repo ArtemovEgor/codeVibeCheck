@@ -151,3 +151,13 @@ export interface ITopic {
   requiredTopicIds: string[];
   widgetIds: string[];
 }
+
+/**
+ * Verdict returned after submitting a widget answer.
+ */
+export interface IVerdict {
+  isCorrect: boolean;
+  explanation?: LocalizedString;
+  xpEarned: number;
+  streakUpdated: boolean;
+}
