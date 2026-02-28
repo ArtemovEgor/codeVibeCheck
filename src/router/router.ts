@@ -1,4 +1,5 @@
 import BaseComponent from "@/components/base/base-component";
+import { AppLayout } from "@/components/layout/app-layout/app-layout";
 import { ROUTES } from "@/constants/routes";
 import type Page from "@/pages/page";
 
@@ -19,6 +20,7 @@ export default class Router {
   private rootContainer: HTMLElement | undefined = undefined;
   private currentPage: Page | undefined = undefined;
   private authCheck: () => boolean = () => false;
+  private currentLayout: AppLayout | undefined = undefined;
 
   constructor() {
     globalThis.addEventListener("hashchange", () => this.handlePathChange());
@@ -118,14 +120,24 @@ export default class Router {
   private render(route: Route, parameters: Record<string, string>): void {
     if (!this.rootContainer) return;
 
+    const page = route.component(parameters);
+    if (!(page instanceof BaseComponent)) return;
+
     if (this.currentPage) {
       this.currentPage.destroy();
     }
 
-    const page = route.component(parameters);
     this.currentPage = page;
 
-    if (page instanceof BaseComponent) {
+    if (route.isProtected) {
+      if (!this.currentLayout) {
+        this.currentLayout = new AppLayout();
+        this.rootContainer.replaceChildren(this.currentLayout.getNode());
+      }
+      this.currentLayout.setPage(page);
+    } else {
+      this.currentLayout?.destroy();
+      this.currentLayout = undefined;
       this.rootContainer.replaceChildren(page.getNode());
     }
   }
