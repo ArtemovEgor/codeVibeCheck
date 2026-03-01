@@ -9,6 +9,15 @@ export const EN = {
       logo: "</>",
     },
   },
+  sidebar: {
+    nav: {
+      dashboard: "Dashboard",
+      library: "Library",
+      aiChat: "AI Chat",
+      profile: "Profile",
+      logout: "Logout",
+    },
+  },
   landing: {
     hero: {
       title: {

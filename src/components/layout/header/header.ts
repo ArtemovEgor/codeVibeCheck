@@ -2,7 +2,6 @@ import { EN } from "@/locale/en";
 import BaseComponent from "../../base/base-component";
 import Link from "../../link/link";
 import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
-import { DEFAULT_THEME, THEME_STORAGE_KEY } from "@/constants/app";
 import { SCROLL_THRESHOLD } from "./header.constants";
 import "./header.scss";
 import { ROUTES } from "@/constants/routes";
@@ -10,14 +9,8 @@ import { ROUTES } from "@/constants/routes";
 export class Header extends BaseComponent {
   constructor() {
     super({ tag: "header", className: "header" });
-    this.restoreTheme();
     this.render();
     this.initScrollHandler();
-  }
-
-  private restoreTheme(): void {
-    const saved = localStorage.getItem(THEME_STORAGE_KEY) ?? DEFAULT_THEME;
-    document.documentElement.dataset.theme = saved;
   }
 
   private render(): void {

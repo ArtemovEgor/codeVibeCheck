@@ -1,0 +1,110 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  @include body-text;
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: var(--space-6) var(--space-8);
+
+    @include tablet-down {
+      padding: var(--space-4);
+      padding-top: calc(var(--header-height) + var(--space-4));
+    }
+
+    @include mobile {
+      padding: var(--space-3);
+      padding-top: calc(var(--header-height) + var(--space-3));
+    }
+  }
+
+  .mobile-bar {
+    display: none;
+
+    @include tablet-down {
+      @include flex-between;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      padding-inline: var(--space-4);
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      z-index: calc(var(--z-sticky) + 10);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .logo__icon {
+      font-family: var(--font-mono);
+      font-weight: var(--weight-bold);
+      font-size: var(--text-xl);
+      color: var(--accent-primary);
+    }
+
+    .burger {
+      display: none;
+
+      @include tablet-down {
+        @include flex-column-between;
+        width: 30px;
+        height: 27px;
+        padding: var(--space-1);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        transition: var(--transition-base);
+
+        &:hover {
+          background: var(--bg-surface-hover);
+        }
+      }
+
+      &-line {
+        width: 100%;
+        height: 3px;
+        background-color: var(--text-primary);
+        border-radius: var(--radius-full);
+        transition: var(--transition-slow);
+      }
+
+      &--active {
+        .burger-line:nth-child(1) {
+          transform: translateY(8px) rotate(45deg);
+        }
+        .burger-line:nth-child(2) {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        .burger-line:nth-child(3) {
+          transform: translateY(-8px) rotate(-45deg);
+        }
+      }
+    }
+  }
+
+  .sidebar-overlay {
+    display: none;
+
+    @include tablet-down {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background-color: var(--bg-overlay);
+      z-index: var(--z-sticky);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-base);
+
+      &--visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+  }
+}
