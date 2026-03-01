@@ -37,14 +37,14 @@ export default class AuthModal extends Modal {
 
     this.loginTabButton = new BaseComponent<HTMLButtonElement>({
       tag: "button",
-      text: EN.common.auth.login_link,
+      text: EN.common.auth.login,
       className: "auth-switch__tab",
     });
     this.loginTabButton.on("click", () => this.showTab("login"));
 
     this.registerTabButton = new BaseComponent<HTMLButtonElement>({
       tag: "button",
-      text: EN.common.auth.signup_link,
+      text: EN.common.auth.signup,
       className: "auth-switch__tab",
     });
     this.registerTabButton.on("click", () => this.showTab("register"));

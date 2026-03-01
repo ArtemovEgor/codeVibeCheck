@@ -1,8 +1,8 @@
 import { INPUT_VALIDATION } from "@/constants/input-validation";
 import { EN } from "@/locale/en";
-import { authService } from "@/services/auth-service/auth-service";
 import type { IFieldConfig } from "@/types/types";
 import { BaseAuthForm } from "./base-auth-form";
+import { authApi } from "@/api/auth.api";
 
 export default class LoginForm extends BaseAuthForm {
   constructor() {
@@ -39,6 +39,12 @@ export default class LoginForm extends BaseAuthForm {
   }
 
   protected async handleSubmit(): Promise<void> {
-    await authService.loginUser();
+    const email = this.getInputValue("auth-email");
+    const password = this.getInputValue("auth-password");
+
+    await authApi.login({
+      email,
+      password,
+    });
   }
 }
