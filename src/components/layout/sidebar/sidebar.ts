@@ -5,6 +5,9 @@ import { EN } from "@/locale/en";
 import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 import "./sidebar.scss";
 import { SIDEBAR_ICONS } from "@/assets/icons";
+import { authApi } from "@/api/auth.api";
+import { router } from "@/router/router";
+import type { IUser } from "@/types/shared";
 
 const NAV_ITEMS = [
   {
@@ -31,6 +34,9 @@ const NAV_ITEMS = [
 
 export class Sidebar extends BaseComponent {
   private navLinks: HTMLAnchorElement[] = [];
+  private currentUser: IUser | undefined;
+  private avatarEl: BaseComponent | undefined;
+  private usernameEl: BaseComponent | undefined;
 
   constructor() {
     super({ tag: "aside", className: "app-layout__sidebar" });
@@ -126,10 +132,10 @@ export class Sidebar extends BaseComponent {
 
     this.renderAvatar(userWrap);
 
-    new BaseComponent({
+    this.usernameEl = new BaseComponent({
       tag: "span",
       className: "sidebar__username",
-      text: "Alex",
+      text: this.currentUser?.name ?? "User",
       parent: userWrap,
     });
 
@@ -138,20 +144,24 @@ export class Sidebar extends BaseComponent {
       new ThemeSwitcher(),
     ]);
 
-    new BaseComponent({
+    const logoutButton = new BaseComponent({
       tag: "button",
       className: "btn sidebar__logout",
       text: EN.sidebar.nav.logout,
       parent: sidebarFooterWrap,
     });
+
+    logoutButton.on("click", async () => {
+      await authApi.logout();
+      router.navigate(ROUTES.LANDING);
+    });
   }
 
   private renderAvatar(parent: BaseComponent): void {
-    // TODO: authService.getUser()
-    const userName = "Alex";
-    const avatarUrl = "";
+    const userName = this.currentUser?.name ?? "U";
+    const avatarUrl = this.currentUser?.avatarUrl;
 
-    const avatar = new BaseComponent({
+    this.avatarEl = new BaseComponent({
       tag: "div",
       className: "sidebar__avatar",
       parent,
@@ -161,12 +171,20 @@ export class Sidebar extends BaseComponent {
       const img = new BaseComponent<HTMLImageElement>({
         tag: "img",
         className: "sidebar__avatar-img",
-        parent: avatar,
+        parent: this.avatarEl,
       });
       img.getNode().src = avatarUrl;
       img.getNode().alt = userName;
     } else {
-      avatar.setText(userName.charAt(0).toUpperCase());
+      this.avatarEl.setText(userName.charAt(0).toUpperCase());
+    }
+  }
+
+  public setUser(user: IUser): void {
+    this.currentUser = user;
+    this.usernameEl?.setText(user.name);
+    if (this.avatarEl) {
+      this.avatarEl.setText(user.name.charAt(0).toUpperCase());
     }
   }
 

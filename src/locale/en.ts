@@ -1,7 +1,7 @@
 export const EN = {
   common: {
     auth: {
-      login_link: "Login",
+      login: "Login",
       login_header: "Log in to your account",
       register_header: "Create an account",
       email: "Email",
@@ -9,7 +9,7 @@ export const EN = {
       password: "Password",
       password_placeholder: "Enter your password",
       login_button: "Login",
-      signup_link: "Sign up",
+      signup: "Sign up",
       register_button: "Sign up",
       name: "Name",
       name_placeholder: "Enter your name",
@@ -28,6 +28,15 @@ export const EN = {
     app: {
       name: "codeVibeCheck",
       logo: "</>",
+    },
+  },
+  sidebar: {
+    nav: {
+      dashboard: "Dashboard",
+      library: "Library",
+      aiChat: "AI Chat",
+      profile: "Profile",
+      logout: "Logout",
     },
   },
   landing: {

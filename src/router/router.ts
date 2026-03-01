@@ -1,4 +1,5 @@
 import BaseComponent from "@/components/base/base-component";
+import { AppLayout } from "@/components/layout/app-layout/app-layout";
 import Modal from "@/components/modal/modal";
 import { ROUTES } from "@/constants/routes";
 import type Page from "@/pages/page";
@@ -22,6 +23,7 @@ export default class Router {
   private currentPage: Page | undefined = undefined;
   private currentModal: Modal | undefined = undefined;
   private previousPagePath: string | undefined = undefined;
+  private currentLayout: AppLayout | undefined = undefined;
   private authCheck: () => boolean = () => false;
 
   constructor() {
@@ -134,8 +136,22 @@ export default class Router {
     if (this.previousPagePath === path && this.currentPage) return;
     this.currentPage?.destroy();
     this.currentPage = component as unknown as Page;
+
+    const route = this.routes.get(path);
+
+    if (route?.isProtected) {
+      if (!this.currentLayout) {
+        this.currentLayout = new AppLayout();
+        this.rootContainer?.replaceChildren(this.currentLayout.getNode());
+      }
+      this.currentLayout.setPage(component);
+    } else {
+      this.currentLayout?.destroy();
+      this.currentLayout = undefined;
+      this.rootContainer?.replaceChildren(component.getNode());
+    }
+
     this.previousPagePath = path;
-    this.rootContainer?.replaceChildren(component.getNode());
   }
 
   private renderModal(modal: Modal): void {

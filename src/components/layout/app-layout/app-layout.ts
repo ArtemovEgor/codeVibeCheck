@@ -1,3 +1,4 @@
+import { authApi } from "@/api/auth.api";
 import BaseComponent from "@/components/base/base-component";
 import { Sidebar } from "../sidebar/sidebar";
 import "./app-layout.scss";
@@ -28,6 +29,7 @@ export class AppLayout extends BaseComponent {
     ]);
 
     this.initEvents();
+    this.loadUser();
   }
 
   private initEvents() {
@@ -75,5 +77,14 @@ export class AppLayout extends BaseComponent {
 
   public setPage(page: BaseComponent): void {
     this.contentArea.getNode().replaceChildren(page.getNode());
+  }
+
+  private async loadUser(): Promise<void> {
+    try {
+      const response = await authApi.getCurrentUser();
+      this.sidebar.setUser(response.data);
+    } catch {
+      // user data unavailable — sidebar keeps defaults
+    }
   }
 }
