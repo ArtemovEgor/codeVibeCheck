@@ -56,6 +56,11 @@ export default class Router {
     globalThis.location.hash = formattedPath;
   }
 
+  public replaceHash(path: string): void {
+    const formattedPath = path.startsWith("/") ? path : `/${path}`;
+    history.replaceState(undefined, "", `#${formattedPath}`);
+  }
+
   private handlePathChange(): void {
     if (!globalThis.location.hash) {
       this.navigate(ROUTES.LANDING);

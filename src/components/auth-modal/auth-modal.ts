@@ -5,6 +5,8 @@ import LoginForm from "../auth-form/login-form";
 import RegisterForm from "../auth-form/register-form";
 import "./auth-modal.scss";
 import type { BaseAuthForm } from "../auth-form/base-auth-form";
+import { ROUTES } from "@/constants/routes";
+import { router } from "@/router/router";
 
 type AuthTab = "login" | "register";
 
@@ -62,6 +64,8 @@ export default class AuthModal extends Modal {
     const formNode = this.form?.getNode();
     const form: BaseAuthForm =
       tab === "register" ? new RegisterForm() : new LoginForm();
+
+    router.replaceHash(tab === "register" ? ROUTES.REGISTER : ROUTES.LOGIN);
 
     formNode?.replaceChildren(form.getNode());
   }
