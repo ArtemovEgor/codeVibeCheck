@@ -10,13 +10,13 @@ export interface LocalizedString {
 export interface QuizPayload {
   question: LocalizedString;
   options: LocalizedString[];
-  answer?: number;
+  correctIndex?: number;
 }
 
 export interface TrueFalsePayload {
   statement: LocalizedString;
   explanation: LocalizedString;
-  answer?: boolean;
+  correctValue?: boolean;
 }
 
 export interface IQuizAnswer {
@@ -35,13 +35,11 @@ interface IBaseWidget {
   tags: string[];
 }
 
-export type WidgetAnswer = IQuizAnswer | ITrueFalseAnswer;
-
 export type Widget =
   | (IBaseWidget & { type: "quiz"; payload: QuizPayload })
   | (IBaseWidget & { type: "true-false"; payload: TrueFalsePayload });
 
-export interface IWidgetStrategy<T extends Widget, A> {
-  type: T["type"];
-  render(widget: T, onAnswer: (answer: A) => void): BaseComponent;
+export interface IWidgetStrategy {
+  type: string;
+  render(widget: Widget, onAnswer: (answer: unknown) => void): BaseComponent;
 }

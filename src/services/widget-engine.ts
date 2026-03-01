@@ -1,19 +1,15 @@
 import type BaseComponent from "@/components/base/base-component";
 import { QuizStrategy } from "@/components/widgets/quiz/quiz-strategy";
-import type {
-  IWidgetStrategy,
-  WidgetAnswer,
-  Widget,
-} from "@/types/shared/widget.types";
+import type { IWidgetStrategy, Widget } from "@/types/shared/widget.types";
 
 class WidgetEngine {
-  private strategies = new Map<string, IWidgetStrategy<Widget, WidgetAnswer>>();
+  private strategies = new Map<string, IWidgetStrategy>();
 
   constructor() {
     this.register(new QuizStrategy());
   }
 
-  public register(strategy: IWidgetStrategy<Widget, WidgetAnswer>): void {
+  public register(strategy: IWidgetStrategy): void {
     this.strategies.set(strategy.type, strategy);
   }
 
@@ -22,9 +18,11 @@ class WidgetEngine {
     onAnswer: (answer: unknown) => void,
   ): BaseComponent {
     const strategy = this.strategies.get(widget.type);
+
     if (!strategy) {
       throw new Error(`Unknown widget type: ${widget.type}`);
     }
+
     return strategy.render(widget, onAnswer);
   }
 }
