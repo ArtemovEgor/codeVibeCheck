@@ -1,9 +1,11 @@
+import { TOKEN_KEY } from "@/constants/app";
 import type { IApiError } from "@/types/shared";
 
 class ApiService {
   private apiMode = import.meta.env.VITE_API_MODE || "mock";
   private apiUrl = import.meta.env.VITE_API_URL;
-  private token: string | undefined = undefined;
+  private token: string | undefined =
+    localStorage.getItem(TOKEN_KEY) ?? undefined;
 
   public get isMockMode(): boolean {
     return this.apiMode === "mock";
@@ -11,6 +13,7 @@ class ApiService {
 
   /** Save JWT token (called after successful login) */
   public setToken(token: string): void {
+    localStorage.setItem(TOKEN_KEY, token);
     this.token = token;
   }
 
@@ -20,6 +23,7 @@ class ApiService {
 
   /** Clear JWT token (called on logout) */
   public clearToken(): void {
+    localStorage.removeItem(TOKEN_KEY);
     this.token = undefined;
   }
 
@@ -28,9 +32,12 @@ class ApiService {
     options: RequestInit = {},
   ): Promise<T> {
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
       ...(options.headers as Record<string, string>),
     };
+
+    if (options.body && !headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
 
     if (this.token) {
       headers["Authorization"] = `Bearer ${this.token}`;
