@@ -9,3 +9,5 @@ Project team:
 - [Alexander Akatov](https://github.com/Al-E-xXx)
 - [Kateryna Volkova](https://github.com/EkaterynaVolkova)
 - [Egor Artemov](https://github.com/ArtemovEgor)
+
+Deploy: [https://artemovegor.github.io/codeVibeCheck/](https://artemovegor.github.io/codeVibeCheck/)
