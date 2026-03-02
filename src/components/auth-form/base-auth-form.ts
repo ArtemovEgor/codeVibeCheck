@@ -1,4 +1,4 @@
-import { renderAuthField } from "@/utils/create-auth-field";
+import { renderAuthField } from "@/components/auth-form/create-auth-field";
 import BaseComponent from "../base/base-component";
 import { EN } from "@/locale/en";
 import { Button } from "../button/button";
@@ -55,15 +55,15 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
         },
       });
 
+      const [inputNode, errorNode] = [input.getNode(), error.getNode()];
+
       this.fields.set(config.id, {
-        input,
-        error,
+        input: inputNode,
+        error: errorNode,
         pattern: config.pattern,
       });
 
-      input.addEventListener("input", () =>
-        this.validateActiveField(config.id),
-      );
+      input.on("input", () => this.validateActiveField(config.id));
     }
   }
 
@@ -77,7 +77,7 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
   }
 
   private initListeners(): void {
-    this.getNode().addEventListener("submit", (event) => {
+    this.on("submit", (event) => {
       event.preventDefault();
       this.onSubmit();
     });

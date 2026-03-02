@@ -15,7 +15,10 @@ export function renderAuthField(parameters: {
   labelText: string;
   placeholderText: string;
   validationAttributes: IAuthFieldAttributes;
-}): { input: HTMLInputElement; error: HTMLElement } {
+}): {
+  input: BaseComponent<HTMLInputElement>;
+  error: BaseComponent<HTMLElement>;
+} {
   const inputWrapper = new BaseComponent<HTMLElement>({
     tag: "div",
     className: parameters.classNames.div,
@@ -38,21 +41,16 @@ export function renderAuthField(parameters: {
     parameters.classNames.input,
   );
 
-  const errorComponent = new BaseComponent({
-    tag: "span",
-    className: parameters.classNames.error,
-    parent: inputWrapper,
-    text: "",
-  });
+  const errorComponent = createError(inputWrapper, parameters.classNames.error);
 
   return {
-    input: inputComponent.getNode(),
-    error: errorComponent.getNode(),
+    input: inputComponent,
+    error: errorComponent,
   };
 }
 
 function createLabel(
-  parent: BaseComponent<HTMLElement>,
+  parent: BaseComponent,
   forId: string,
   text: string,
   className?: string,
@@ -67,7 +65,7 @@ function createLabel(
 }
 
 function createInput(
-  parent: BaseComponent<HTMLElement>,
+  parent: BaseComponent,
   id: string,
   type: string,
   placeholder: string,
@@ -88,5 +86,17 @@ function createInput(
       maxLength: String(attributes.maxLength),
       "data-error-text": attributes.errorText || "",
     },
+  });
+}
+
+function createError(
+  parent: BaseComponent,
+  className?: string,
+): BaseComponent<HTMLSpanElement> {
+  return new BaseComponent<HTMLSpanElement>({
+    tag: "span",
+    className,
+    parent: parent,
+    text: "",
   });
 }
