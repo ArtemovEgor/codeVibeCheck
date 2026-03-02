@@ -1,29 +1,31 @@
 import BaseComponent from "@/components/base/base-component";
 import type {
-  IQuizAnswer,
+  ITrueFalseAnswer,
   IWidgetStrategy,
   Widget,
 } from "@/types/shared/widget.types";
 
-export class QuizStrategy implements IWidgetStrategy {
-  public type = "quiz" as const;
+export class TrueFalseStrategy implements IWidgetStrategy {
+  public type = "true-false" as const;
 
   public render(
     widget: Widget,
-    onAnswer: (answer: IQuizAnswer) => void,
+    onAnswer: (answer: ITrueFalseAnswer) => void,
   ): BaseComponent {
     if (widget.type !== this.type) return new BaseComponent();
 
-    const container = new BaseComponent({ className: "widget widget--quiz" });
+    const container = new BaseComponent({
+      className: "widget widget--true-false",
+    });
     // TODO: implement render logic
     void onAnswer;
 
     return container;
   }
 
-  public validate(answer: IQuizAnswer, widget: Widget): boolean {
+  public validate(answer: ITrueFalseAnswer, widget: Widget): boolean {
     if (widget.type !== this.type) return false;
 
-    return answer.selectedIndex === widget.payload.correctIndex;
+    return answer.value === widget.payload.correctValue;
   }
 }
