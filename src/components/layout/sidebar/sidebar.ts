@@ -5,11 +5,9 @@ import { EN } from "@/locale/en";
 import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 import "./sidebar.scss";
 import { SIDEBAR_ICONS } from "@/assets/icons";
-
-interface IUserView {
-  displayName: string;
-  avatarUrl: string;
-}
+import { authApi } from "@/api/auth.api";
+import { router } from "@/router/router";
+import type { IUser } from "@/types/shared";
 
 const NAV_ITEMS = [
   {
@@ -36,6 +34,10 @@ const NAV_ITEMS = [
 
 export class Sidebar extends BaseComponent {
   private navLinks: BaseComponent[] = [];
+  private currentUser: IUser | undefined;
+  private avatarEl: BaseComponent | undefined;
+  private usernameEl: BaseComponent | undefined;
+  private userWrap: BaseComponent | undefined;
 
   constructor() {
     super({ tag: "aside", className: "app-layout__sidebar" });
@@ -43,18 +45,9 @@ export class Sidebar extends BaseComponent {
   }
 
   private render(): void {
-    const user = this.getUser();
     this.renderSidebarLogo();
     this.renderSidebarNav();
-    this.renderSidebarFooter(user);
-  }
-
-  // TODO: authService.getUser()
-  private getUser(): IUserView {
-    return {
-      displayName: "Alex",
-      avatarUrl: "",
-    };
+    this.renderSidebarFooter();
   }
 
   private renderSidebarLogo(): void {
@@ -126,24 +119,24 @@ export class Sidebar extends BaseComponent {
     return link;
   }
 
-  private renderSidebarFooter(user: IUserView): void {
+  private renderSidebarFooter(): void {
     const sidebarFooterWrap = new BaseComponent({
       className: "sidebar__footer",
       parent: this,
     });
 
-    const userWrap = new BaseComponent({
-      className: "sidebar__user",
+    this.userWrap = new BaseComponent({
+      className: "sidebar__user sidebar__user--loading",
       parent: sidebarFooterWrap,
     });
 
-    this.renderAvatar(userWrap, user);
+    this.renderAvatar(this.userWrap);
 
-    new BaseComponent({
+    this.usernameEl = new BaseComponent({
       tag: "span",
       className: "sidebar__username",
-      text: user.displayName,
-      parent: userWrap,
+      text: this.currentUser?.name ?? "User",
+      parent: this.userWrap,
     });
 
     sidebarFooterWrap.addChildren([
@@ -151,19 +144,24 @@ export class Sidebar extends BaseComponent {
       new ThemeSwitcher(),
     ]);
 
-    new BaseComponent({
+    const logoutButton = new BaseComponent({
       tag: "button",
       className: "btn sidebar__logout",
       text: EN.sidebar.nav.logout,
       parent: sidebarFooterWrap,
     });
+
+    logoutButton.on("click", async () => {
+      await authApi.logout();
+      router.navigate(ROUTES.LANDING);
+    });
   }
 
-  private renderAvatar(parent: BaseComponent, user: IUserView): void {
-    const userName = user.displayName;
-    const avatarUrl = user.avatarUrl;
+  private renderAvatar(parent: BaseComponent): void {
+    const userName = this.currentUser?.name ?? "U";
+    const avatarUrl = this.currentUser?.avatarUrl;
 
-    const avatar = new BaseComponent({
+    this.avatarEl = new BaseComponent({
       tag: "div",
       className: "sidebar__avatar",
       parent,
@@ -173,13 +171,22 @@ export class Sidebar extends BaseComponent {
       const img = new BaseComponent<HTMLImageElement>({
         tag: "img",
         className: "sidebar__avatar-img",
-        parent: avatar,
+        parent: this.avatarEl,
       });
       img.getNode().src = avatarUrl;
       img.getNode().alt = userName;
     } else {
-      avatar.setText(userName.charAt(0).toUpperCase());
+      this.avatarEl.setText(userName.charAt(0).toUpperCase());
     }
+  }
+
+  public setUser(user: IUser): void {
+    this.currentUser = user;
+    this.usernameEl?.setText(user.name);
+    if (this.avatarEl) {
+      this.avatarEl.setText(user.name.charAt(0).toUpperCase());
+    }
+    this.userWrap?.toggleClass("sidebar__user--loading", false);
   }
 
   public onNavLinkClick(callback: () => void): void {

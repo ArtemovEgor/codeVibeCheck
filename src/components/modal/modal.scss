@@ -1,0 +1,17 @@
+.modal {
+  @include dialog-base(440px);
+  @include scale-in;
+  overflow: hidden;
+
+  &__content {
+    @include flex-column;
+    width: 100%;
+    padding: var(--space-8);
+    gap: var(--space-6);
+  }
+
+  h2 {
+    @include heading(var(--text-2xl));
+    text-align: center;
+  }
+}

@@ -2,7 +2,28 @@ export const EN = {
   common: {
     auth: {
       login: "Login",
+      login_header: "Log in to your account",
+      register_header: "Create an account",
+      email: "Email",
+      email_placeholder: "Enter your email",
+      password: "Password",
+      password_placeholder: "Enter your password",
+      login_button: "Login",
       signup: "Sign up",
+      register_button: "Sign up",
+      name: "Name",
+      name_placeholder: "Enter your name",
+    },
+    validation: {
+      empty: "This field is required",
+      default_error: "Invalid input",
+      email_error: "Please enter a valid email address",
+      name_error:
+        "Name can only contain letters, spaces, hyphens and apostrophes",
+      password_error: "Password does not meet the requirements",
+      too_short: "Minimum length is",
+      too_long: "Maximum length is",
+      characters: "characters",
     },
     app: {
       name: "codeVibeCheck",

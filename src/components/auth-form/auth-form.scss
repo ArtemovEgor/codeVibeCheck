@@ -1,0 +1,91 @@
+.auth-form,
+.register-form {
+  @include flex-column;
+}
+
+.form-field {
+  @include flex-column;
+  gap: var(--space-2);
+
+  &__label {
+    @include label;
+    user-select: none;
+  }
+
+  &__input {
+    @include input-base;
+
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+  }
+
+  &__error {
+    font-size: var(--text-xs);
+    line-height: 1.2;
+    color: var(--accent-error);
+    min-height: 1.2em;
+    transition: opacity var(--transition-fast);
+    opacity: 0;
+
+    &--visible {
+      opacity: 1;
+    }
+  }
+
+  &--invalid &__input {
+    border-color: var(--accent-error);
+    box-shadow: 0 0 0 3px var(--accent-error-light);
+
+    &:focus {
+      border-color: var(--accent-error);
+      box-shadow: 0 0 0 3px var(--accent-error-light);
+    }
+  }
+
+  &--valid &__input {
+    border-color: var(--accent-success);
+  }
+}
+
+.button--submit {
+  @include btn-primary;
+  width: 100%;
+  padding: var(--space-3) var(--space-6);
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+
+    &:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
+@include mobile {
+  .modal--auth {
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+
+    &::backdrop {
+      backdrop-filter: none;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+    }
+  }
+
+  .auth-form,
+  .register-form {
+    padding: 0 var(--space-6) var(--space-6);
+  }
+}

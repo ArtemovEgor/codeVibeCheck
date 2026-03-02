@@ -1,3 +1,5 @@
+import { apiService } from "./api/api-service";
+import AuthModal from "./components/auth-modal/auth-modal";
 import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
 import { ROUTES } from "./constants/routes";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
@@ -15,8 +17,18 @@ export default class App {
 
   private initRoutes(): void {
     router.setRootContainer(this.parentNode);
+    router.setAuthCheck(() => apiService.getToken() !== undefined);
+
     router.register(ROUTES.LANDING, () => new LandingPage(), {
       isGuestOnly: true,
+    });
+    router.register(ROUTES.LOGIN, () => new AuthModal("login"), {
+      isGuestOnly: true,
+      isModal: true,
+    });
+    router.register(ROUTES.REGISTER, () => new AuthModal("register"), {
+      isGuestOnly: true,
+      isModal: true,
     });
     router.register(ROUTES.DASHBOARD, () => new DashboardPage(), {
       isProtected: true,

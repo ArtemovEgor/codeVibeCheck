@@ -1,0 +1,25 @@
+.notifications-container {
+  @include toast-container;
+}
+
+.notification {
+  @include toast;
+  opacity: 0;
+  transform: translateX(100%);
+  transition:
+    opacity var(--transition-slow),
+    transform var(--transition-slow);
+
+  &--visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification-success {
+  @include toast-accent(var(--accent-success));
+}
+
+.notification-error {
+  @include toast-accent(var(--accent-error));
+}

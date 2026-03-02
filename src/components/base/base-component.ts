@@ -12,6 +12,7 @@ export default class BaseComponent<T extends HTMLElement = HTMLElement> {
     text = "",
     parent,
     children = [],
+    attributes,
   }: IBaseComponentConfig = {}) {
     this.node = document.createElement(tag) as T;
 
@@ -24,6 +25,11 @@ export default class BaseComponent<T extends HTMLElement = HTMLElement> {
     if (text) this.node.textContent = text;
     if (children.length > 0) this.addChildren(children);
     if (parent) this.addTo(parent);
+    if (attributes && Object.keys(attributes).length > 0) {
+      for (const [key, value] of Object.entries(attributes)) {
+        this.node.setAttribute(key, value);
+      }
+    }
   }
 
   public setText(text: string): this {

@@ -1,13 +1,15 @@
 import BaseComponent from "@/components/base/base-component";
 import { AppLayout } from "@/components/layout/app-layout/app-layout";
+import Modal from "@/components/modal/modal";
 import { ROUTES } from "@/constants/routes";
 import type Page from "@/pages/page";
 
-type RouteCallback = (parameters: Record<string, string>) => Page;
+type RouteCallback = (parameters: Record<string, string>) => Page | Modal;
 
 interface RouteOptions {
   isProtected?: boolean;
   isGuestOnly?: boolean;
+  isModal?: boolean;
 }
 
 type Route = RouteOptions & {
@@ -19,8 +21,10 @@ export default class Router {
   private routes = new Map<string, Route>();
   private rootContainer: HTMLElement | undefined = undefined;
   private currentPage: Page | undefined = undefined;
-  private authCheck: () => boolean = () => false;
+  private currentModal: Modal | undefined = undefined;
+  private previousPagePath: string | undefined = undefined;
   private currentLayout: AppLayout | undefined = undefined;
+  private authCheck: () => boolean = () => false;
 
   constructor() {
     globalThis.addEventListener("hashchange", () => this.handlePathChange());
@@ -50,6 +54,11 @@ export default class Router {
   public navigate(path: string): void {
     const formattedPath = path.startsWith("/") ? path : `/${path}`;
     globalThis.location.hash = formattedPath;
+  }
+
+  public replaceHash(path: string): void {
+    const formattedPath = path.startsWith("/") ? path : `/${path}`;
+    history.replaceState(undefined, "", `#${formattedPath}`);
   }
 
   private handlePathChange(): void {
@@ -119,26 +128,77 @@ export default class Router {
 
   private render(route: Route, parameters: Record<string, string>): void {
     if (!this.rootContainer) return;
+    const component = route.component(parameters);
+    if (route.isModal && component instanceof Modal) {
+      this.renderModal(component);
+    } else if (component instanceof BaseComponent) {
+      this.renderPage(component, route.path);
+    }
+  }
 
-    const page = route.component(parameters);
-    if (!(page instanceof BaseComponent)) return;
-
-    if (this.currentPage) {
+  private renderPage(component: BaseComponent, path: string): void {
+    this.closeCurrentModal();
+    if (this.previousPagePath === path && this.currentPage) return;
+    if (this.currentPage && "destroy" in this.currentPage) {
       this.currentPage.destroy();
     }
 
-    this.currentPage = page;
+    this.currentPage = this.isPage(component) ? component : undefined;
 
-    if (route.isProtected) {
+    const route = this.routes.get(path);
+
+    if (route?.isProtected) {
       if (!this.currentLayout) {
         this.currentLayout = new AppLayout();
-        this.rootContainer.replaceChildren(this.currentLayout.getNode());
+        this.rootContainer?.replaceChildren(this.currentLayout.getNode());
       }
-      this.currentLayout.setPage(page);
+      this.currentLayout.setPage(component);
     } else {
       this.currentLayout?.destroy();
       this.currentLayout = undefined;
-      this.rootContainer.replaceChildren(page.getNode());
+      this.rootContainer?.replaceChildren(component.getNode());
+    }
+
+    this.previousPagePath = path;
+  }
+
+  private isPage(component: BaseComponent): component is BaseComponent & Page {
+    return "init" in component && "destroy" in component;
+  }
+
+  private renderModal(modal: Modal): void {
+    if (!this.currentPage) {
+      const pagePath = this.previousPagePath ?? ROUTES.LANDING;
+      const parameters: Record<string, string> = {};
+      const route = this.findRoute(pagePath, parameters);
+      if (route && !route.isModal) {
+        const page = route.component(parameters);
+        if (page instanceof BaseComponent) {
+          this.renderPage(page, route.path);
+        }
+      }
+    }
+    this.closeCurrentModal();
+    this.currentModal = modal;
+    if (this.rootContainer) {
+      modal.addTo(this.rootContainer);
+      modal.showModal();
+      modal.getNode().addEventListener(
+        "close",
+        () => {
+          this.currentModal?.destroy();
+          this.currentModal = undefined;
+          this.replaceHash(this.previousPagePath ?? ROUTES.LANDING);
+        },
+        { once: true },
+      );
+    }
+  }
+
+  private closeCurrentModal(): void {
+    if (this.currentModal) {
+      this.currentModal.destroy();
+      this.currentModal = undefined;
     }
   }
 }

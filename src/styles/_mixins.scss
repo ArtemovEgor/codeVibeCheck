@@ -303,6 +303,24 @@
   padding: var(--space-8);
 }
 
+// ── Dialog (native <dialog> with showModal) ─────────────────
+
+@mixin dialog-base($max-width: 520px) {
+  border: none;
+  padding: 0;
+  margin: auto;
+  max-width: $max-width;
+  width: calc(100% - var(--space-8));
+  border-radius: var(--radius-xl);
+  background-color: var(--bg-elevated);
+  box-shadow: var(--shadow-lg);
+
+  &::backdrop {
+    background-color: var(--bg-overlay);
+    backdrop-filter: blur(6px);
+  }
+}
+
 // ── Animations ───────────────────────────────────────────────
 
 @mixin skeleton-pulse {
