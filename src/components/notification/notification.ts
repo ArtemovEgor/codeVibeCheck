@@ -41,7 +41,7 @@ export default class Notification extends BaseComponent {
       node.classList.remove("notification--visible");
 
       setTimeout(() => {
-        node.remove();
+        notification.destroy();
       }, 300);
     }, 5000);
   }
