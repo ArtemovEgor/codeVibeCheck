@@ -5,7 +5,6 @@ import type {
   IRegisterCredentials,
   IUser,
 } from "@/types/shared";
-import { apiService } from "../api-service";
 
 const MOCK_USER: IUser = {
   id: "1",
@@ -28,7 +27,6 @@ class AuthMock {
   ): Promise<IApiResponse<IAuthResponse>> {
     await delay();
     this.currentUser = { ...MOCK_USER, email: credentials.email };
-    apiService.setToken(MOCK_TOKEN);
     return {
       success: true,
       data: { user: this.currentUser, token: MOCK_TOKEN },
@@ -44,7 +42,6 @@ class AuthMock {
       name: credentials.name,
       email: credentials.email,
     };
-    apiService.setToken(MOCK_TOKEN);
     return {
       success: true,
       data: { user: this.currentUser, token: MOCK_TOKEN },
@@ -57,7 +54,6 @@ class AuthMock {
   }
 
   public async logout(): Promise<void> {
-    apiService.clearToken();
     this.currentUser = MOCK_USER;
     await delay();
   }
