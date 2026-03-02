@@ -1,0 +1,15 @@
+// Generates a fluid clamp() value that scales linearly between $min and $max
+// across a viewport range from $viewport-min to $viewport-max (in pixels).
+// Usage: fluid-clamp($min, $max, $viewport-min, $viewport-max)
+// Example: font-size: fluid-clamp(16, 24, 320, 1200);
+
+@function fluid-clamp($min, $max, $viewport-min, $viewport-max) {
+  @return clamp(
+    #{$min}px,
+    calc(
+      #{$min}px + (#{$max} - #{$min}) *
+        ((100vw - #{$viewport-min}px) / (#{$viewport-max} - #{$viewport-min}))
+    ),
+    #{$max}px
+  );
+}
