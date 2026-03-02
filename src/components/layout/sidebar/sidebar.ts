@@ -33,7 +33,7 @@ const NAV_ITEMS = [
 ] as const;
 
 export class Sidebar extends BaseComponent {
-  private navLinks: HTMLAnchorElement[] = [];
+  private navLinks: BaseComponent[] = [];
   private currentUser: IUser | undefined;
   private avatarEl: BaseComponent | undefined;
   private usernameEl: BaseComponent | undefined;
@@ -86,8 +86,7 @@ export class Sidebar extends BaseComponent {
     for (const item of NAV_ITEMS) {
       const link = this.renderNavLink(item);
       nav.addChildren([link]);
-      const node = link.getNode() as HTMLAnchorElement;
-      this.navLinks.push(node);
+      this.navLinks.push(link);
     }
 
     this.updateActive();
@@ -189,15 +188,16 @@ export class Sidebar extends BaseComponent {
   }
 
   public onNavLinkClick(callback: () => void): void {
-    for (const node of this.navLinks) {
-      node.addEventListener("click", callback);
+    for (const link of this.navLinks) {
+      link.on("click", callback);
     }
   }
 
   private updateActive = (): void => {
     const currentPath = globalThis.location.hash.slice(1) || "/";
     for (let index = 0; index < this.navLinks.length; index++) {
-      this.navLinks[index].classList.toggle(
+      const linkNode = this.navLinks[index].getNode();
+      linkNode.classList.toggle(
         "nav-link--active",
         currentPath === NAV_ITEMS[index].href,
       );
