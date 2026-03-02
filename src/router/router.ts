@@ -25,7 +25,6 @@ export default class Router {
   private previousPagePath: string | undefined = undefined;
   private currentLayout: AppLayout | undefined = undefined;
   private authCheck: () => boolean = () => false;
-  private currentLayout: AppLayout | undefined = undefined;
 
   constructor() {
     globalThis.addEventListener("hashchange", () => this.handlePathChange());
