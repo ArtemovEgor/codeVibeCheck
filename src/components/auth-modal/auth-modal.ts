@@ -13,6 +13,7 @@ type AuthTab = "login" | "register";
 export default class AuthModal extends Modal {
   declare content;
   private form: BaseComponent | undefined = undefined;
+  private currentFormComponent: BaseAuthForm | undefined;
   private currentTab: AuthTab;
   private loginTabButton: BaseComponent<HTMLButtonElement> | undefined =
     undefined;
@@ -61,13 +62,11 @@ export default class AuthModal extends Modal {
     this.currentTab = tab;
     this.activateTabButton(tab);
 
-    const formNode = this.form?.getNode();
-    const form: BaseAuthForm =
+    this.currentFormComponent?.destroy();
+    this.currentFormComponent =
       tab === "register" ? new RegisterForm() : new LoginForm();
-
     router.replaceHash(tab === "register" ? ROUTES.REGISTER : ROUTES.LOGIN);
-
-    formNode?.replaceChildren(form.getNode());
+    this.form?.addChildren([this.currentFormComponent]);
   }
 
   private activateTabButton(tab: AuthTab): void {
@@ -88,10 +87,8 @@ export default class AuthModal extends Modal {
       parent: this.content,
     });
 
-    if (tab === "register") {
-      this.form.addChildren([new RegisterForm()]);
-    } else {
-      this.form.addChildren([new LoginForm()]);
-    }
+    this.currentFormComponent =
+      tab === "register" ? new RegisterForm() : new LoginForm();
+    this.form.addChildren([this.currentFormComponent]);
   }
 }

@@ -15,7 +15,7 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
     { input: HTMLInputElement; error: HTMLElement; pattern: string }
   >();
 
-  protected submitButton: HTMLButtonElement | undefined = undefined;
+  protected submitButton: Button | undefined = undefined;
 
   constructor(className: string) {
     super({
@@ -73,7 +73,7 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
       className: "button--submit",
       attributes: { disabled: "" },
       parent: this,
-    }).getNode();
+    });
   }
 
   private initListeners(): void {
@@ -108,7 +108,7 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
         allValid = false;
       }
     }
-    this.submitButton.disabled = !allValid;
+    this.submitButton.getNode().disabled = !allValid;
   }
 
   private validateField(
@@ -182,7 +182,7 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
   private async onSubmit(): Promise<void> {
     if (!this.submitButton) return;
 
-    this.submitButton.disabled = true;
+    this.submitButton.getNode().disabled = true;
 
     try {
       await this.handleSubmit();
