@@ -66,7 +66,7 @@ export class ThemeSwitcher extends BaseComponent {
     inactiveButton: Button,
   ): void {
     this.applyTheme(theme);
-    localStorage.setItem("app-theme", theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
     activeButton.toggleClass("theme-switcher__btn--active", true);
     inactiveButton.toggleClass("theme-switcher__btn--active", false);
   }
