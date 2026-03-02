@@ -12,7 +12,11 @@ import type BaseComponent from "@/components/base/base-component";
  * Supported widget types.
  * Add new types here to support them in the engine.
  */
-export type WidgetType = "quiz" | "true-false";
+export type WidgetType =
+  | "quiz"
+  | "true-false"
+  | "code-completion"
+  | "code-ordering";
 
 /**
  * Difficulty levels for widgets.
@@ -46,17 +50,48 @@ export interface TrueFalsePayload {
 }
 
 /**
- * Answer Definitions
+ * Payload structure for "code-completion" type widgets.
+ */
+export interface CodeCompletionPayload {
+  code: string; // "const result = arr.___(x => x > 0);"
+  hints: LocalizedString[];
+  solutions: string[]; // ["filter"]
+}
+
+/**
+ * Payload structure for "code-ordering" type widgets.
+ */
+export interface CodeOrderingPayload {
+  description: LocalizedString;
+  lines: string[];
+}
+
+/**
+ * Answer Definitions for "quiz" type widgets.
  */
 export interface IQuizAnswer {
   selectedIndex: number;
 }
 
 /**
- * Answer Definitions
+ * Answer Definitions for "true-false" type widgets.
  */
 export interface ITrueFalseAnswer {
   value: boolean;
+}
+
+/**
+ * Answer Definitions for "code-completion" type widgets.
+ */
+export interface ICodeCompletionAnswer {
+  values: string[];
+}
+
+/**
+ * Answer Definitions for "code-ordering" type widgets.
+ */
+export interface ICodeOrderingAnswer {
+  order: number[];
 }
 
 /**
@@ -75,13 +110,27 @@ interface IBaseWidget {
  */
 export type Widget =
   | (IBaseWidget & { type: "quiz"; payload: QuizPayload })
-  | (IBaseWidget & { type: "true-false"; payload: TrueFalsePayload });
+  | (IBaseWidget & { type: "true-false"; payload: TrueFalsePayload })
+  | (IBaseWidget & { type: "code-completion"; payload: CodeCompletionPayload })
+  | (IBaseWidget & { type: "code-ordering"; payload: CodeOrderingPayload });
+
+/**
+ * Combined type for any widget answer
+ */
+export type WidgetAnswer =
+  | IQuizAnswer
+  | ITrueFalseAnswer
+  | ICodeCompletionAnswer
+  | ICodeOrderingAnswer;
 
 /**
  * Interface for implementing new widget rendering strategies.
  */
 export interface IWidgetStrategy {
   type: string;
-  render(widget: Widget, onAnswer: (answer: unknown) => void): BaseComponent;
-  validate(answer: unknown, widget: Widget): boolean;
+  render(
+    widget: Widget,
+    onAnswer: (answer: WidgetAnswer) => void,
+  ): BaseComponent;
+  validate(answer: WidgetAnswer, widget: Widget): boolean;
 }

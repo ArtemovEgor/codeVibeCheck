@@ -1,5 +1,9 @@
 import type BaseComponent from "@/components/base/base-component";
-import type { IWidgetStrategy, Widget } from "@/types/shared/widget.types";
+import type {
+  IWidgetStrategy,
+  Widget,
+  WidgetAnswer,
+} from "@/types/shared/widget.types";
 
 class WidgetEngine {
   private strategies = new Map<string, IWidgetStrategy>();
@@ -10,11 +14,15 @@ class WidgetEngine {
 
   public renderWidget(
     widget: Widget,
-    onAnswer: (answer: unknown) => void,
-  ): BaseComponent {
+    onAnswer: (answer: WidgetAnswer) => void,
+  ): BaseComponent | undefined {
     const strategy = this.strategies.get(widget.type);
 
-    if (!strategy) throw new Error(`Unknown widget type: ${widget.type}`);
+    if (!strategy) {
+      console.warn(`Стратегия для ${widget.type} не зарегистрирована.`);
+
+      return undefined;
+    }
 
     return strategy.render(widget, onAnswer);
   }
