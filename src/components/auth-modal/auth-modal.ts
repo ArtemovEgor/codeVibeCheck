@@ -11,7 +11,7 @@ import { router } from "@/router/router";
 type AuthTab = "login" | "register";
 
 export default class AuthModal extends Modal {
-  declare content;
+  declare content: BaseComponent;
   private form: BaseComponent | undefined = undefined;
   private currentFormComponent: BaseAuthForm | undefined;
   private currentTab: AuthTab;
