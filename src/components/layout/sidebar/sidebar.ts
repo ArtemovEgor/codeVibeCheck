@@ -37,6 +37,7 @@ export class Sidebar extends BaseComponent {
   private currentUser: IUser | undefined;
   private avatarEl: BaseComponent | undefined;
   private usernameEl: BaseComponent | undefined;
+  private userWrap: BaseComponent | undefined;
 
   constructor() {
     super({ tag: "aside", className: "app-layout__sidebar" });
@@ -124,18 +125,18 @@ export class Sidebar extends BaseComponent {
       parent: this,
     });
 
-    const userWrap = new BaseComponent({
-      className: "sidebar__user",
+    this.userWrap = new BaseComponent({
+      className: "sidebar__user sidebar__user--loading",
       parent: sidebarFooterWrap,
     });
 
-    this.renderAvatar(userWrap);
+    this.renderAvatar(this.userWrap);
 
     this.usernameEl = new BaseComponent({
       tag: "span",
       className: "sidebar__username",
       text: this.currentUser?.name ?? "User",
-      parent: userWrap,
+      parent: this.userWrap,
     });
 
     sidebarFooterWrap.addChildren([
@@ -185,6 +186,7 @@ export class Sidebar extends BaseComponent {
     if (this.avatarEl) {
       this.avatarEl.setText(user.name.charAt(0).toUpperCase());
     }
+    this.userWrap?.toggleClass("sidebar__user--loading", false);
   }
 
   public onNavLinkClick(callback: () => void): void {

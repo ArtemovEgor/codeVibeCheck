@@ -131,6 +131,10 @@
     cursor: pointer;
     transition: var(--transition-base);
 
+    &--loading {
+      visibility: hidden;
+    }
+
     &:hover {
       background: var(--bg-surface-hover);
     }
