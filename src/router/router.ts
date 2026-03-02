@@ -139,8 +139,11 @@ export default class Router {
   private renderPage(component: BaseComponent, path: string): void {
     this.closeCurrentModal();
     if (this.previousPagePath === path && this.currentPage) return;
-    this.currentPage?.destroy();
-    this.currentPage = component as unknown as Page;
+    if (this.currentPage && "destroy" in this.currentPage) {
+      this.currentPage.destroy();
+    }
+
+    this.currentPage = this.isPage(component) ? component : undefined;
 
     const route = this.routes.get(path);
 
@@ -157,6 +160,10 @@ export default class Router {
     }
 
     this.previousPagePath = path;
+  }
+
+  private isPage(component: BaseComponent): component is BaseComponent & Page {
+    return "init" in component && "destroy" in component;
   }
 
   private renderModal(modal: Modal): void {
@@ -181,7 +188,7 @@ export default class Router {
         () => {
           this.currentModal?.destroy();
           this.currentModal = undefined;
-          this.navigateBack();
+          this.replaceHash(this.previousPagePath ?? ROUTES.LANDING);
         },
         { once: true },
       );
@@ -193,11 +200,6 @@ export default class Router {
       this.currentModal.destroy();
       this.currentModal = undefined;
     }
-  }
-
-  private navigateBack(): void {
-    const path = this.previousPagePath ?? ROUTES.LANDING;
-    history.replaceState(undefined, "", `#${path}`);
   }
 }
 
