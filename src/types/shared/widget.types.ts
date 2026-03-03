@@ -12,11 +12,14 @@ import type BaseComponent from "@/components/base/base-component";
  * Supported widget types.
  * Add new types here to support them in the engine.
  */
-export type WidgetType =
-  | "quiz"
-  | "true-false"
-  | "code-completion"
-  | "code-ordering";
+export const WIDGET_TYPES = {
+  QUIZ: "quiz",
+  TRUE_FALSE: "true-false",
+  CODE_COMPLETION: "code-completion",
+  CODE_ORDERING: "code-ordering",
+} as const;
+
+export type WidgetType = (typeof WIDGET_TYPES)[keyof typeof WIDGET_TYPES];
 
 /**
  * Difficulty levels for widgets.
@@ -128,7 +131,7 @@ export type WidgetAnswer =
  * Interface for implementing new widget rendering strategies.
  */
 export interface IWidgetStrategy {
-  type: string;
+  type: WidgetType;
   render(
     widget: Widget,
     onAnswer: (answer: WidgetAnswer) => void,
