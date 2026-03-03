@@ -55,7 +55,7 @@ export interface TrueFalsePayload {
 export interface CodeCompletionPayload {
   code: string; // "const result = arr.___(x => x > 0);"
   hints: LocalizedString[];
-  solutions: string[]; // ["filter"]
+  correctValues: string[]; // ["filter"]
 }
 
 /**
@@ -64,6 +64,7 @@ export interface CodeCompletionPayload {
 export interface CodeOrderingPayload {
   description: LocalizedString;
   lines: string[];
+  correctOrder: number[];
 }
 
 /**
@@ -133,4 +134,17 @@ export interface IWidgetStrategy {
     onAnswer: (answer: WidgetAnswer) => void,
   ): BaseComponent;
   validate(answer: WidgetAnswer, widget: Widget): boolean;
+}
+
+/**
+ *  Interface for implementing topics
+ */
+export interface ITopic {
+  id: string;
+  title: LocalizedString;
+  description: LocalizedString;
+  difficulty: WidgetDifficulty;
+  order: number;
+  requiredTopicIds: string[];
+  widgetIds: string[];
 }
