@@ -11,7 +11,7 @@
 export type ChatRole = "user" | "assistant" | "system";
 
 /** A message in the chat history */
-export interface ChatMessage {
+export interface IChatMessage {
   readonly id: string;
   readonly role: ChatRole;
   readonly content: string;
@@ -19,14 +19,14 @@ export interface ChatMessage {
 }
 
 /** Response from POST /api/ai/chat */
-export interface AIResponse {
-  readonly message: ChatMessage;
+export interface IAIResponse {
+  readonly message: IChatMessage;
   /** Was the response streamed (for UI rendering decisions) */
   readonly streamed: boolean;
 }
 
 /** AI evaluation of the user's interview */
-export interface AIJudgeResult {
+export interface IAIJudgeResult {
   /** Overall score (0–100) */
   readonly score: number;
   /** Points the user covered correctly */
