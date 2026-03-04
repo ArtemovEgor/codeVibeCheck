@@ -84,7 +84,8 @@ class WidgetMock {
     if (!widget) throw this.notFoundError(`Widget not found: ${widgetId}`);
 
     const strategy = widgetEngine.getStrategy(widget.type);
-    if (!strategy) throw new Error(`Strategy not found: ${widget.type}`);
+    if (!strategy)
+      throw this.notFoundError(`Strategy not found: ${widget.type}`);
 
     const isCorrect = strategy.validate(answer, widget);
 
