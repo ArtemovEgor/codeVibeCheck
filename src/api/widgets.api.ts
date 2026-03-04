@@ -53,9 +53,7 @@ class WidgetsApi {
     if (apiService.isMockMode) return widgetsMock.getTopicById(id);
     return apiService.send<IApiResponse<ITopic>>(
       ENDPOINTS.TOPICS.GET_BY_ID(id),
-      {
-        method: "GET",
-      },
+      { method: "GET" },
     );
   }
 
