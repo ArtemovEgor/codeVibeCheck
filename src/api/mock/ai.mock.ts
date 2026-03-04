@@ -14,25 +14,27 @@ class AIMock {
   public async sendChatMessage(
     message: ISendMessagePayload,
   ): Promise<IApiResponse<IAIResponse>> {
-    await delay();
-
     const history = this.getChatsFromStorage();
-    const dateNow = Date.now().toString();
+    const dateSent = Date.now().toString();
 
     const messageData: IChatMessage = {
-      id: `UserMessage-${dateNow}`,
+      id: `UserMessage-${dateSent}`,
       role: ChatRoles.user,
       content: message.content,
-      createdAt: dateNow,
+      createdAt: dateSent,
     };
 
     history.push(messageData);
 
+    await delay();
+
+    const dateReceived = Date.now().toString();
+
     const responseData: IChatMessage = {
-      id: `AIMessage-${dateNow}`,
+      id: `AIMessage-${dateReceived}`,
       role: ChatRoles.assistant,
       content: `${EN.mock.ai_response} ${message.content}`,
-      createdAt: dateNow,
+      createdAt: dateReceived,
     };
 
     history.push(responseData);
@@ -63,7 +65,7 @@ class AIMock {
   }
 
   private getChatsFromStorage(): IChatMessage[] {
-    return storageService.getStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY);
+    return storageService.getStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
   }
 }
 
