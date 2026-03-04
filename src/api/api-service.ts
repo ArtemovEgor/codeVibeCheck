@@ -58,7 +58,16 @@ class ApiService {
       throw error;
     }
 
-    return result.json();
+    const data = await result.json();
+
+    if (!data.success) {
+      throw {
+        success: false,
+        status: data.status ?? result.status,
+        message: data.message ?? "Unknown error",
+      } satisfies IApiError;
+    }
+    return data;
   }
 }
 
