@@ -10,7 +10,7 @@ export const ENDPOINTS = {
     CHAT: "/api/ai/chat", // POST — { content } → IAIResponse
     CHAT_HISTORY: "/api/ai/chat/", // GET — → IChatMessage[]
     CHAT_RESET: "/api/ai/chat", // DELETE — → void
-  }
+  },
   TOPICS: {
     GET_ALL: "/api/topics", // GET -> ITopic[]
     GET_BY_ID: (id: string) => `/api/topics/${id}`, // GET -> ITopic
