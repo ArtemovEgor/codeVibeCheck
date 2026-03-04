@@ -81,4 +81,7 @@ export const EN = {
       button: "Get Started Now",
     },
   },
+  mock: {
+    ai_response: "Your request was sent to the robot uprising headquarters:",
+  },
 } as const;

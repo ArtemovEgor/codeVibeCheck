@@ -5,17 +5,23 @@
  * Messages are exchanged via POST /api/ai/chat (proxied to Gemini API).
  */
 
+import type { ChatRole } from "@/constants/api-chat";
+
 // ── Chat ────────────────────────────────────────────────────────────────────
 
 /** Roles in the chat conversation */
-export type ChatRole = "user" | "assistant" | "system";
 
-/** A message in the chat history */
+/** A message in the chat history stored in the backend */
 export interface IChatMessage {
   readonly id: string;
   readonly role: ChatRole;
   readonly content: string;
   readonly createdAt: string;
+}
+
+/**  A message sent from the frontend */
+export interface ISendMessagePayload {
+  readonly content: string;
 }
 
 /** Response from POST /api/ai/chat */
