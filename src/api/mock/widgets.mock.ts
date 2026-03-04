@@ -3,7 +3,7 @@ import {
   WIDGET_TYPES,
   type ITopic,
   type IVerdict,
-  type LocalizedString,
+  type ILocalizedString,
   type Widget,
   type WidgetAnswer,
 } from "@/types/shared/widget.types";
@@ -68,7 +68,7 @@ class WidgetMock {
     return XP_BY_DIFFICULTY[widget.difficulty];
   }
 
-  private getExplanation(widget: Widget): LocalizedString | undefined {
+  private getExplanation(widget: Widget): ILocalizedString | undefined {
     if (widget.type === WIDGET_TYPES.TRUE_FALSE)
       return widget.payload.explanation;
     return undefined;
