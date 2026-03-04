@@ -29,7 +29,7 @@ export type WidgetDifficulty = 1 | 2 | 3;
 /**
  * Localized string structure for multi-language support.
  */
-export interface LocalizedString {
+export interface ILocalizedString {
   ru: string;
   en: string;
 }
@@ -37,35 +37,35 @@ export interface LocalizedString {
 /**
  * Payload structure for "quiz" type widgets.
  */
-export interface QuizPayload {
-  question: LocalizedString;
-  options: LocalizedString[];
+export interface IQuizPayload {
+  question: ILocalizedString;
+  options: ILocalizedString[];
   correctIndex?: number;
 }
 
 /**
  * Payload structure for "true-false" type widgets.
  */
-export interface TrueFalsePayload {
-  statement: LocalizedString;
-  explanation: LocalizedString;
+export interface ITrueFalsePayload {
+  statement: ILocalizedString;
+  explanation: ILocalizedString;
   correctValue?: boolean;
 }
 
 /**
  * Payload structure for "code-completion" type widgets.
  */
-export interface CodeCompletionPayload {
+export interface ICodeCompletionPayload {
   code: string; // "const result = arr.___(x => x > 0);"
-  hints: LocalizedString[];
+  hints: ILocalizedString[];
   correctValues: string[]; // ["filter"]
 }
 
 /**
  * Payload structure for "code-ordering" type widgets.
  */
-export interface CodeOrderingPayload {
-  description: LocalizedString;
+export interface ICodeOrderingPayload {
+  description: ILocalizedString;
   lines: string[];
   correctOrder: number[];
 }
@@ -113,10 +113,10 @@ interface IBaseWidget {
  * Discriminated Union for safe type narrowing in strategies.
  */
 export type Widget =
-  | (IBaseWidget & { type: "quiz"; payload: QuizPayload })
-  | (IBaseWidget & { type: "true-false"; payload: TrueFalsePayload })
-  | (IBaseWidget & { type: "code-completion"; payload: CodeCompletionPayload })
-  | (IBaseWidget & { type: "code-ordering"; payload: CodeOrderingPayload });
+  | (IBaseWidget & { type: "quiz"; payload: IQuizPayload })
+  | (IBaseWidget & { type: "true-false"; payload: ITrueFalsePayload })
+  | (IBaseWidget & { type: "code-completion"; payload: ICodeCompletionPayload })
+  | (IBaseWidget & { type: "code-ordering"; payload: ICodeOrderingPayload });
 
 /**
  * Combined type for any widget answer
@@ -144,10 +144,20 @@ export interface IWidgetStrategy {
  */
 export interface ITopic {
   id: string;
-  title: LocalizedString;
-  description: LocalizedString;
+  title: ILocalizedString;
+  description: ILocalizedString;
   difficulty: WidgetDifficulty;
   order: number;
   requiredTopicIds: string[];
   widgetIds: string[];
+}
+
+/**
+ * Verdict returned after submitting a widget answer.
+ */
+export interface IVerdict {
+  isCorrect: boolean;
+  explanation?: ILocalizedString;
+  xpEarned: number;
+  streakUpdated: boolean;
 }
