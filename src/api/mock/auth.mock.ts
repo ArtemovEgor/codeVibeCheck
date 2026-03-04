@@ -1,5 +1,4 @@
 import type {
-  IApiResponse,
   IAuthResponse,
   ILoginCredentials,
   IRegisterCredentials,
@@ -20,35 +19,27 @@ const MOCK_TOKEN = "mock-jwt-token";
 class AuthMock {
   private currentUser: IUser = MOCK_USER;
 
-  public async login(
-    credentials: ILoginCredentials,
-  ): Promise<IApiResponse<IAuthResponse>> {
+  public async login(credentials: ILoginCredentials): Promise<IAuthResponse> {
     await delay();
     this.currentUser = { ...MOCK_USER, email: credentials.email };
-    return {
-      success: true,
-      data: { user: this.currentUser, token: MOCK_TOKEN },
-    };
+    return { user: this.currentUser, token: MOCK_TOKEN };
   }
 
   public async register(
     credentials: IRegisterCredentials,
-  ): Promise<IApiResponse<IAuthResponse>> {
+  ): Promise<IAuthResponse> {
     await delay();
     this.currentUser = {
       ...MOCK_USER,
       name: credentials.name,
       email: credentials.email,
     };
-    return {
-      success: true,
-      data: { user: this.currentUser, token: MOCK_TOKEN },
-    };
+    return { user: this.currentUser, token: MOCK_TOKEN };
   }
 
-  public async getCurrentUser(): Promise<IApiResponse<IUser>> {
+  public async getCurrentUser(): Promise<IUser> {
     await delay();
-    return { success: true, data: this.currentUser };
+    return this.currentUser;
   }
 
   public async logout(): Promise<void> {

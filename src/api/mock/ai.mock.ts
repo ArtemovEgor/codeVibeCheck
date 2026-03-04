@@ -1,6 +1,5 @@
 import type {
   IAIResponse,
-  IApiResponse,
   IChatMessage,
   ISendMessagePayload,
 } from "@/types/shared";
@@ -13,7 +12,7 @@ import { ChatRoles } from "@/constants/api-chat";
 class AIMock {
   public async sendChatMessage(
     message: ISendMessagePayload,
-  ): Promise<IApiResponse<IAIResponse>> {
+  ): Promise<IAIResponse> {
     const history = this.getChatsFromStorage();
     const dateSent = Date.now().toString();
 
@@ -41,26 +40,22 @@ class AIMock {
     storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, history);
 
     return {
-      success: true,
-      data: {
-        message: responseData,
-        streamed: false,
-      },
+      message: responseData,
+      streamed: false,
     };
   }
 
-  public async getChatHistory(): Promise<IApiResponse<IChatMessage[]>> {
+  public async getChatHistory(): Promise<IChatMessage[]> {
     await delay();
 
     const history = this.getChatsFromStorage();
 
-    return {
-      success: true,
-      data: history,
-    };
+    return history;
   }
 
-  public resetChat(): void {
+  public async resetChat(): Promise<void> {
+    await delay();
+
     storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
   }
 
