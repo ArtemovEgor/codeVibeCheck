@@ -81,7 +81,26 @@ export const EN = {
       button: "Get Started Now",
     },
   },
+  ai_chat: {
+    xp: "XP",
+    restart_icon: "⟲",
+    restart_text: "Restart",
+  },
   mock: {
     ai_response: "Your request was sent to the robot uprising headquarters:",
+    ai_welcome_message: `Welcome to the AI Interview Simulator! 🚀
+
+      I’m your virtual technical interviewer. My goal is to simulate a real-world frontend engineering interview, test your knowledge, and give you actionable feedback to help you land your next job.
+      
+      Here is how we’ll do this:
+
+      I'll ask you technical questions one at a time. Share your thought process and use code blocks when necessary.
+
+      After the session, I’ll evaluate your answers, point out any edge cases you missed, and give you an objective score.
+
+      Don't worry about being perfect—this is a safe space to fail and learn.
+
+      Ready to test your skills? Tell me your estimated grade and we'll start!
+    `,
   },
 } as const;

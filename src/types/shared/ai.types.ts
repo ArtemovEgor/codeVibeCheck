@@ -17,6 +17,8 @@ export interface IChatMessage {
   readonly role: ChatRole;
   readonly content: string;
   readonly createdAt: string;
+  /** Points received for the previous user message */
+  readonly xpAwarded?: number;
 }
 
 /**  A message sent from the frontend */
@@ -29,6 +31,7 @@ export interface IAIResponse {
   readonly message: IChatMessage;
   /** Was the response streamed (for UI rendering decisions) */
   readonly streamed: boolean;
+  readonly totalXp?: number;
 }
 
 /** AI evaluation of the user's interview */
