@@ -6,6 +6,7 @@ import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
 import { ROUTES } from "./constants/routes";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
 import { LandingPage } from "./pages/landing-page/landing-page";
+import { PracticePage } from "./pages/practice/practice-page";
 import { router } from "./router/router";
 import widgetEngine from "./services/widget-engine";
 
@@ -37,6 +38,13 @@ export default class App {
     router.register(ROUTES.DASHBOARD, () => new DashboardPage(), {
       isProtected: true,
     });
+    router.register(
+      ROUTES.PRACTICE,
+      (parameters) => new PracticePage(parameters.topicId),
+      {
+        isProtected: true,
+      },
+    );
   }
 
   private restoreTheme(): void {
