@@ -19,7 +19,23 @@ export class QuizStrategy implements IWidgetStrategy {
       );
 
     const container = new BaseComponent({ className: "widget widget--quiz" });
-    // TODO: implement render logic
+
+    new BaseComponent({
+      tag: "h2",
+      className: "widget__question",
+      text: widget.payload.question.en,
+      parent: container,
+    });
+
+    for (const [index, option] of widget.payload.options.entries()) {
+      new BaseComponent({
+        tag: "button",
+        className: "widget__option",
+        text: option.en,
+        parent: container,
+      }).on("click", () => onAnswer({ selectedIndex: index }));
+    }
+
     void onAnswer;
 
     return container;
