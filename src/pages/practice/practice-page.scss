@@ -1,0 +1,22 @@
+.practice-page {
+  height: 100%;
+
+  &__content {
+    @include flex-center;
+    align-items: start;
+    gap: 24px;
+    height: 100%;
+    padding: 24px;
+  }
+
+  &__main {
+    @include flex-column;
+    gap: 24px;
+    flex: 1;
+  }
+
+  &__right-panel {
+    width: 280px;
+    flex-shrink: 0;
+  }
+}
