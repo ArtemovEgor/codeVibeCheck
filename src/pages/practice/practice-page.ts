@@ -5,6 +5,9 @@ import type { Widget, WidgetAnswer } from "@/types/shared/widget.types";
 import widgetEngine from "@/services/widget-engine";
 import "./practice-page.scss";
 import { EN } from "@/locale/en";
+import { NotificationType } from "@/constants/notification";
+import Notification from "../../components/notification/notification";
+import { VerdictCard } from "@/components/widgets/verdict-card/verdict-card";
 
 export class PracticePage extends BaseComponent implements Page {
   private topicId: string;
@@ -96,9 +99,30 @@ export class PracticePage extends BaseComponent implements Page {
         widget.id,
         answer,
       );
-      console.log(verdict); // TODO: show VerdictCard
+      if (verdict.isCorrect) {
+        Notification.show(
+          `${EN.widgets.answer.correct} + ${verdict.xpEarned} XP`,
+          NotificationType.SUCCESS,
+        );
+      } else {
+        Notification.show(EN.widgets.answer.wrong, NotificationType.ERROR);
+      }
+
+      const verdictCard = new VerdictCard(verdict, () => this.goToNext());
+      this.widgetArea.getNode().replaceChildren();
+      this.widgetArea.addChildren([verdictCard]);
     } catch (error) {
       console.error(error);
     }
+  }
+
+  private goToNext(): void {
+    this.currentIndex++;
+    if (this.currentIndex >= this.widgets.length) {
+      // TODO: results screen
+      console.log("Topic completed!");
+      return;
+    }
+    this.renderCurrentWidget();
   }
 }

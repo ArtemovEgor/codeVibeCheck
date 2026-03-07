@@ -1,0 +1,42 @@
+.verdict-card {
+  @include card;
+  @include flex-column;
+  @include scale-in;
+  gap: var(--space-4);
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+
+  &__status {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+
+    &--correct {
+      color: var(--accent-success);
+    }
+    &--wrong {
+      color: var(--accent-error);
+    }
+  }
+
+  &__xp {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--accent-primary);
+  }
+
+  &__explanation {
+    @include label;
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-surface-hover);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--accent-primary);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+  }
+
+  &__next {
+    align-self: flex-end;
+    margin-top: var(--space-2);
+  }
+}
