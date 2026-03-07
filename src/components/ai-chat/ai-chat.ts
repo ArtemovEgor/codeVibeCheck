@@ -156,6 +156,17 @@ export default class AIChat extends BaseComponent implements Page {
       this.renderMessage(message);
       this.currentXp += message.xpAwarded || 0;
     }
+    this.scrollToBottom(false);
+  }
+
+  private scrollToBottom(smooth = true): void {
+    if (this.messageHistory) {
+      const node = this.messageHistory.getNode();
+      node.scrollTo({
+        top: node.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
+    }
   }
 
   private renderMessage(message: IChatMessage): void {
@@ -264,6 +275,7 @@ export default class AIChat extends BaseComponent implements Page {
       content,
       createdAt: new Date().toISOString(),
     });
+    this.scrollToBottom();
 
     try {
       const response = await aiApi.sendChatMessage({
@@ -271,6 +283,7 @@ export default class AIChat extends BaseComponent implements Page {
       });
 
       this.renderMessage(response.message);
+      this.scrollToBottom();
 
       const xpAwarded = response.message.xpAwarded;
 
