@@ -2,21 +2,26 @@
   height: 100%;
 
   &__content {
-    @include flex-center;
-    align-items: start;
-    gap: 24px;
+    @include flex-start;
+    align-items: flex-start;
+    gap: var(--space-6);
     height: 100%;
-    padding: 24px;
+    padding: var(--space-6);
   }
 
   &__main {
     @include flex-column;
-    gap: 24px;
+    gap: var(--space-6);
     flex: 1;
+    min-width: 0;
   }
 
   &__right-panel {
     width: 280px;
     flex-shrink: 0;
+
+    @include tablet-down {
+      display: none;
+    }
   }
 }

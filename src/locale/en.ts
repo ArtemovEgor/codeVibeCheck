@@ -87,5 +87,10 @@ export const EN = {
   widgets: {
     submit: "Submit",
     placeholder: "Stats coming soon",
+    answer: {
+      correct: "Correct",
+      wrong: "Wrong answer",
+    },
+    next: "Next Question",
   },
 } as const;
