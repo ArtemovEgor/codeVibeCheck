@@ -1,0 +1,105 @@
+.widget--quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.widget__question {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  padding: 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.widget__options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.widget__option {
+  width: 100%;
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-surface-hover);
+    box-shadow: var(--shadow-glow);
+    transform: translateX(4px);
+  }
+
+  &--selected {
+    border-color: var(--accent-primary);
+    background: var(--bg-surface-hover);
+    color: var(--accent-primary);
+    box-shadow: var(--shadow-glow);
+  }
+
+  &--correct {
+    border-color: var(--accent-success);
+    background: color-mix(in srgb, var(--accent-success) 10%, transparent);
+    color: var(--accent-success);
+    pointer-events: none;
+  }
+
+  &--wrong {
+    border-color: var(--accent-error);
+    background: color-mix(in srgb, var(--accent-error) 10%, transparent);
+    color: var(--accent-error);
+    pointer-events: none;
+  }
+
+  &--disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+}
+
+.widget__submit {
+  align-self: flex-end;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-secondary)
+  );
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}

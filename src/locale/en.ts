@@ -84,4 +84,8 @@ export const EN = {
   mock: {
     ai_response: "Your request was sent to the robot uprising headquarters:",
   },
+  widgets: {
+    submit: "Submit",
+    placeholder: "Stats coming soon",
+  },
 } as const;
