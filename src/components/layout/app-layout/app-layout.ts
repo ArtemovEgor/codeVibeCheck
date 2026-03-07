@@ -82,7 +82,7 @@ export class AppLayout extends BaseComponent {
   private async loadUser(): Promise<void> {
     try {
       const response = await authApi.getCurrentUser();
-      this.sidebar.setUser(response.data);
+      this.sidebar.setUser(response);
     } catch {
       // user data unavailable — sidebar keeps defaults
     }

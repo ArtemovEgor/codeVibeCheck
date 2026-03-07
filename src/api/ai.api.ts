@@ -11,28 +11,35 @@ import { aiMock } from "./mock/ai.mock";
 class AIApi {
   public async sendChatMessage(
     message: ISendMessagePayload,
-  ): Promise<IApiResponse<IAIResponse>> {
+  ): Promise<IAIResponse> {
     if (apiService.isMockMode) {
       return await aiMock.sendChatMessage(message);
     }
 
-    return await apiService.send<IApiResponse<IAIResponse>>(ENDPOINTS.AI.CHAT, {
-      method: "POST",
-      body: JSON.stringify(message),
-    });
+    const response = await apiService.send<IApiResponse<IAIResponse>>(
+      ENDPOINTS.AI.CHAT,
+      {
+        method: "POST",
+        body: JSON.stringify(message),
+      },
+    );
+
+    return response.data;
   }
 
-  public async getChatHistory(): Promise<IApiResponse<IChatMessage[]>> {
+  public async getChatHistory(): Promise<IChatMessage[]> {
     if (apiService.isMockMode) {
       return await aiMock.getChatHistory();
     }
 
-    return await apiService.send<IApiResponse<IChatMessage[]>>(
+    const response = await apiService.send<IApiResponse<IChatMessage[]>>(
       ENDPOINTS.AI.CHAT_HISTORY,
       {
         method: "GET",
       },
     );
+
+    return response.data;
   }
 
   public async resetChat(): Promise<void> {
