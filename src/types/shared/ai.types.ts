@@ -31,7 +31,6 @@ export interface IAIResponse {
   readonly message: IChatMessage;
   /** Was the response streamed (for UI rendering decisions) */
   readonly streamed: boolean;
-  readonly totalXp?: number;
 }
 
 /** AI evaluation of the user's interview */

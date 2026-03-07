@@ -1,11 +1,14 @@
 import { apiService } from "./api/api-service";
 import AIChat from "./components/ai-chat/ai-chat";
 import AuthModal from "./components/auth-modal/auth-modal";
+import { QuizStrategy } from "./components/widgets/quiz/quiz-strategy";
+import { TrueFalseStrategy } from "./components/widgets/true-false/true-false";
 import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
 import { ROUTES } from "./constants/routes";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
 import { LandingPage } from "./pages/landing-page/landing-page";
 import { router } from "./router/router";
+import widgetEngine from "./services/widget-engine";
 
 export default class App {
   private readonly parentNode: HTMLElement;
@@ -13,6 +16,7 @@ export default class App {
   constructor(parentNode: HTMLElement) {
     this.parentNode = parentNode;
     this.restoreTheme();
+    this.registerWidgets();
     this.initRoutes();
   }
 
@@ -42,5 +46,10 @@ export default class App {
   private restoreTheme(): void {
     const saved = localStorage.getItem(THEME_STORAGE_KEY) ?? DEFAULT_THEME;
     document.documentElement.dataset.theme = saved;
+  }
+
+  private registerWidgets(): void {
+    widgetEngine.register(new QuizStrategy());
+    widgetEngine.register(new TrueFalseStrategy());
   }
 }
