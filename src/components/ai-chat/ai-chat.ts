@@ -8,6 +8,8 @@ import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
 import "./ai-chat.scss";
 import { EN } from "@/locale/en";
+import { ChatRoles } from "@/constants/api-chat";
+import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory: BaseComponent | undefined = undefined;
@@ -100,7 +102,7 @@ export default class AIChat extends BaseComponent implements Page {
           controlsNode.classList.add("ai-chat__controls--primed");
           restartTimeout = setTimeout(() => {
             controlsNode.classList.remove("ai-chat__controls--primed");
-          }, 3000);
+          }, RESTART_TIMEOUT_MS);
         }
       },
     });
@@ -170,7 +172,8 @@ export default class AIChat extends BaseComponent implements Page {
   }
 
   private renderMessage(message: IChatMessage): void {
-    const modifier = message.role === "assistant" ? "incoming" : "outgoing";
+    const modifier =
+      message.role === ChatRoles.assistant ? "incoming" : "outgoing";
 
     const wrapper = new BaseComponent({
       tag: "div",
@@ -178,7 +181,7 @@ export default class AIChat extends BaseComponent implements Page {
       parent: this.messagesContainer,
     });
 
-    if (message.role === "assistant") {
+    if (message.role === ChatRoles.assistant) {
       new BaseComponent({
         tag: "span",
         className: "chat-message__avatar",
@@ -212,9 +215,9 @@ export default class AIChat extends BaseComponent implements Page {
         "chat-xp--error",
       );
 
-      if (xp >= 4) {
+      if (xp >= XP_THRESHOLDS.success) {
         xpContainer.classList.add("chat-xp--success");
-      } else if (xp === 3) {
+      } else if (xp === XP_THRESHOLDS.warning) {
         xpContainer.classList.add("chat-xp--warning");
       } else if (xp > 0) {
         xpContainer.classList.add("chat-xp--error");
@@ -271,7 +274,7 @@ export default class AIChat extends BaseComponent implements Page {
 
     this.renderMessage({
       id: "",
-      role: "user",
+      role: ChatRoles.user,
       content,
       createdAt: new Date().toISOString(),
     });
