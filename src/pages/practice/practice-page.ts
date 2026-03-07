@@ -4,6 +4,7 @@ import { widgetsApi } from "@/api/widgets.api";
 import type { Widget, WidgetAnswer } from "@/types/shared/widget.types";
 import widgetEngine from "@/services/widget-engine";
 import "./practice-page.scss";
+import { EN } from "@/locale/en";
 
 export class PracticePage extends BaseComponent implements Page {
   private topicId: string;
@@ -53,7 +54,7 @@ export class PracticePage extends BaseComponent implements Page {
     new BaseComponent({
       tag: "p",
       className: "practice-page__panel-placeholder",
-      text: "Stats coming soon",
+      text: EN.widgets.placeholder,
       parent: this.rightPanel,
     });
 
