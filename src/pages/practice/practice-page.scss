@@ -24,4 +24,49 @@
       display: none;
     }
   }
+
+  &__header {
+    @include flex-between;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__breadcrumb {
+    @include label;
+
+    a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      padding: 0;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    span {
+      color: var(--text-secondary);
+    }
+  }
+
+  &__progress {
+    @include flex-column;
+    align-items: flex-end;
+    gap: var(--space-2);
+    min-width: 160px;
+  }
+
+  &__progress-text {
+    @include label;
+  }
+
+  &__progress-track {
+    @include progress-track;
+    width: 160px;
+  }
+
+  &__progress-fill {
+    @include progress-fill;
+    width: 0%;
+  }
 }

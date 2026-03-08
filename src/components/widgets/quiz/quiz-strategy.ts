@@ -3,6 +3,7 @@ import {
   WIDGET_TYPES,
   type ILocalizedString,
   type IQuizAnswer,
+  type IVerdict,
   type IWidgetStrategy,
   type Widget,
 } from "@/types/shared/widget.types";
@@ -95,9 +96,6 @@ export class QuizStrategy implements IWidgetStrategy {
     submitButton.on("click", () => {
       const selectedIndex = this.selectedIndex;
       if (selectedIndex === undefined) return;
-      for (const option of this.optionButtons) {
-        option.getNode().classList.add("widget__option--disabled");
-      }
       submitButton.setDisabled(true);
       onAnswer({ selectedIndex });
     });
@@ -109,5 +107,32 @@ export class QuizStrategy implements IWidgetStrategy {
     if (widget.type !== this.type) return false;
 
     return answer.selectedIndex === widget.payload.correctIndex;
+  }
+
+  public showVerdict(verdict: IVerdict, widget: Widget): void {
+    if (widget.type !== this.type) return;
+
+    for (const option of this.optionButtons) {
+      option.getNode().classList.add("widget__option--disabled");
+    }
+
+    this.submitButton?.getNode().classList.add("widget__submit--hidden");
+
+    if (this.selectedIndex !== undefined) {
+      this.optionButtons[this.selectedIndex]
+        ?.getNode()
+        .classList.add(
+          verdict.isCorrect
+            ? "widget__option--correct"
+            : "widget__option--wrong",
+        );
+    }
+
+    const correctIndex = widget.payload.correctIndex;
+    if (!verdict.isCorrect && correctIndex !== undefined) {
+      this.optionButtons[correctIndex]
+        ?.getNode()
+        .classList.add("widget__option--correct");
+    }
   }
 }
