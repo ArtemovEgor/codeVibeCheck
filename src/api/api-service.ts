@@ -1,4 +1,5 @@
 import { TOKEN_KEY } from "@/constants/app";
+import { EN } from "@/locale/en";
 import type { IApiError } from "@/types/shared";
 
 class ApiService {
@@ -64,7 +65,7 @@ class ApiService {
       throw {
         success: false,
         status: data.status ?? result.status,
-        message: data.message ?? "Unknown error",
+        message: data.message ?? EN.common.error.unknown_api_error,
       } satisfies IApiError;
     }
     return data;
