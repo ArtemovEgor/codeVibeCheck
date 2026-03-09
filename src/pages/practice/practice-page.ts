@@ -26,7 +26,7 @@ export class PracticePage extends BaseComponent implements Page {
   private progressFill: BaseComponent | undefined = undefined;
 
   constructor(topicId: string) {
-    super({ tag: "div", className: "practice-page" });
+    super({ className: "practice-page" });
     this.topicId = topicId;
 
     this.init();
@@ -42,13 +42,11 @@ export class PracticePage extends BaseComponent implements Page {
 
   private renderLayout(): void {
     const content = new BaseComponent({
-      tag: "div",
       className: "practice-page__content",
       parent: this,
     });
 
     this.mainArea = new BaseComponent({
-      tag: "div",
       className: "practice-page__main",
       parent: content,
     });
@@ -60,13 +58,11 @@ export class PracticePage extends BaseComponent implements Page {
     });
 
     this.header = new BaseComponent({
-      tag: "div",
       className: "practice-page__header",
       parent: this.mainArea,
     });
 
     this.widgetArea = new BaseComponent({
-      tag: "div",
       className: "practice-page__widget-area",
       parent: this.mainArea,
     });
@@ -82,7 +78,6 @@ export class PracticePage extends BaseComponent implements Page {
 
   private renderHeader() {
     const breadcrumb = new BaseComponent({
-      tag: "div",
       className: "practice-page__breadcrumb",
       parent: this.header,
     });
@@ -111,7 +106,6 @@ export class PracticePage extends BaseComponent implements Page {
 
   private renderProgressBar() {
     const progressWrapper = new BaseComponent({
-      tag: "div",
       className: "practice-page__progress",
       parent: this.header,
     });
@@ -123,13 +117,11 @@ export class PracticePage extends BaseComponent implements Page {
     });
 
     const track = new BaseComponent({
-      tag: "div",
       className: "practice-page__progress-track",
       parent: progressWrapper,
     });
 
     this.progressFill = new BaseComponent({
-      tag: "div",
       className: "practice-page__progress-fill",
       parent: track,
     });

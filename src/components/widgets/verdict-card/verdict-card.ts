@@ -16,7 +16,6 @@ export class VerdictCard extends BaseComponent {
 
     if (verdict.xpEarned > 0) {
       new BaseComponent({
-        tag: "div",
         className: "verdict-card__xp",
         text: `+${verdict.xpEarned} XP`,
         parent: infoWrapper,
@@ -48,7 +47,6 @@ export class VerdictCard extends BaseComponent {
     const classSuffix = verdict.isCorrect ? "correct" : "wrong";
 
     const statusElement = new BaseComponent({
-      tag: "div",
       className: `verdict-card__status verdict-card__status--${classSuffix}`,
       parent: infoWrapper,
     });
