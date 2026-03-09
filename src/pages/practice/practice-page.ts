@@ -12,7 +12,7 @@ import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
 
 export class PracticePage extends BaseComponent implements Page {
-  private topicId: string;
+  private readonly topicId: string;
   private currentIndex = 0;
   private widgets: Widget[] = [];
   private topic: ITopic | undefined = undefined;
@@ -76,7 +76,7 @@ export class PracticePage extends BaseComponent implements Page {
     });
   }
 
-  private renderHeader() {
+  private renderHeader(): void {
     const breadcrumb = new BaseComponent({
       className: "practice-page__breadcrumb",
       parent: this.header,
@@ -104,7 +104,7 @@ export class PracticePage extends BaseComponent implements Page {
     this.renderProgressBar();
   }
 
-  private renderProgressBar() {
+  private renderProgressBar(): void {
     const progressWrapper = new BaseComponent({
       className: "practice-page__progress",
       parent: this.header,
@@ -160,7 +160,7 @@ export class PracticePage extends BaseComponent implements Page {
     }
   }
 
-  private renderCurrentWidget() {
+  private renderCurrentWidget(): void {
     const widgetComponent = widgetEngine.renderWidget(
       this.widgets[this.currentIndex],
       (answer: WidgetAnswer) => this.handleAnswer(answer),
