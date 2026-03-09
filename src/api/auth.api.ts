@@ -10,12 +10,10 @@ import { ENDPOINTS } from "./endpoints";
 import { authMock } from "./mock/auth.mock";
 
 class AuthApi {
-  public async login(
-    credentials: ILoginCredentials,
-  ): Promise<IApiResponse<IAuthResponse>> {
+  public async login(credentials: ILoginCredentials): Promise<IAuthResponse> {
     if (apiService.isMockMode) {
       const response = await authMock.login(credentials);
-      apiService.setToken(response.data.token);
+      apiService.setToken(response.token);
       return response;
     }
 
@@ -29,15 +27,15 @@ class AuthApi {
 
     apiService.setToken(response.data.token);
 
-    return response;
+    return response.data;
   }
 
   public async register(
     credentials: IRegisterCredentials,
-  ): Promise<IApiResponse<IAuthResponse>> {
+  ): Promise<IAuthResponse> {
     if (apiService.isMockMode) {
       const response = await authMock.register(credentials);
-      apiService.setToken(response.data.token);
+      apiService.setToken(response.token);
       return response;
     }
 
@@ -51,15 +49,20 @@ class AuthApi {
 
     apiService.setToken(response.data.token);
 
-    return response;
+    return response.data;
   }
 
-  public async getCurrentUser(): Promise<IApiResponse<IUser>> {
+  public async getCurrentUser(): Promise<IUser> {
     if (apiService.isMockMode) return authMock.getCurrentUser();
 
-    return apiService.send<IApiResponse<IUser>>(ENDPOINTS.AUTH.ME, {
-      method: "GET",
-    });
+    const response = await apiService.send<IApiResponse<IUser>>(
+      ENDPOINTS.AUTH.ME,
+      {
+        method: "GET",
+      },
+    );
+
+    return response.data;
   }
 
   public async logout(): Promise<void> {

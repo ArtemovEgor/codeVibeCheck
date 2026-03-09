@@ -17,6 +17,8 @@ export interface IChatMessage {
   readonly role: ChatRole;
   readonly content: string;
   readonly createdAt: string;
+  /** Points received for the previous user message */
+  readonly xpAwarded?: number;
 }
 
 /**  A message sent from the frontend */

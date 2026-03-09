@@ -1,4 +1,5 @@
 import { apiService } from "./api/api-service";
+import AIChat from "./components/ai-chat/ai-chat";
 import AuthModal from "./components/auth-modal/auth-modal";
 import { QuizStrategy } from "./components/widgets/quiz/quiz-strategy";
 import { TrueFalseStrategy } from "./components/widgets/true-false/true-false";
@@ -35,6 +36,9 @@ export default class App {
       isModal: true,
     });
     router.register(ROUTES.DASHBOARD, () => new DashboardPage(), {
+      isProtected: true,
+    });
+    router.register(ROUTES.AI_CHAT, () => new AIChat(), {
       isProtected: true,
     });
   }

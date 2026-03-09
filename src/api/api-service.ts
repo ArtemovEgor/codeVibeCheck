@@ -1,4 +1,5 @@
 import { TOKEN_KEY } from "@/constants/app";
+import { EN } from "@/locale/en";
 import type { IApiError } from "@/types/shared";
 
 class ApiService {
@@ -58,7 +59,16 @@ class ApiService {
       throw error;
     }
 
-    return result.json();
+    const data = await result.json();
+
+    if (!data.success) {
+      throw {
+        success: false,
+        status: data.status ?? result.status,
+        message: data.message ?? EN.common.error.unknown_api_error,
+      } satisfies IApiError;
+    }
+    return data;
   }
 }
 
