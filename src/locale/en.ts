@@ -29,6 +29,9 @@ export const EN = {
       name: "codeVibeCheck",
       logo: "</>",
     },
+    error: {
+      unknown_api_error: "Unknown error",
+    },
   },
   sidebar: {
     nav: {

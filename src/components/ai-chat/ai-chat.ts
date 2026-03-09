@@ -28,9 +28,9 @@ export default class AIChat extends BaseComponent implements Page {
     this.init();
   }
 
-  public init(): void {
+  public async init(): Promise<void> {
     this.renderHeader();
-    this.renderChat();
+    await this.renderChat();
     this.renderMessageField();
   }
 
@@ -88,7 +88,7 @@ export default class AIChat extends BaseComponent implements Page {
           globalThis.matchMedia("(hover: hover)").matches;
 
         if (isHoverSupported) {
-          this.restartChat();
+          await this.restartChat();
           return;
         }
 
