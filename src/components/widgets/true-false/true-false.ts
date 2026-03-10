@@ -34,7 +34,7 @@ export class TrueFalseStrategy implements IWidgetStrategy {
     return answer.value === widget.payload.correctValue;
   }
 
-  showVerdict(verdict: IVerdict, widget: Widget): void {
+  public showVerdict(verdict: IVerdict, widget: Widget): void {
     // TODO: implement showVerdict logic
     console.log(verdict, widget);
     throw new Error("Method not implemented.");

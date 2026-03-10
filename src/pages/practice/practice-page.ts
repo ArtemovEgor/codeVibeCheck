@@ -91,7 +91,7 @@ export class PracticePage extends BaseComponent implements Page {
 
     new BaseComponent({
       tag: "span",
-      text: " › ",
+      text: EN.breadcrumbs.separator,
       parent: breadcrumb,
     });
 
@@ -161,14 +161,18 @@ export class PracticePage extends BaseComponent implements Page {
   }
 
   private renderCurrentWidget(): void {
+    if (this.currentIndex < 0 || this.currentIndex >= this.widgets.length)
+      return;
+    const currentWidget = this.widgets[this.currentIndex];
+
     const widgetComponent = widgetEngine.renderWidget(
-      this.widgets[this.currentIndex],
+      currentWidget,
       (answer: WidgetAnswer) => this.handleAnswer(answer),
     );
-    if (!widgetComponent) return;
+    if (!widgetComponent || !this.widgetArea) return;
 
-    this.widgetArea?.getNode().replaceChildren();
-    this.widgetArea?.addChildren([widgetComponent]);
+    this.widgetArea.getNode().replaceChildren();
+    this.widgetArea.addChildren([widgetComponent]);
   }
 
   private async handleAnswer(answer: WidgetAnswer): Promise<void> {

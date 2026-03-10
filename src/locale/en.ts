@@ -115,4 +115,7 @@ export const EN = {
     },
     next: "Next Question",
   },
+  breadcrumbs: {
+    separator: " › ",
+  },
 } as const;
