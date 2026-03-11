@@ -32,6 +32,42 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
+    const request = this.prepareRequest(options);
+
+    const result = await fetch(`${this.apiUrl}${endpoint}`, request);
+
+    if (!result.ok) await this.handleError(result);
+
+    const data = await result.json();
+
+    if (!data.success) {
+      throw {
+        success: false,
+        status: data.status ?? result.status,
+        message: data.message ?? EN.common.error.unknown_api_error,
+      } satisfies IApiError;
+    }
+    return data;
+  }
+
+  public async sendStream(
+    endpoint: string,
+    options: RequestInit = {},
+    signal?: AbortSignal,
+  ): Promise<ReadableStream<Uint8Array> | undefined> {
+    const request = this.prepareRequest(options, signal);
+
+    const result = await fetch(`${this.apiUrl}${endpoint}`, request);
+
+    if (!result.ok) await this.handleError(result);
+
+    return result.body ?? undefined;
+  }
+
+  private prepareRequest(
+    options: RequestInit = {},
+    signal?: AbortSignal,
+  ): RequestInit {
     const headers: Record<string, string> = {
       ...(options.headers as Record<string, string>),
     };
@@ -44,31 +80,21 @@ class ApiService {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
 
-    const result = await fetch(`${this.apiUrl}${endpoint}`, {
+    return {
       ...options,
       headers,
-    });
+      signal,
+    };
+  }
 
-    if (!result.ok) {
-      const error: IApiError = await result.json().catch(() => ({
-        success: false as const,
-        status: result.status,
-        message: result.statusText,
-      }));
+  private async handleError(result: Response): Promise<void> {
+    const error: IApiError = await result.json().catch(() => ({
+      success: false as const,
+      status: result.status,
+      message: result.statusText,
+    }));
 
-      throw error;
-    }
-
-    const data = await result.json();
-
-    if (!data.success) {
-      throw {
-        success: false,
-        status: data.status ?? result.status,
-        message: data.message ?? EN.common.error.unknown_api_error,
-      } satisfies IApiError;
-    }
-    return data;
+    throw error;
   }
 }
 

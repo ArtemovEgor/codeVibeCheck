@@ -1,30 +1,29 @@
 import {
   type IApiResponse,
-  type IAIResponse,
   type ISendMessagePayload,
   type IChatMessage,
 } from "@/types/shared";
 import { apiService } from "./api-service";
 import { ENDPOINTS } from "./endpoints";
 import { aiMock } from "./mock/ai.mock";
+import { parseSSEStream } from "./stream-parser";
 
 class AIApi {
-  public async sendChatMessage(
+  public async *sendChatMessage(
     message: ISendMessagePayload,
-  ): Promise<IAIResponse> {
+  ): AsyncGenerator<string> {
     if (apiService.isMockMode) {
-      return await aiMock.sendChatMessage(message);
+      yield* aiMock.sendChatMessage(message);
+      return;
     }
 
-    const response = await apiService.send<IApiResponse<IAIResponse>>(
-      ENDPOINTS.AI.CHAT,
-      {
-        method: "POST",
-        body: JSON.stringify(message),
-      },
-    );
+    const response = await apiService.sendStream(ENDPOINTS.AI.CHAT, {
+      method: "POST",
+      body: JSON.stringify(message),
+    });
 
-    return response.data;
+    if (!response) return;
+    yield* parseSSEStream(response);
   }
 
   public async getChatHistory(): Promise<IChatMessage[]> {
