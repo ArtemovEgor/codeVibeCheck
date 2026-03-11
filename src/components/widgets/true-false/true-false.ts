@@ -9,6 +9,7 @@ import {
   type IWidgetStrategy,
   type Widget,
 } from "@/types/shared/widget.types";
+import "./true-false.scss";
 
 const OPTIONS = [
   { value: true, label: { en: "True", ru: "Верно" } },
@@ -35,7 +36,9 @@ export class TrueFalseStrategy implements IWidgetStrategy {
     this.selectedValue = undefined;
     this.optionButtons = [];
     this.submitButton = undefined;
-    const container = new BaseComponent({ className: "widget widget--quiz" });
+    const container = new BaseComponent({
+      className: "widget widget--true-false",
+    });
 
     new BaseComponent({
       tag: "h2",
@@ -113,8 +116,35 @@ export class TrueFalseStrategy implements IWidgetStrategy {
   }
 
   public showVerdict(verdict: IVerdict, widget: Widget): void {
-    // TODO: implement showVerdict logic
-    console.log(verdict, widget);
-    throw new Error("Method not implemented.");
+    if (widget.type !== this.type) return;
+
+    for (const option of this.optionButtons) {
+      option.getNode().classList.add("widget__option--disabled");
+    }
+
+    this.submitButton?.getNode().classList.add("widget__submit--hidden");
+
+    if (this.selectedValue !== undefined) {
+      const correctIndex = OPTIONS.findIndex(
+        (o) => o.value === this.selectedValue,
+      );
+      this.optionButtons[correctIndex]
+        ?.getNode()
+        .classList.add(
+          verdict.isCorrect
+            ? "widget__option--correct"
+            : "widget__option--wrong",
+        );
+    }
+
+    const correctValue = widget.payload.correctValue;
+    if (!verdict.isCorrect && correctValue !== undefined) {
+      const correctIndex = OPTIONS.findIndex((o) => o.value === correctValue);
+      if (correctIndex !== -1) {
+        this.optionButtons[correctIndex]
+          ?.getNode()
+          .classList.add("widget__option--correct");
+      }
+    }
   }
 }
