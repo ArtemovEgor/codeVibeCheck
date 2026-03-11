@@ -106,4 +106,16 @@ export const EN = {
       Ready to test your skills? Tell me your estimated grade and we'll start!
     `,
   },
+  widgets: {
+    submit: "Submit",
+    placeholder: "Stats coming soon",
+    answer: {
+      correct: "Correct",
+      wrong: "Wrong answer",
+    },
+    next: "Next Question",
+  },
+  breadcrumbs: {
+    separator: " › ",
+  },
 } as const;

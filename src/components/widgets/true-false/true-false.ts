@@ -2,6 +2,7 @@ import BaseComponent from "@/components/base/base-component";
 import {
   WIDGET_TYPES,
   type ITrueFalseAnswer,
+  type IVerdict,
   type IWidgetStrategy,
   type Widget,
 } from "@/types/shared/widget.types";
@@ -31,5 +32,11 @@ export class TrueFalseStrategy implements IWidgetStrategy {
     if (widget.type !== this.type) return false;
 
     return answer.value === widget.payload.correctValue;
+  }
+
+  public showVerdict(verdict: IVerdict, widget: Widget): void {
+    // TODO: implement showVerdict logic
+    console.log(verdict, widget);
+    throw new Error("Method not implemented.");
   }
 }

@@ -1,5 +1,6 @@
 import type BaseComponent from "@/components/base/base-component";
 import type {
+  IVerdict,
   IWidgetStrategy,
   Widget,
   WidgetAnswer,
@@ -32,6 +33,19 @@ class WidgetEngine {
     }
 
     return strategy.render(widget, onAnswer);
+  }
+
+  public showVerdict(widget: Widget, verdict: IVerdict): void {
+    const strategy = this.getStrategy(widget.type);
+
+    if (!strategy) {
+      console.warn(
+        `Strategy for widget type "${widget.type}" is not registered.`,
+      );
+      return;
+    }
+
+    strategy.showVerdict(verdict, widget);
   }
 }
 
