@@ -6,11 +6,12 @@ import { NotificationType } from "@/constants/notification";
 import type { IApiError, IChatMessage } from "@/types/shared";
 import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
-import "./ai-chat.scss";
 import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
 import { RESTART_TIMEOUT_MS /*XP_THRESHOLDS*/ } from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
+import "./ai-chat.scss";
+import "highlight.js/styles/tokyo-night-dark.css";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory: BaseComponent | undefined = undefined;
