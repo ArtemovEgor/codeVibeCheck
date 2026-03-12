@@ -9,8 +9,6 @@ import type { ChatRole } from "@/constants/api-chat";
 
 // ── Chat ────────────────────────────────────────────────────────────────────
 
-/** Roles in the chat conversation */
-
 /** A message in the chat history stored in the backend */
 export interface IChatMessage {
   readonly id: string;
