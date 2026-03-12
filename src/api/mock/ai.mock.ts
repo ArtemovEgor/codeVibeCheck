@@ -30,7 +30,7 @@ class AIMock {
     await delay();
 
     const text = EN.mock.ai_response[this.currentMessageIndex];
-    if (this.currentMessageIndex <= EN.mock.ai_response.length) {
+    if (this.currentMessageIndex < EN.mock.ai_response.length - 1) {
       this.currentMessageIndex += 1;
     } else {
       this.currentMessageIndex = 0;
