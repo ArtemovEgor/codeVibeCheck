@@ -6,8 +6,11 @@ import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
 import { MOCK_XP_AWARD } from "@/constants/mock";
 import { tokenizeString } from "@/utils/tokenize-string";
+import { renderMarkdown } from "@/utils/markdown";
 
 class AIMock {
+  private currentMessageIndex = 0;
+
   public async *sendChatMessage(
     message: ISendMessagePayload,
   ): AsyncGenerator<string> {
@@ -27,7 +30,14 @@ class AIMock {
 
     await delay();
 
-    yield* await this.handleResponse(`${EN.mock.ai_response} ${content}`);
+    const text = EN.mock.ai_response[this.currentMessageIndex];
+    if (this.currentMessageIndex <= EN.mock.ai_response.length) {
+      this.currentMessageIndex += 1;
+    } else {
+      this.currentMessageIndex = 0;
+    }
+
+    yield* await this.handleResponse(renderMarkdown(text));
   }
 
   public async getChatHistory(): Promise<IChatMessage[]> {

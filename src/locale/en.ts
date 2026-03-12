@@ -102,6 +102,19 @@ Don't worry about being perfect — this is a safe space to learn.
 **Ready?** Tell me your level and let's go!`,
   },
   mock: {
-    ai_response: "Your request was sent to the robot uprising headquarters:",
+    ai_response: [
+      "Your request was sent to the robot uprising headquarters",
+      `Here's one totally random block of code for you:
+
+\`\`\`javascript
+const highlight = "code";
+\`\`\`
+      `,
+      `Robots don't have doubts.
+
+Even cats don't have doubts, but not you, you are just a human. An imitation of a machine.
+
+Can a human understand machine code? Can a human... vibe code a major bug and push in into production on Friday evening?`,
+    ],
   },
 } as const;
