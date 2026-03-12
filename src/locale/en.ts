@@ -107,7 +107,17 @@ Don't worry about being perfect — this is a safe space to learn.
       `Here's one totally random block of code for you:
 
 \`\`\`javascript
-const highlight = "code";
+function curry(func) {
+  return function curr (...args) {
+    if (args.length >= func.length) {
+      return func.apply(this, args)
+    } else {
+      return function(...newArgs) {
+        return curr.apply(this, [...args, ...newArgs])
+      }
+    }
+  }
+}
 \`\`\`
       `,
       `Robots don't have doubts.

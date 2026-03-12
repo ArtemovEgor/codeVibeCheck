@@ -214,6 +214,10 @@
         margin: var(--space-2) 0;
       }
     }
+
+    pre {
+      padding: 0;
+    }
   }
 
   &--outgoing {
