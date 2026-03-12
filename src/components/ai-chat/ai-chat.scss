@@ -288,6 +288,12 @@
     border-color var(--transition-base),
     box-shadow var(--transition-base);
 
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
   &::before {
     content: "";
     position: absolute;
@@ -309,6 +315,7 @@
   }
 
   &__input {
+    height: 100%;
     flex: 1;
     border: none;
     background: transparent;
@@ -325,12 +332,15 @@
   }
 
   &__button {
-    @include btn-primary;
     width: 36px;
     height: 36px;
     padding: 0;
     flex-shrink: 0;
     border-radius: var(--radius-full);
+
+    &--hidden {
+      display: none;
+    }
   }
 
   @include mobile {

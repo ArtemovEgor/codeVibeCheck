@@ -20,6 +20,8 @@ export default class AIChat extends BaseComponent implements Page {
     undefined;
   private currentXp = 0;
   private xpValueElement: BaseComponent | undefined = undefined;
+  private sendButton: Button | undefined = undefined;
+  private stopButton: Button | undefined = undefined;
 
   constructor() {
     super({
@@ -34,6 +36,7 @@ export default class AIChat extends BaseComponent implements Page {
     this.renderHeader();
     this.renderChatContainer();
     this.renderMessageField();
+    this.blockInput(false);
     this.renderWelcome();
     await this.loadChatHistory();
   }
@@ -278,16 +281,33 @@ export default class AIChat extends BaseComponent implements Page {
       });
     }
 
-    const sendButton = new Button({
-      className: "message-field__button",
+    wrapper.addChildren([this.createInputControls()]);
+  }
+
+  private createInputControls(): BaseComponent {
+    const wrapper = new BaseComponent({
+      tag: "div",
+      className: "message-field__controls",
+    });
+
+    this.sendButton = new Button({
+      className: "message-field__button message-field__button--send",
       parent: wrapper,
+      onClick: () => this.handleSend(),
     });
 
-    sendButton.getNode().innerHTML = ICONS.send;
+    this.sendButton.getNode().innerHTML = ICONS.send;
 
-    sendButton.on("click", () => {
-      this.handleSend();
+    this.stopButton = new Button({
+      className: "message-field__button message-field__button--stop",
+      parent: wrapper,
+      // TODO: implement stop functionality
+      variant: "danger",
     });
+
+    this.stopButton.getNode().innerHTML = ICONS.stop;
+
+    return wrapper;
   }
 
   private async handleSend(): Promise<void> {
@@ -318,6 +338,8 @@ export default class AIChat extends BaseComponent implements Page {
     this.scrollToBottom();
     let accumulated = "";
 
+    this.blockInput(true);
+
     try {
       for await (const token of aiApi.sendChatMessage({ content })) {
         accumulated += token;
@@ -325,11 +347,20 @@ export default class AIChat extends BaseComponent implements Page {
 
         if (responseContainer) responseContainer.innerHTML = html;
       }
-
-      this.scrollToBottom();
     } catch (error) {
       const apiError = error as IApiError;
       Notification.show(apiError.message, NotificationType.ERROR);
     }
+
+    this.scrollToBottom();
+    this.blockInput(false);
+  }
+
+  private blockInput(isBlocked: boolean): void {
+    const inputNode = this.messageField?.getNode();
+    if (inputNode) inputNode.disabled = isBlocked;
+
+    this.sendButton?.toggleClass("message-field__button--hidden", isBlocked);
+    this.stopButton?.toggleClass("message-field__button--hidden", !isBlocked);
   }
 }
