@@ -26,13 +26,6 @@ export interface ISendMessagePayload {
   readonly content: string;
 }
 
-/** Response from POST /api/ai/chat */
-export interface IAIResponse {
-  readonly message: IChatMessage;
-  /** Was the response streamed (for UI rendering decisions) */
-  readonly streamed: boolean;
-}
-
 /** AI evaluation of the user's interview */
 export interface IAIJudgeResult {
   /** Overall score (0–100) */

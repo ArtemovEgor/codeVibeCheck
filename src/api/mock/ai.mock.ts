@@ -27,7 +27,7 @@ class AIMock {
 
     await delay();
 
-    yield* await this.handleResponse(EN.mock.ai_response + content);
+    yield* await this.handleResponse(`${EN.mock.ai_response} ${content}`);
   }
 
   public async getChatHistory(): Promise<IChatMessage[]> {

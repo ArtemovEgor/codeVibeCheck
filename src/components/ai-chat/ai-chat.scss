@@ -194,7 +194,26 @@
   &__content {
     overflow-wrap: break-word;
     word-break: break-all;
-    white-space: pre-line;
+    min-height: calc(
+      var(--leading-relaxed) * var(--text-base) + 2 * var(--space-3)
+    );
+
+    p:not(:last-child) {
+      margin-bottom: var(--space-4);
+    }
+
+    ol,
+    ul {
+      list-style: decimal;
+      padding-left: var(--space-5);
+      text-align: left;
+      margin: var(--space-2) 0 var(--space-4);
+
+      li {
+        padding-left: var(--space-1);
+        margin: var(--space-2) 0;
+      }
+    }
   }
 
   &--outgoing {
@@ -210,8 +229,10 @@
 
   &--incoming {
     align-items: start;
+    width: 100%;
 
     .chat-message__content {
+      width: 100%;
       background-color: var(--bg-surface);
       border: 1px solid var(--border);
       color: var(--text-primary);
@@ -222,7 +243,8 @@
 
   &__avatar {
     @include flex-center;
-    margin-top: 0.5em;
+    user-select: none;
+    margin-top: calc(var(--space-4) / 2);
     flex-shrink: 0;
     width: 32px;
     height: 32px;
