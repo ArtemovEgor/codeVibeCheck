@@ -16,6 +16,12 @@ export interface IRegisterCredentials {
   readonly password: string;
 }
 
+/** Payload sent to POST /api/auth/login */
+export interface ILoginCredentials {
+  readonly email: string;
+  readonly password: string;
+}
+
 /** Successful authentication response from the server */
 export interface IAuthResponse {
   readonly user: IUser;

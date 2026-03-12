@@ -2,7 +2,12 @@ import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dataBase from "./database";
-import { IRegisterCredentials, IAuthResponse } from "./types";
+import {
+  IRegisterCredentials,
+  IAuthResponse,
+  ILoginCredentials,
+  IDatabaseUser,
+} from "./types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-prod";
 const SALT_ROUNDS = 10;
@@ -11,7 +16,7 @@ const SALT_ROUNDS = 10;
  * Registers a new user
  *
  * @param data - Data from the client (email, password, name)
- * @returns Object with user and token
+ * @returns - Object with user and token
  * @throws Error - If the email is busy or the data is invalid
  */
 export function registerUser(data: IRegisterCredentials): IAuthResponse {
@@ -56,6 +61,46 @@ export function registerUser(data: IRegisterCredentials): IAuthResponse {
 
   return {
     user,
+    token,
+  };
+}
+
+/**
+ * Login User
+ *
+ * @param data - Data from the client (email, password)
+ * @returns - Object with user and token
+ * @throws - Error - If the user is not found or the password is incorrect
+ */
+
+export function loginUser(data: ILoginCredentials): IAuthResponse {
+  const { email, password } = data;
+
+  const findStmt = dataBase.prepare("SELECT * FROM users WHERE email = ?");
+  const user = findStmt.get(email) as IDatabaseUser | undefined;
+
+  if (!user) {
+    throw new Error("Incorrect email or password");
+  }
+
+  const isPasswordValid = bcrypt.compareSync(password, user.passwordHash);
+
+  if (!isPasswordValid) {
+    throw new Error("Incorrect email or password");
+  }
+
+  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
+
+  const userResponse: IAuthResponse["user"] = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatarUrl || undefined,
+    createdAt: user.createdAt,
+  };
+
+  return {
+    user: userResponse,
     token,
   };
 }

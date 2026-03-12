@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import "./database";
-import { registerUser } from "./auth.service";
-import { IRegisterCredentials } from "./types.js";
+import { registerUser, loginUser } from "./auth.service";
+import { IRegisterCredentials, ILoginCredentials } from "./types.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,12 +33,6 @@ app.post("/api/auth/register", (request, response) => {
       throw new Error("All fields are required");
     }
 
-    console.log("Получены данные:", JSON.stringify(credentials, null, 2));
-    console.log(
-      "Кодировка имени:",
-      Buffer.from(credentials.name).toString("hex"),
-    );
-
     const registerResult = registerUser(credentials);
 
     /**
@@ -56,7 +50,33 @@ app.post("/api/auth/register", (request, response) => {
     console.log("Registration error:", error);
 
     response.status(400).json({
-      error: error instanceof Error ? error.message : "Ошибка регистрации",
+      error: error instanceof Error ? error.message : "Registration error",
+    });
+  }
+});
+
+/** POST /api/auth/login - User Login */
+app.post("/api/auth/login", (request, response) => {
+  try {
+    const credentials: ILoginCredentials = request.body;
+
+    if (!credentials.email || !credentials.password) {
+      throw new Error("Email and password are required");
+    }
+
+    const loginResult = loginUser(credentials);
+
+    response.status(200).json(loginResult);
+  } catch (error) {
+    console.error("Login Error:", error);
+
+    const statusCode =
+      error instanceof Error && error.message === "Incorrect email or password"
+        ? 401
+        : 400;
+
+    response.status(statusCode).json({
+      error: error instanceof Error ? error.message : "Login error",
     });
   }
 });
@@ -65,4 +85,5 @@ app.listen(PORT, () => {
   console.log(`Server listens to: http://localhost:${PORT}`);
   console.log(`Check health: http://localhost:${PORT}/api/health`);
   console.log(`Registration: POST http://localhost:${PORT}/api/auth/register`);
+  console.log(`Login: POST http://localhost:${PORT}/api/auth/login`);
 });
