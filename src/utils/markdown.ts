@@ -4,9 +4,13 @@ import DOMPurify from "dompurify";
 import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
 import plaintext from "highlight.js/lib/languages/plaintext";
+import typescript from "highlight.js/lib/languages/typescript";
+import css from "highlight.js/lib/languages/css";
 
 hljs.registerLanguage("javascript", javascript);
 hljs.registerLanguage("plaintext", plaintext);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("css", css);
 
 const marked = new Marked(
   markedHighlight({
