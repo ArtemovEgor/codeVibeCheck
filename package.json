@@ -15,6 +15,7 @@
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [
+      "prettier --write",
       "eslint --fix"
     ],
     "*.{css,scss,md,html,json}": [
@@ -32,7 +33,7 @@
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "jiti": "^2.6.1",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^16.3.3",
     "prettier": "^3.8.1",
     "sass": "^1.97.3",
     "typescript": "~5.9.3",
