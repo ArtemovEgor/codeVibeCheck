@@ -21,11 +21,15 @@ export async function* parseSSEStream(
         const payload = line.replace(/^data: /, "");
 
         if (payload === "[DONE]") return;
-        const parsed = JSON.parse(payload);
+        try {
+          const parsed = JSON.parse(payload);
+          const content = parsed.choices?.[0]?.delta?.content;
 
-        const content = parsed.choices?.[0]?.delta?.content;
-
-        if (content) yield content;
+          if (content) yield content;
+        } catch (error) {
+          console.warn("Failed to parse SSE chunk:", payload, error);
+          continue;
+        }
       }
     }
   } finally {
