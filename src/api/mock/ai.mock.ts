@@ -16,7 +16,6 @@ class AIMock {
   ): AsyncGenerator<string> {
     const history = this.getChatsFromStorage();
     const dateSent = Date.now().toString();
-    const content = message.content;
 
     const messageData: IChatMessage = {
       id: `UserMessage-${dateSent}`,
@@ -65,7 +64,7 @@ class AIMock {
     const tokens = tokenizeString(message);
     for (const token of tokens) {
       abortSignal?.throwIfAborted();
-      await delay(30);
+      await delay(MOCK_STREAM_DELAY);
       fullText += token;
       yield token;
     }

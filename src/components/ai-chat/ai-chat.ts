@@ -124,6 +124,7 @@ export default class AIChat extends BaseComponent implements Page {
 
   private async restartChat(): Promise<void> {
     try {
+      this.abortController?.abort();
       await aiApi.resetChat();
 
       this.currentXp = 0;
