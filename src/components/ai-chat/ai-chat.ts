@@ -396,4 +396,9 @@ export default class AIChat extends BaseComponent implements Page {
 
     container?.append(notice.getNode());
   }
+
+  public destroy(): void {
+    this.abortController?.abort();
+    super.destroy();
+  }
 }
