@@ -16,7 +16,6 @@ export type { IApiResponse, IApiError } from "./api.types";
 
 export type {
   IChatMessage,
-  IAIResponse,
   IAIJudgeResult,
   ISendMessagePayload,
 } from "./ai.types";

@@ -1,83 +1,81 @@
-import type {
-  IAIResponse,
-  IChatMessage,
-  ISendMessagePayload,
-} from "@/types/shared";
+import type { IChatMessage, ISendMessagePayload } from "@/types/shared";
 import { delay } from "./delay";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { storageService } from "../../services/storage-service";
 import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
-import { MOCK_XP_AWARD } from "@/constants/mock";
+import { MOCK_STREAM_DELAY, MOCK_XP_AWARD } from "@/constants/mock";
+import { tokenizeString } from "@/utils/tokenize-string";
 
 class AIMock {
-  public async sendChatMessage(
+  private currentMessageIndex = 0;
+
+  public async *sendChatMessage(
     message: ISendMessagePayload,
-  ): Promise<IAIResponse> {
+  ): AsyncGenerator<string> {
     const history = this.getChatsFromStorage();
     const dateSent = Date.now().toString();
+    const content = message.content;
 
     const messageData: IChatMessage = {
       id: `UserMessage-${dateSent}`,
       role: ChatRoles.user,
-      content: message.content,
+      content,
       createdAt: dateSent,
     };
 
     history.push(messageData);
+    storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, history);
 
     await delay();
+
+    const text = EN.mock.ai_response[this.currentMessageIndex];
+    if (this.currentMessageIndex < EN.mock.ai_response.length - 1) {
+      this.currentMessageIndex += 1;
+    } else {
+      this.currentMessageIndex = 0;
+    }
+
+    yield* await this.handleResponse(text);
+  }
+
+  public async getChatHistory(): Promise<IChatMessage[]> {
+    await delay();
+    return this.getChatsFromStorage();
+  }
+
+  public async resetChat(): Promise<void> {
+    await delay();
+    this.currentMessageIndex = 0;
+    storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
+  }
+
+  private getChatsFromStorage(): IChatMessage[] {
+    return storageService.getStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
+  }
+
+  private async *handleResponse(message: string): AsyncGenerator<string> {
+    let fullText = "";
+    const tokens = tokenizeString(message);
+    for (const token of tokens) {
+      await delay(MOCK_STREAM_DELAY);
+      fullText += token;
+      yield token;
+    }
 
     const dateReceived = Date.now().toString();
 
     const responseData: IChatMessage = {
       id: `AIMessage-${dateReceived}`,
       role: ChatRoles.assistant,
-      content: `${EN.mock.ai_response} ${message.content}`,
+      content: fullText,
       createdAt: dateReceived,
       xpAwarded: MOCK_XP_AWARD,
     };
 
+    const history = this.getChatsFromStorage();
     history.push(responseData);
     storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, history);
-
-    return {
-      message: responseData,
-      streamed: false,
-    };
-  }
-
-  public async getChatHistory(): Promise<IChatMessage[]> {
-    await delay();
-
-    const history = this.getChatsFromStorage();
-
-    if (history.length === 0) {
-      await delay();
-      const dateReceived = Date.now().toString();
-      const welcomeMessage: IChatMessage = {
-        id: `AIMessage-${dateReceived}`,
-        role: "assistant",
-        content: EN.mock.ai_welcome_message,
-        createdAt: dateReceived,
-      };
-
-      history.push(welcomeMessage);
-
-      storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, history);
-    }
-
-    return history;
-  }
-
-  public async resetChat(): Promise<void> {
-    await delay();
-
-    storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
-  }
-
-  private getChatsFromStorage(): IChatMessage[] {
-    return storageService.getStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
   }
 }
 

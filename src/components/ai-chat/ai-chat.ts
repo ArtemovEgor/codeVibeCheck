@@ -6,10 +6,12 @@ import { NotificationType } from "@/constants/notification";
 import type { IApiError, IChatMessage } from "@/types/shared";
 import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
-import "./ai-chat.scss";
 import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
-import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
+import { RESTART_TIMEOUT_MS /*XP_THRESHOLDS*/ } from "./ai-chat.constants";
+import { renderMarkdown } from "@/utils/markdown";
+import "./ai-chat.scss";
+import "highlight.js/styles/tokyo-night-dark.css";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory: BaseComponent | undefined = undefined;
@@ -30,8 +32,10 @@ export default class AIChat extends BaseComponent implements Page {
 
   public async init(): Promise<void> {
     this.renderHeader();
-    await this.renderChat();
+    this.renderChatContainer();
     this.renderMessageField();
+    this.renderWelcome();
+    await this.loadChatHistory();
   }
 
   private renderHeader(): void {
@@ -114,14 +118,14 @@ export default class AIChat extends BaseComponent implements Page {
   private async restartChat(): Promise<void> {
     try {
       await aiApi.resetChat();
-      const history = await aiApi.getChatHistory();
 
       this.currentXp = 0;
       if (this.messagesContainer) {
         this.messagesContainer.getNode().replaceChildren();
       }
 
-      this.handleChatHistory(history);
+      this.renderWelcome();
+      await this.loadChatHistory();
       this.updateXP();
     } catch (error) {
       const apiError = error as IApiError;
@@ -129,7 +133,7 @@ export default class AIChat extends BaseComponent implements Page {
     }
   }
 
-  private async renderChat(): Promise<void> {
+  private renderChatContainer(): void {
     this.messageHistory = new BaseComponent({
       tag: "div",
       className: "ai-chat__history",
@@ -141,7 +145,9 @@ export default class AIChat extends BaseComponent implements Page {
       className: "ai-chat__history-inner",
       parent: this.messageHistory,
     });
+  }
 
+  private async loadChatHistory(): Promise<void> {
     try {
       const history = await aiApi.getChatHistory();
 
@@ -151,6 +157,21 @@ export default class AIChat extends BaseComponent implements Page {
       const apiError = error as IApiError;
       Notification.show(apiError.message, NotificationType.ERROR);
     }
+  }
+
+  private renderWelcome(): void {
+    const messageWrapper = this.renderMessage({
+      id: "",
+      role: "assistant",
+      content: "",
+      createdAt: "",
+    });
+
+    const content = messageWrapper
+      .getNode()
+      .querySelector(".chat-message__content");
+
+    if (content) content.innerHTML = renderMarkdown(EN.ai_chat.welcome);
   }
 
   private handleChatHistory(chatHistory: IChatMessage[]): void {
@@ -171,7 +192,7 @@ export default class AIChat extends BaseComponent implements Page {
     }
   }
 
-  private renderMessage(message: IChatMessage): void {
+  private renderMessage(message: IChatMessage): BaseComponent {
     const modifier =
       message.role === ChatRoles.assistant ? "incoming" : "outgoing";
 
@@ -190,18 +211,22 @@ export default class AIChat extends BaseComponent implements Page {
       });
     }
 
-    new BaseComponent({
-      tag: "p",
+    const contentElement = new BaseComponent({
+      tag: "div",
       className: "chat-message__content",
       parent: wrapper,
-      text: message.content,
     });
+
+    contentElement.getNode().innerHTML = renderMarkdown(message.content);
+
+    return wrapper;
   }
 
   private updateXP(): void {
     this.xpValueElement?.setText(String(this.currentXp));
   }
 
+  /* Commenting out the XP logic for now
   private addXP(xp: number) {
     this.currentXp += xp;
     this.updateXP();
@@ -227,6 +252,7 @@ export default class AIChat extends BaseComponent implements Page {
       xpContainer.classList.add("chat-xp--animate");
     }
   }
+  */
 
   private renderMessageField(): void {
     const wrapper = new BaseComponent({
@@ -280,17 +306,27 @@ export default class AIChat extends BaseComponent implements Page {
     });
     this.scrollToBottom();
 
+    const responseContainer = this.renderMessage({
+      id: "",
+      role: ChatRoles.assistant,
+      content: "",
+      createdAt: new Date().toISOString(),
+    })
+      .getNode()
+      .querySelector(".chat-message__content");
+
+    this.scrollToBottom();
+    let accumulated = "";
+
     try {
-      const response = await aiApi.sendChatMessage({
-        content,
-      });
+      for await (const token of aiApi.sendChatMessage({ content })) {
+        accumulated += token;
+        const html = renderMarkdown(accumulated);
 
-      this.renderMessage(response.message);
+        if (responseContainer) responseContainer.innerHTML = html;
+      }
+
       this.scrollToBottom();
-
-      const xpAwarded = response.message.xpAwarded;
-
-      if (xpAwarded) this.addXP(xpAwarded);
     } catch (error) {
       const apiError = error as IApiError;
       Notification.show(apiError.message, NotificationType.ERROR);

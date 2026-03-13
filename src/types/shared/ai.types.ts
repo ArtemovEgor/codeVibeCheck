@@ -9,8 +9,6 @@ import type { ChatRole } from "@/constants/api-chat";
 
 // ── Chat ────────────────────────────────────────────────────────────────────
 
-/** Roles in the chat conversation */
-
 /** A message in the chat history stored in the backend */
 export interface IChatMessage {
   readonly id: string;
@@ -24,13 +22,6 @@ export interface IChatMessage {
 /**  A message sent from the frontend */
 export interface ISendMessagePayload {
   readonly content: string;
-}
-
-/** Response from POST /api/ai/chat */
-export interface IAIResponse {
-  readonly message: IChatMessage;
-  /** Was the response streamed (for UI rendering decisions) */
-  readonly streamed: boolean;
 }
 
 /** AI evaluation of the user's interview */
