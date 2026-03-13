@@ -7,7 +7,14 @@ class StorageService {
   }
 
   public setStorage<T>(key: StorageKey, data: T): void {
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+      console.warn(
+        `Failed to save data to localStorage for key: ${key}`,
+        error,
+      );
+    }
   }
 }
 

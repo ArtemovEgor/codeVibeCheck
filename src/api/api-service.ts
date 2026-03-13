@@ -1,3 +1,4 @@
+import { MAX_RETRIES } from "@/constants/api";
 import { TOKEN_KEY } from "@/constants/app";
 import { EN } from "@/locale/en";
 import type { IApiError } from "@/types/shared";
@@ -34,7 +35,10 @@ class ApiService {
   ): Promise<T> {
     const request = this.prepareRequest(options);
 
-    const result = await fetch(`${this.apiUrl}${endpoint}`, request);
+    const result = await this.fetchWithRetry(
+      `${this.apiUrl}${endpoint}`,
+      request,
+    );
 
     if (!result.ok) await this.handleError(result);
 
@@ -57,7 +61,10 @@ class ApiService {
   ): Promise<ReadableStream<Uint8Array> | undefined> {
     const request = this.prepareRequest(options, signal);
 
-    const result = await fetch(`${this.apiUrl}${endpoint}`, request);
+    const result = await this.fetchWithRetry(
+      `${this.apiUrl}${endpoint}`,
+      request,
+    );
 
     if (!result.ok) await this.handleError(result);
 
@@ -85,6 +92,43 @@ class ApiService {
       headers,
       signal,
     };
+  }
+
+  private async fetchWithRetry(
+    url: string,
+    options: RequestInit,
+    maxRetries = MAX_RETRIES,
+  ): Promise<Response> {
+    let lastError: unknown;
+    const isGet = !options.method || options.method === "GET";
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url, options);
+
+        if (!response.ok && response.status >= 500 && isGet) {
+          if (attempt === maxRetries) return response;
+
+          console.warn(`Retrying request to ${url} (attempt ${attempt + 1})`);
+          await new Promise((resolve) =>
+            setTimeout(resolve, 500 * (attempt + 1)),
+          );
+          continue;
+        }
+        return response;
+      } catch (error) {
+        lastError = error;
+        if (attempt === maxRetries) throw lastError;
+
+        console.warn(
+          `Network error. Retrying request to ${url} (attempt ${attempt + 1})`,
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, 500 * (attempt + 1)),
+        );
+      }
+    }
+    throw lastError;
   }
 
   private async handleError(result: Response): Promise<void> {

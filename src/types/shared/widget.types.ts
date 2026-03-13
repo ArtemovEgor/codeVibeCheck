@@ -137,6 +137,7 @@ export interface IWidgetStrategy {
     onAnswer: (answer: WidgetAnswer) => void,
   ): BaseComponent;
   validate(answer: WidgetAnswer, widget: Widget): boolean;
+  showVerdict(verdict: IVerdict, widget: Widget): void;
 }
 
 /**
