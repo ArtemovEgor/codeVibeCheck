@@ -350,6 +350,7 @@ export default class AIChat extends BaseComponent implements Page {
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         this.addStopNotice(responseContainer);
+        if (this.messageField) this.messageField.getNode().value = content;
         return;
       }
 
