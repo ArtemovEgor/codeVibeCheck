@@ -4,7 +4,7 @@ import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { storageService } from "../../services/storage-service";
 import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
-import { MOCK_XP_AWARD } from "@/constants/mock";
+import { MOCK_STREAM_DELAY, MOCK_XP_AWARD } from "@/constants/mock";
 import { tokenizeString } from "@/utils/tokenize-string";
 
 class AIMock {
@@ -46,7 +46,7 @@ class AIMock {
 
   public async resetChat(): Promise<void> {
     await delay();
-
+    this.currentMessageIndex = 0;
     storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
   }
 
@@ -58,7 +58,7 @@ class AIMock {
     let fullText = "";
     const tokens = tokenizeString(message);
     for (const token of tokens) {
-      await delay(30);
+      await delay(MOCK_STREAM_DELAY);
       fullText += token;
       yield token;
     }
