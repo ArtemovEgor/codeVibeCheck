@@ -14,14 +14,13 @@ import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
 
 export default class AIChat extends BaseComponent implements Page {
-  private messageHistory: BaseComponent | undefined = undefined;
-  private messagesContainer: BaseComponent | undefined = undefined;
-  private messageField: BaseComponent<HTMLTextAreaElement> | undefined =
-    undefined;
+  private messageHistory?: BaseComponent;
+  private messagesContainer?: BaseComponent;
+  private messageField?: BaseComponent<HTMLTextAreaElement>;
   private currentXp = 0;
-  private xpValueElement: BaseComponent | undefined = undefined;
-  private sendButton: Button | undefined = undefined;
-  private stopButton: Button | undefined = undefined;
+  private xpValueElement?: BaseComponent;
+  private sendButton?: Button;
+  private stopButton?: Button;
 
   constructor() {
     super({

@@ -3,7 +3,7 @@ import { NotificationType } from "../../constants/notification";
 import BaseComponent from "../base/base-component";
 
 export default class Notification extends BaseComponent {
-  private static container: HTMLElement | undefined = undefined;
+  private static container: HTMLElement;
 
   private static getContainer(): HTMLElement {
     if (this.container) return this.container;

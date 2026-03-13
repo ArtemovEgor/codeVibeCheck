@@ -19,11 +19,11 @@ type Route = RouteOptions & {
 
 export default class Router {
   private routes = new Map<string, Route>();
-  private rootContainer: HTMLElement | undefined = undefined;
-  private currentPage: Page | undefined = undefined;
-  private currentModal: Modal | undefined = undefined;
-  private previousPagePath: string | undefined = undefined;
-  private currentLayout: AppLayout | undefined = undefined;
+  private rootContainer?: HTMLElement;
+  private currentPage?: Page;
+  private currentModal?: Modal;
+  private previousPagePath?: string;
+  private currentLayout?: AppLayout;
   private authCheck: () => boolean = () => false;
 
   constructor() {
