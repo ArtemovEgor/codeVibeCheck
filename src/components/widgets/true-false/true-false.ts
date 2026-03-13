@@ -1,6 +1,7 @@
 import BaseComponent from "@/components/base/base-component";
 import { Button } from "@/components/button/button";
 import { EN } from "@/locale/en";
+import { RU } from "@/locale/ru";
 import {
   WIDGET_TYPES,
   type ILocalizedString,
@@ -12,8 +13,14 @@ import {
 import "./true-false.scss";
 
 const OPTIONS = [
-  { value: true, label: { en: "True", ru: "Верно" } },
-  { value: false, label: { en: "False", ru: "Неверно" } },
+  {
+    value: true,
+    label: { en: EN.widgets.true_false.true, ru: RU.widgets.true_false.true },
+  },
+  {
+    value: false,
+    label: { en: EN.widgets.true_false.false, ru: RU.widgets.true_false.false },
+  },
 ] as const;
 
 export class TrueFalseStrategy implements IWidgetStrategy {
