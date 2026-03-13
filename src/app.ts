@@ -7,6 +7,7 @@ import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
 import { ROUTES } from "./constants/routes";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
 import { LandingPage } from "./pages/landing-page/landing-page";
+import { Library } from "./pages/library/library";
 import { PracticePage } from "./pages/practice/practice-page";
 import { router } from "./router/router";
 import widgetEngine from "./services/widget-engine";
@@ -49,6 +50,9 @@ export default class App {
         isProtected: true,
       },
     );
+    router.register(ROUTES.LIBRARY, () => new Library(), {
+      isProtected: true,
+    });
   }
 
   private restoreTheme(): void {

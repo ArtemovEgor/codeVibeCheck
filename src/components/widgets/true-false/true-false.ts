@@ -126,7 +126,7 @@ export class TrueFalseStrategy implements IWidgetStrategy {
 
     if (this.selectedValue !== undefined) {
       const correctIndex = OPTIONS.findIndex(
-        (o) => o.value === this.selectedValue,
+        (option) => option.value === this.selectedValue,
       );
       this.optionButtons[correctIndex]
         ?.getNode()
@@ -139,7 +139,9 @@ export class TrueFalseStrategy implements IWidgetStrategy {
 
     const correctValue = widget.payload.correctValue;
     if (!verdict.isCorrect && correctValue !== undefined) {
-      const correctIndex = OPTIONS.findIndex((o) => o.value === correctValue);
+      const correctIndex = OPTIONS.findIndex(
+        (option) => option.value === correctValue,
+      );
       if (correctIndex !== -1) {
         this.optionButtons[correctIndex]
           ?.getNode()

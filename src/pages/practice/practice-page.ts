@@ -10,6 +10,7 @@ import Notification from "../../components/notification/notification";
 import { VerdictCard } from "@/components/widgets/verdict-card/verdict-card";
 import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
+import { router } from "@/router/router";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
@@ -132,7 +133,7 @@ export class PracticePage extends BaseComponent implements Page {
   private updateProgress(): void {
     const total = this.widgets.length;
     const current = this.currentIndex + 1;
-    const percent = Math.round((this.currentIndex / total) * 100);
+    const percent = Math.round((current / total) * 100);
 
     this.progressText?.setText(`${current} / ${total}`);
     if (this.progressFill) {
@@ -204,12 +205,15 @@ export class PracticePage extends BaseComponent implements Page {
 
   private goToNext(): void {
     this.currentIndex++;
-    this.updateProgress();
+
     if (this.currentIndex >= this.widgets.length) {
       // TODO: results screen
       console.log("Topic completed!");
+      router.navigate(ROUTES.LIBRARY);
       return;
     }
+
+    this.updateProgress();
     this.renderCurrentWidget();
   }
 }
