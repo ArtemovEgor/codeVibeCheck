@@ -9,6 +9,8 @@ import { VerdictCard } from "@/components/widgets/verdict-card/verdict-card";
 import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
 import { router } from "@/router/router";
+import { progressApi } from "@/api/progress.api";
+import type { IUserTopicProgress } from "@/types/shared/user.types";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
@@ -43,6 +45,7 @@ export class PracticePage extends BaseComponent implements Page {
       router.navigate(ROUTES.LIBRARY);
       return;
     }
+    this.currentIndex = await this.loadCurrentIndex();
     this.renderHeader();
     this.renderCurrentWidget();
   }
@@ -136,6 +139,26 @@ export class PracticePage extends BaseComponent implements Page {
     this.updateProgress();
   }
 
+  private async loadCurrentIndex(): Promise<number> {
+    try {
+      const progress: IUserTopicProgress = await progressApi.getByTopicId(
+        this.topicId,
+      );
+      let lastCompleted = -1;
+      for (let index = this.widgets.length - 1; index >= 0; index--) {
+        if (progress.completedWidgetIds.includes(this.widgets[index].id)) {
+          lastCompleted = index;
+          console.log(index);
+          break;
+        }
+      }
+      const nextIndex = lastCompleted + 1;
+      return nextIndex >= this.widgets.length ? 0 : nextIndex;
+    } catch {
+      return 0;
+    }
+  }
+
   private updateProgress(): void {
     const total = this.widgets.length;
     const current = this.currentIndex + 1;
@@ -170,13 +193,20 @@ export class PracticePage extends BaseComponent implements Page {
   private renderCurrentWidget(): void {
     if (this.currentIndex < 0 || this.currentIndex >= this.widgets.length)
       return;
+
     const currentWidget = this.widgets[this.currentIndex];
 
     const widgetComponent = widgetEngine.renderWidget(
       currentWidget,
       (answer: WidgetAnswer) => this.handleAnswer(answer),
     );
-    if (!widgetComponent || !this.widgetArea) return;
+
+    if (!widgetComponent) {
+      this.goToNext();
+      return;
+    }
+
+    if (!this.widgetArea) return;
 
     this.widgetArea.getNode().replaceChildren();
     this.widgetArea.addChildren([widgetComponent]);
@@ -191,6 +221,12 @@ export class PracticePage extends BaseComponent implements Page {
         widget.id,
         answer,
       );
+
+      await progressApi.update({
+        topicId: this.topicId,
+        widgetId: widget.id,
+        xpEarned: verdict.xpEarned,
+      });
 
       widgetEngine.showVerdict(widget, verdict);
 
