@@ -5,8 +5,6 @@ import type { ITopic, Widget, WidgetAnswer } from "@/types/shared/widget.types";
 import widgetEngine from "@/services/widget-engine";
 import "./practice-page.scss";
 import { EN } from "@/locale/en";
-import { NotificationType } from "@/constants/notification";
-import Notification from "../../components/notification/notification";
 import { VerdictCard } from "@/components/widgets/verdict-card/verdict-card";
 import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
@@ -36,7 +34,15 @@ export class PracticePage extends BaseComponent implements Page {
   public async init(): Promise<void> {
     this.renderLayout();
     this.topic = await this.loadTopic();
+    if (!this.topic) {
+      router.navigate(ROUTES.LIBRARY);
+      return;
+    }
     this.widgets = await this.loadWidgets();
+    if (this.widgets.length === 0) {
+      router.navigate(ROUTES.LIBRARY);
+      return;
+    }
     this.renderHeader();
     this.renderCurrentWidget();
   }
@@ -187,14 +193,6 @@ export class PracticePage extends BaseComponent implements Page {
       );
 
       widgetEngine.showVerdict(widget, verdict);
-
-      const message = verdict.isCorrect
-        ? `${EN.widgets.answer.correct} +${verdict.xpEarned} XP`
-        : EN.widgets.answer.wrong;
-      const type = verdict.isCorrect
-        ? NotificationType.SUCCESS
-        : NotificationType.ERROR;
-      Notification.show(message, type);
 
       const verdictCard = new VerdictCard(verdict, () => this.goToNext());
       this.widgetArea?.addChildren([verdictCard]);
