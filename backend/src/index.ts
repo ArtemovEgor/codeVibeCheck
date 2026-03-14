@@ -2,10 +2,12 @@ import express from "express";
 import cors from "cors";
 import "./database";
 import { registerUser, loginUser } from "./auth.service";
-import { IRegisterCredentials, ILoginCredentials } from "./types.js";
+import { IRegisterCredentials, ILoginCredentials } from "./types";
+import { EN } from "./locale/en";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const LANG = EN;
 
 app.use(
   cors({
@@ -18,9 +20,7 @@ app.use(express.json());
 /** GET /api/health - Check server state */
 app.get("/api/health", (_request, response) => {
   response.json({
-    status: "Ok",
-    message: "Backend is work!",
-    database: "Connected!",
+    message: LANG.messages.server_status,
   });
 });
 
@@ -30,7 +30,7 @@ app.post("/api/auth/register", (request, response) => {
     const credentials: IRegisterCredentials = request.body;
 
     if (!credentials.email || !credentials.password || !credentials.name) {
-      throw new Error("All fields are required");
+      throw new Error(LANG.errors.all_fields_required);
     }
 
     const registerResult = registerUser(credentials);
@@ -47,10 +47,12 @@ app.post("/api/auth/register", (request, response) => {
 
     response.status(201).json(registerResult);
   } catch (error) {
-    console.log("Registration error:", error);
+    /* Only for dev */
+    console.log(`${LANG.errors.registration_error}:`, error);
 
     response.status(400).json({
-      error: error instanceof Error ? error.message : "Registration error",
+      error:
+        error instanceof Error ? error.message : LANG.errors.registration_error,
     });
   }
 });
@@ -61,22 +63,24 @@ app.post("/api/auth/login", (request, response) => {
     const credentials: ILoginCredentials = request.body;
 
     if (!credentials.email || !credentials.password) {
-      throw new Error("Email and password are required");
+      throw new Error(EN.errors.email_password_required);
     }
 
     const loginResult = loginUser(credentials);
 
     response.status(200).json(loginResult);
   } catch (error) {
-    console.error("Login Error:", error);
+    /* Only for dev */
+    console.error(`${LANG.errors.login_error}:`, error);
 
     const statusCode =
-      error instanceof Error && error.message === "Incorrect email or password"
+      error instanceof Error &&
+      error.message === LANG.errors.incorrect_mail_password
         ? 401
         : 400;
 
     response.status(statusCode).json({
-      error: error instanceof Error ? error.message : "Login error",
+      error: error instanceof Error ? error.message : LANG.errors.login_error,
     });
   }
 });

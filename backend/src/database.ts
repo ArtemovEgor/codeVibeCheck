@@ -18,6 +18,4 @@ dataBase.exec(`
   )
 `);
 
-console.log("DB is ready!");
-
 export default dataBase;

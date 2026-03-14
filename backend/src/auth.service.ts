@@ -8,9 +8,12 @@ import {
   ILoginCredentials,
   IDatabaseUser,
 } from "./types";
+import { EN } from "./locale/en";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-prod";
 const SALT_ROUNDS = 10;
+const TOKEN_EXPIRED = "1h";
+const LANG = EN;
 
 /**
  * Registers a new user
@@ -23,18 +26,18 @@ export function registerUser(data: IRegisterCredentials): IAuthResponse {
   const { name, email, password } = data;
 
   if (password.length < 6) {
-    throw new Error("The password must be at least 6 characters long.");
+    throw new Error(LANG.errors.password_length);
   }
 
   if (!email || !email.includes("@")) {
-    throw new Error("Incorrect email");
+    throw new Error(LANG.errors.mail_error);
   }
 
   const findStmt = dataBase.prepare("SELECT id FROM users WHERE email = ?");
   const existingUser = findStmt.get(email) as { id: string } | undefined;
 
   if (existingUser) {
-    throw new Error("A user with this email already exists.");
+    throw new Error(LANG.errors.user_already_exist);
   }
 
   const salt = bcrypt.genSaltSync(SALT_ROUNDS);
@@ -49,7 +52,7 @@ export function registerUser(data: IRegisterCredentials): IAuthResponse {
 
   insertStmt.run(id, name, email, passwordHash, null, createdAt);
 
-  const token = jwt.sign({ id }, JWT_SECRET, { expiresIn: "1h" });
+  const token = jwt.sign({ id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRED });
 
   const user: IAuthResponse["user"] = {
     id,
@@ -80,16 +83,18 @@ export function loginUser(data: ILoginCredentials): IAuthResponse {
   const user = findStmt.get(email) as IDatabaseUser | undefined;
 
   if (!user) {
-    throw new Error("Incorrect email or password");
+    throw new Error(LANG.errors.incorrect_mail_password);
   }
 
   const isPasswordValid = bcrypt.compareSync(password, user.passwordHash);
 
   if (!isPasswordValid) {
-    throw new Error("Incorrect email or password");
+    throw new Error(LANG.errors.incorrect_mail_password);
   }
 
-  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
+  const token = jwt.sign({ id: user.id }, JWT_SECRET, {
+    expiresIn: TOKEN_EXPIRED,
+  });
 
   const userResponse: IAuthResponse["user"] = {
     id: user.id,
