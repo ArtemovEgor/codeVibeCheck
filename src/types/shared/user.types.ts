@@ -39,3 +39,21 @@ export interface IAuthResponse {
   /** JWT access token */
   readonly token: string;
 }
+
+// ── Progress ────────────────────────────────────────────────────────────────────
+
+/** Progress of a user for a specific topic */
+export interface IUserTopicProgress {
+  topicId: string;
+  completedWidgetIds: string[];
+  earnedXp: number;
+  isCompleted: boolean;
+  isUnlocked: boolean;
+}
+
+/** Payload for updating user progress after submitting an answer */
+export interface IUpdateProgressPayload {
+  topicId: string;
+  widgetId: string;
+  xpEarned: number;
+}

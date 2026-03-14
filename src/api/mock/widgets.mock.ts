@@ -44,7 +44,8 @@ class WidgetMock {
     await delay();
 
     const topic = MOCK_TOPICS.find((topic) => topic.id === topicId);
-    if (!topic) throw this.notFoundError(`Topic not found: ${topicId}`);
+    if (!topic)
+      throw this.notFoundError(`Widgets not found for topic: ${topicId}`);
 
     const widgets = topic.widgetIds
       .map((id) => MOCK_WIDGETS.find((w) => w.id === id))
