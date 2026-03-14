@@ -3,7 +3,11 @@ import BaseComponent from "../base/base-component";
 import { aiApi } from "@/api/ai.api";
 import Notification from "../notification/notification";
 import { NotificationType } from "@/constants/notification";
-import type { IApiError, IChatMessage } from "@/types/shared";
+import type {
+  IApiError,
+  IChatMessage,
+  ISendMessagePayload,
+} from "@/types/shared";
 import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
 import { EN } from "@/locale/en";
@@ -14,12 +18,14 @@ import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
 
 export default class AIChat extends BaseComponent implements Page {
-  private messageHistory: BaseComponent | undefined = undefined;
-  private messagesContainer: BaseComponent | undefined = undefined;
-  private messageField: BaseComponent<HTMLTextAreaElement> | undefined =
-    undefined;
+  private messageHistory?: BaseComponent;
+  private messagesContainer?: BaseComponent;
+  private messageField?: BaseComponent<HTMLTextAreaElement>;
   private currentXp = 0;
-  private xpValueElement: BaseComponent | undefined = undefined;
+  private xpValueElement?: BaseComponent;
+  private sendButton?: Button;
+  private stopButton?: Button;
+  private abortController?: AbortController;
 
   constructor() {
     super({
@@ -34,6 +40,7 @@ export default class AIChat extends BaseComponent implements Page {
     this.renderHeader();
     this.renderChatContainer();
     this.renderMessageField();
+    this.blockInput(false);
     this.renderWelcome();
     await this.loadChatHistory();
   }
@@ -117,6 +124,7 @@ export default class AIChat extends BaseComponent implements Page {
 
   private async restartChat(): Promise<void> {
     try {
+      this.abortController?.abort();
       await aiApi.resetChat();
 
       this.currentXp = 0;
@@ -278,16 +286,33 @@ export default class AIChat extends BaseComponent implements Page {
       });
     }
 
-    const sendButton = new Button({
-      className: "message-field__button",
+    wrapper.addChildren([this.createInputControls()]);
+  }
+
+  private createInputControls(): BaseComponent {
+    const wrapper = new BaseComponent({
+      tag: "div",
+      className: "message-field__controls",
+    });
+
+    this.sendButton = new Button({
+      className: "message-field__button message-field__button--send",
       parent: wrapper,
+      onClick: () => this.handleSend(),
     });
 
-    sendButton.getNode().innerHTML = ICONS.send;
+    this.sendButton.getNode().innerHTML = ICONS.send;
 
-    sendButton.on("click", () => {
-      this.handleSend();
+    this.stopButton = new Button({
+      className: "message-field__button message-field__button--stop",
+      parent: wrapper,
+      onClick: () => this.abortController?.abort(),
+      variant: "danger",
     });
+
+    this.stopButton.getNode().innerHTML = ICONS.stop;
+
+    return wrapper;
   }
 
   private async handleSend(): Promise<void> {
@@ -304,7 +329,6 @@ export default class AIChat extends BaseComponent implements Page {
       content,
       createdAt: new Date().toISOString(),
     });
-    this.scrollToBottom();
 
     const responseContainer = this.renderMessage({
       id: "",
@@ -313,23 +337,68 @@ export default class AIChat extends BaseComponent implements Page {
       createdAt: new Date().toISOString(),
     })
       .getNode()
-      .querySelector(".chat-message__content");
+      .querySelector(".chat-message__content") as HTMLElement | undefined;
 
+    this.scrollToBottom();
+
+    this.blockInput(true);
+    this.abortController?.abort();
+    this.abortController = new AbortController();
+    const abortSignal = this.abortController.signal;
+
+    try {
+      await this.renderMessageText(responseContainer, { content }, abortSignal);
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        this.addStopNotice(responseContainer);
+        if (this.messageField) this.messageField.getNode().value = content;
+        return;
+      }
+
+      const apiError = error as IApiError;
+      Notification.show(apiError.message, NotificationType.ERROR);
+    } finally {
+      this.scrollToBottom();
+      this.blockInput(false);
+    }
+  }
+
+  private async renderMessageText(
+    responseContainer: HTMLElement | undefined,
+    { content }: ISendMessagePayload,
+    abortSignal: AbortSignal,
+  ): Promise<void> {
     this.scrollToBottom();
     let accumulated = "";
 
-    try {
-      for await (const token of aiApi.sendChatMessage({ content })) {
-        accumulated += token;
-        const html = renderMarkdown(accumulated);
+    for await (const token of aiApi.sendChatMessage({ content }, abortSignal)) {
+      accumulated += token;
+      const html = renderMarkdown(accumulated);
 
-        if (responseContainer) responseContainer.innerHTML = html;
-      }
-
-      this.scrollToBottom();
-    } catch (error) {
-      const apiError = error as IApiError;
-      Notification.show(apiError.message, NotificationType.ERROR);
+      if (responseContainer) responseContainer.innerHTML = html;
     }
+  }
+
+  private blockInput(isBlocked: boolean): void {
+    const inputNode = this.messageField?.getNode();
+    if (inputNode) inputNode.disabled = isBlocked;
+
+    this.sendButton?.toggleClass("message-field__button--hidden", isBlocked);
+    this.stopButton?.toggleClass("message-field__button--hidden", !isBlocked);
+  }
+
+  private addStopNotice(container: HTMLElement | undefined) {
+    const notice = new BaseComponent({
+      tag: "p",
+      className: "chat-message__stop-notice",
+      text: EN.ai_chat.stop_generation,
+    });
+
+    container?.append(notice.getNode());
+  }
+
+  public destroy(): void {
+    this.abortController?.abort();
+    super.destroy();
   }
 }

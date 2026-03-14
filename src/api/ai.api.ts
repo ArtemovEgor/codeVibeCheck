@@ -10,16 +10,17 @@ import { parseSSEStream } from "./stream-parser";
 
 class AIApi {
   public async *sendChatMessage(
-    message: ISendMessagePayload,
+    { content }: ISendMessagePayload,
+    abortSignal?: AbortSignal,
   ): AsyncGenerator<string> {
     if (apiService.isMockMode) {
-      yield* aiMock.sendChatMessage(message);
+      yield* aiMock.sendChatMessage({ content }, abortSignal);
       return;
     }
 
     const response = await apiService.sendStream(ENDPOINTS.AI.CHAT, {
       method: "POST",
-      body: JSON.stringify(message),
+      body: JSON.stringify(content),
     });
 
     if (!response) return;

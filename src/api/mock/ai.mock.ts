@@ -11,11 +11,11 @@ class AIMock {
   private currentMessageIndex = 0;
 
   public async *sendChatMessage(
-    message: ISendMessagePayload,
+    { content }: ISendMessagePayload,
+    abortSignal?: AbortSignal,
   ): AsyncGenerator<string> {
     const history = this.getChatsFromStorage();
     const dateSent = Date.now().toString();
-    const content = message.content;
 
     const messageData: IChatMessage = {
       id: `UserMessage-${dateSent}`,
@@ -27,6 +27,8 @@ class AIMock {
     history.push(messageData);
     storageService.setStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, history);
 
+    abortSignal?.throwIfAborted();
+
     await delay();
 
     const text = EN.mock.ai_response[this.currentMessageIndex];
@@ -36,7 +38,7 @@ class AIMock {
       this.currentMessageIndex = 0;
     }
 
-    yield* await this.handleResponse(text);
+    yield* await this.handleResponse(text, abortSignal);
   }
 
   public async getChatHistory(): Promise<IChatMessage[]> {
@@ -54,10 +56,14 @@ class AIMock {
     return storageService.getStorage(STORAGE_KEYS.MOCK_CHAT_HISTORY_KEY, []);
   }
 
-  private async *handleResponse(message: string): AsyncGenerator<string> {
+  private async *handleResponse(
+    message: string,
+    abortSignal?: AbortSignal,
+  ): AsyncGenerator<string> {
     let fullText = "";
     const tokens = tokenizeString(message);
     for (const token of tokens) {
+      abortSignal?.throwIfAborted();
       await delay(MOCK_STREAM_DELAY);
       fullText += token;
       yield token;

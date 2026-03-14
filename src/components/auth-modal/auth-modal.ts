@@ -12,13 +12,11 @@ type AuthTab = "login" | "register";
 
 export default class AuthModal extends Modal {
   declare content: BaseComponent;
-  private form: BaseComponent | undefined = undefined;
-  private currentFormComponent: BaseAuthForm | undefined;
+  private form?: BaseComponent;
+  private currentFormComponent?: BaseAuthForm;
   private currentTab: AuthTab;
-  private loginTabButton: BaseComponent<HTMLButtonElement> | undefined =
-    undefined;
-  private registerTabButton: BaseComponent<HTMLButtonElement> | undefined =
-    undefined;
+  private loginTabButton?: BaseComponent<HTMLButtonElement>;
+  private registerTabButton?: BaseComponent<HTMLButtonElement>;
 
   constructor(tab: AuthTab = "login") {
     super("modal modal--auth");

@@ -15,7 +15,7 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
     { input: HTMLInputElement; error: HTMLElement; pattern: string }
   >();
 
-  protected submitButton: Button | undefined = undefined;
+  protected submitButton?: Button;
 
   constructor(className: string) {
     super({
