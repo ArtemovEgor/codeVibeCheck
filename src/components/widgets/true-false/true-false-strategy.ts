@@ -10,7 +10,7 @@ import {
   type IWidgetStrategy,
   type Widget,
 } from "@/types/shared/widget.types";
-import "./true-false.scss";
+import "./true-false-strategy.scss";
 
 const OPTIONS = [
   {

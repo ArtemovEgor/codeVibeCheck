@@ -2,7 +2,7 @@ import { apiService } from "./api/api-service";
 import AIChat from "./components/ai-chat/ai-chat";
 import AuthModal from "./components/auth-modal/auth-modal";
 import { QuizStrategy } from "./components/widgets/quiz/quiz-strategy";
-import { TrueFalseStrategy } from "./components/widgets/true-false/true-false";
+import { TrueFalseStrategy } from "./components/widgets/true-false/true-false-strategy";
 import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
 import { ROUTES } from "./constants/routes";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
