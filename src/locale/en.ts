@@ -136,6 +136,10 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
       wrong: "Wrong answer",
     },
     next: "Next Question",
+    true_false: {
+      true: "True",
+      false: "False",
+    },
   },
   breadcrumbs: {
     separator: " › ",
