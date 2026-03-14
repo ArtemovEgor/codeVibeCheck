@@ -342,7 +342,7 @@ export default class AIChat extends BaseComponent implements Page {
     this.scrollToBottom();
 
     this.blockInput(true);
-
+    this.abortController?.abort();
     this.abortController = new AbortController();
     const abortSignal = this.abortController.signal;
 
