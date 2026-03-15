@@ -1,5 +1,4 @@
 import type { Widget } from "@/types/shared/widget.types";
-import { describe, expect, it } from "vitest";
 import { TrueFalseStrategy } from "./true-false-strategy";
 
 const mockWidget = {
