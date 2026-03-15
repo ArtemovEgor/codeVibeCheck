@@ -7,7 +7,7 @@ import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const LANG = EN;
 
 app.use(
@@ -46,7 +46,10 @@ app.post("/api/auth/register", (request, response) => {
      * - 500 - Internal Server Error
      */
 
-    response.status(201).json(registerResult);
+    response.status(201).json({
+      data: registerResult,
+      success: true,
+    });
   } catch (error) {
     /* Only for dev */
     console.log(`${LANG.errors.registration_error}:`, error);
@@ -71,7 +74,10 @@ app.post("/api/auth/login", (request, response) => {
 
     const loginResult = loginUser(credentials);
 
-    response.status(200).json(loginResult);
+    response.status(200).json({
+      data: loginResult,
+      success: true,
+    });
   } catch (error) {
     /* Only for dev */
     console.error(`${LANG.errors.login_error}:`, error);
