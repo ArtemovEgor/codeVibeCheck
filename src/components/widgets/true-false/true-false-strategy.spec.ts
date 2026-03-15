@@ -15,10 +15,10 @@ const strategy = new TrueFalseStrategy();
 
 describe("TrueFalseStrategy validate", () => {
   it("validate correct answer", () => {
-    expect(strategy.validate({ value: true }, mockWidget)).equal(true);
+    expect(strategy.validate({ value: true }, mockWidget)).toBe(true);
   });
 
   it("validate wrong answer", () => {
-    expect(strategy.validate({ value: false }, mockWidget)).equal(false);
+    expect(strategy.validate({ value: false }, mockWidget)).toBe(false);
   });
 });

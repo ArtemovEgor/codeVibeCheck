@@ -1,4 +1,3 @@
-import WidgetEngine from "./widget-engine";
 import widgetEngine from "./widget-engine";
 import type { IWidgetStrategy, Widget } from "@/types/shared/widget.types";
 import BaseComponent from "@/components/base/base-component";
@@ -7,7 +6,7 @@ const mockStrategy: IWidgetStrategy = {
   type: "quiz",
   render: () => new BaseComponent({ className: "mock" }),
   validate: () => true,
-  showVerdict: () => vi.fn(),
+  showVerdict: vi.fn(),
 };
 
 const mockWidget = {
@@ -25,16 +24,16 @@ const mockWidget = {
 
 describe("WidgetEngine", () => {
   beforeEach(() => {
-    WidgetEngine.clear();
+    widgetEngine.clear();
   });
 
   it("getStrategy returns undefined for unregistered type", () => {
-    expect(WidgetEngine.getStrategy("unknown")).toBeUndefined();
+    expect(widgetEngine.getStrategy("unknown")).toBeUndefined();
   });
 
   it("getStrategy returns strategy for registered type", () => {
     widgetEngine.register(mockStrategy);
-    expect(WidgetEngine.getStrategy(mockStrategy.type)).toEqual(mockStrategy);
+    expect(widgetEngine.getStrategy(mockStrategy.type)).toEqual(mockStrategy);
   });
 
   it("renderWidget returns undefined for unregistered type", () => {
