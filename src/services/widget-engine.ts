@@ -17,6 +17,10 @@ class WidgetEngine {
     return this.strategies.get(type);
   }
 
+  public clear(): void {
+    this.strategies.clear();
+  }
+
   public renderWidget(
     widget: Widget,
     onAnswer: (answer: WidgetAnswer) => void,
