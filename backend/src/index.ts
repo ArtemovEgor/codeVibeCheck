@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import "./database";
@@ -51,7 +52,9 @@ app.post("/api/auth/register", (request, response) => {
     console.log(`${LANG.errors.registration_error}:`, error);
 
     response.status(400).json({
-      error:
+      success: false,
+      status: 400,
+      message:
         error instanceof Error ? error.message : LANG.errors.registration_error,
     });
   }
@@ -80,7 +83,9 @@ app.post("/api/auth/login", (request, response) => {
         : 400;
 
     response.status(statusCode).json({
-      error: error instanceof Error ? error.message : LANG.errors.login_error,
+      success: false,
+      status: statusCode,
+      message: error instanceof Error ? error.message : LANG.errors.login_error,
     });
   }
 });
