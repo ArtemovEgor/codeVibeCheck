@@ -35,4 +35,15 @@ describe("registerUser", () => {
 
     expect(() => registerUser(testUser)).toThrow(/password/i);
   });
+
+  it("should throw error when email is invalid", () => {
+    const testUser = {
+      name: "Test User",
+      email: "not-an-email",
+      password: "password123",
+    };
+
+    expect(() => registerUser(testUser)).toThrow();
+    expect(() => registerUser(testUser)).toThrow(/mail|email/i);
+  });
 });
