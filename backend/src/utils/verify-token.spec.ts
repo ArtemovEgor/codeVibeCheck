@@ -16,4 +16,24 @@ describe("verifyToken validation", () => {
     const result = verifyToken(token);
     expect(result).toMatchObject(payload);
   });
+
+  it("should throw error for expired token", () => {
+    const token = jwt.sign({ id: "user-123" }, MOCK_SECRET, {
+      expiresIn: "0s",
+    });
+
+    expect(() => verifyToken(token)).toThrow("Invalid or expired token");
+  });
+
+  it("should throw error for invalid signature", () => {
+    const token = jwt.sign({ id: "user-123" }, "wrong-secret");
+
+    expect(() => verifyToken(token)).toThrow("Invalid or expired token");
+  });
+
+  it("should throw error for invalid payload (missing id)", () => {
+    const token = jwt.sign("not-an-object", MOCK_SECRET);
+
+    expect(() => verifyToken(token)).toThrow("Invalid token payload");
+  });
 });
