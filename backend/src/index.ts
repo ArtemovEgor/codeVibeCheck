@@ -17,13 +17,13 @@ const LANG = EN;
 const getUserId = (request: express.Request): string => {
   const authHeader = request.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
-    throw new Error("Unauthorized", { cause: "MISSING_TOKEN" });
+    throw new Error(LANG.errors.unauthorized, { cause: "MISSING_TOKEN" });
   }
 
   const token = authHeader.split(" ")[1];
 
   if (!token) {
-    throw new Error("Unauthorized", { cause: "EMPTY_TOKEN" });
+    throw new Error(LANG.errors.unauthorized, { cause: "EMPTY_TOKEN" });
   }
 
   const decoded = verifyToken(token);
@@ -153,19 +153,19 @@ app.post("/api/ai/chat", async (request, response) => {
 
     const isAuthError =
       error instanceof Error &&
-      (error.message === "Unauthorized" ||
-        error.message === "Invalid or expired token");
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
 
     if (response.headersSent) {
       console.error("Stream failed", error);
       response.write(
-        `data: ${JSON.stringify({ error: "Stream interrupted" })}\n\n`,
+        `data: ${JSON.stringify({ error: LANG.errors.stream_interrupted })}\n\n`,
       );
       response.end();
     } else {
       const status = isAuthError ? 401 : 500;
       const message =
-        error instanceof Error ? error.message : "Internal Server Error";
+        error instanceof Error ? error.message : LANG.errors.internal_error;
       response.status(status).json({ success: false, message });
     }
   }
@@ -179,12 +179,12 @@ app.get("/api/ai/chat", (request, response) => {
   } catch (error) {
     const isAuthError =
       error instanceof Error &&
-      (error.message === "Unauthorized" ||
-        error.message === "Invalid or expired token");
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
 
     const status = isAuthError ? 401 : 500;
     const message =
-      error instanceof Error ? error.message : "Internal Server Error";
+      error instanceof Error ? error.message : LANG.errors.internal_error;
     response.status(status).json({ success: false, message });
   }
 });
@@ -197,12 +197,12 @@ app.delete("/api/ai/chat", (request, response) => {
   } catch (error) {
     const isAuthError =
       error instanceof Error &&
-      (error.message === "Unauthorized" ||
-        error.message === "Invalid or expired token");
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
 
     const status = isAuthError ? 401 : 500;
     const message =
-      error instanceof Error ? error.message : "Internal Server Error";
+      error instanceof Error ? error.message : LANG.errors.internal_error;
     response.status(status).json({ success: false, message });
   }
 });
