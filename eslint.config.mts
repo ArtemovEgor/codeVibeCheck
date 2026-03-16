@@ -44,6 +44,14 @@ export default tseslint.config(
     },
   },
 
+  // === Test Overrides ===
+  {
+    files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "max-lines-per-function": "off",
+    },
+  },
+
   // === Backend (backend/src/) ===
   {
     files: ["backend/src/**/*.{ts,js}"],
