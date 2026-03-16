@@ -11,12 +11,14 @@ import { ROUTES } from "@/constants/routes";
 import { router } from "@/router/router";
 import { progressApi } from "@/api/progress.api";
 import type { IUserTopicProgress } from "@/types/shared/user.types";
+import { PracticeStats } from "@/components/layout/practice-stats/practice-stats.ts";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
   private currentIndex = 0;
   private widgets: Widget[] = [];
   private topic: ITopic | undefined = undefined;
+  private progress: IUserTopicProgress | undefined = undefined;
 
   private mainArea: BaseComponent | undefined = undefined;
   private rightPanel: BaseComponent | undefined = undefined;
@@ -45,9 +47,13 @@ export class PracticePage extends BaseComponent implements Page {
       router.navigate(ROUTES.LIBRARY);
       return;
     }
-    this.currentIndex = await this.loadCurrentIndex();
+    this.progress = await this.loadProgress();
+    this.currentIndex = this.progress
+      ? await this.loadCurrentIndex(this.progress)
+      : 0;
     this.renderHeader();
     this.renderCurrentWidget();
+    this.renderRightPanel();
   }
 
   private renderLayout(): void {
@@ -75,14 +81,6 @@ export class PracticePage extends BaseComponent implements Page {
     this.widgetArea = new BaseComponent({
       className: "practice-page__widget-area",
       parent: this.mainArea,
-    });
-
-    // TODO: add stats
-    new BaseComponent({
-      tag: "p",
-      className: "practice-page__panel-placeholder",
-      text: EN.widgets.placeholder,
-      parent: this.rightPanel,
     });
   }
 
@@ -139,24 +137,27 @@ export class PracticePage extends BaseComponent implements Page {
     this.updateProgress();
   }
 
-  private async loadCurrentIndex(): Promise<number> {
+  private async loadProgress(): Promise<IUserTopicProgress | undefined> {
     try {
-      const progress: IUserTopicProgress = await progressApi.getByTopicId(
-        this.topicId,
-      );
-      let lastCompleted = -1;
-      for (let index = this.widgets.length - 1; index >= 0; index--) {
-        if (progress.completedWidgetIds.includes(this.widgets[index].id)) {
-          lastCompleted = index;
-          console.log(index);
-          break;
-        }
-      }
-      const nextIndex = lastCompleted + 1;
-      return nextIndex >= this.widgets.length ? 0 : nextIndex;
-    } catch {
-      return 0;
+      return await progressApi.getByTopicId(this.topicId);
+    } catch (error) {
+      console.error(error);
+      return undefined;
     }
+  }
+
+  private async loadCurrentIndex(
+    progress: IUserTopicProgress,
+  ): Promise<number> {
+    let lastCompleted = -1;
+    for (let index = this.widgets.length - 1; index >= 0; index--) {
+      if (progress.completedWidgetIds.includes(this.widgets[index].id)) {
+        lastCompleted = index;
+        break;
+      }
+    }
+    const nextIndex = lastCompleted + 1;
+    return nextIndex >= this.widgets.length ? 0 : nextIndex;
   }
 
   private updateProgress(): void {
@@ -212,6 +213,14 @@ export class PracticePage extends BaseComponent implements Page {
     this.widgetArea.addChildren([widgetComponent]);
   }
 
+  private renderRightPanel(): void {
+    if (!this.rightPanel) return;
+    this.rightPanel.getNode().replaceChildren();
+    this.rightPanel.addChildren([
+      new PracticeStats(this.progress, this.widgets),
+    ]);
+  }
+
   private async handleAnswer(answer: WidgetAnswer): Promise<void> {
     const widget = this.widgets[this.currentIndex];
     if (!widget) return;
@@ -227,6 +236,8 @@ export class PracticePage extends BaseComponent implements Page {
         widgetId: widget.id,
         xpEarned: verdict.xpEarned,
       });
+
+      this.renderRightPanel();
 
       widgetEngine.showVerdict(widget, verdict);
 
