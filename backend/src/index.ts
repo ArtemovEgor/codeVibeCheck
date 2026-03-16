@@ -5,8 +5,8 @@ import "./database";
 import { registerUser, loginUser } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
-import { getChatHistory, resetChat, sendChatMessage } from "./ai.service";
-import { ISendMessagePayload } from "./ai.types";
+import { getChatHistory, resetChat, sendChatMessage } from "./ai/ai.service";
+import { ISendMessagePayload } from "./ai/ai.types";
 import { verifyToken } from "./utils/verify-token";
 
 const app = express();
