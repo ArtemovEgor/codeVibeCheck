@@ -62,7 +62,6 @@ class ApiService {
     const request = this.prepareRequest(options, signal);
 
     const result = await fetch(`${this.apiUrl}${endpoint}`, request);
-    console.log(result.body);
 
     if (!result.ok) await this.handleError(result);
 
