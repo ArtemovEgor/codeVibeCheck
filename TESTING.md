@@ -33,7 +33,7 @@ npm test
 PR с тестами фронтенда: https://github.com/ArtemovEgor/codeVibeCheck/pull/59
 PR c тестами бэкенда: https://github.com/ArtemovEgor/codeVibeCheck/pull/57
 
-#### @ekaterynavolkova
+#### @Al-E-xXx
 
 Что тестирую: функции registerUser, loginUser
 
