@@ -2,7 +2,7 @@ import Groq from "groq-sdk";
 import { ChatCompletionChunk } from "groq-sdk/resources/chat/completions";
 import { IChatMessage, ISendMessagePayload } from "./ai.types";
 import crypto from "node:crypto";
-import aiDataBase from "./ai.database";
+import dataBase from "../database";
 
 const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -20,7 +20,7 @@ export async function* sendChatMessage(
   message: ISendMessagePayload,
   signal?: AbortSignal,
 ): AsyncGenerator<ChatCompletionChunk> {
-  const insertQuery = aiDataBase.prepare(`
+  const insertQuery = dataBase.prepare(`
     INSERT INTO messages (id, userId, role, content, createdAt, xpAwarded)
     VALUES (@id, @userId, @role, @content, @createdAt, @xpAwarded)
   `);
@@ -69,7 +69,7 @@ export async function* sendChatMessage(
  * @returns Array of chat messages ordered by creation time
  */
 export function getChatHistory(userId: string): IChatMessage[] {
-  const query = aiDataBase.prepare(
+  const query = dataBase.prepare(
     "SELECT * FROM messages WHERE userId = ? ORDER BY createdAt ASC",
   );
   const history = query.all(userId) as IChatMessage[];
@@ -82,6 +82,6 @@ export function getChatHistory(userId: string): IChatMessage[] {
  * @param userId - ID of the user whose chat should be reset
  */
 export function resetChat(userId: string): void {
-  const query = aiDataBase.prepare("DELETE FROM messages WHERE userId = ?");
+  const query = dataBase.prepare("DELETE FROM messages WHERE userId = ?");
   query.run(userId);
 }
