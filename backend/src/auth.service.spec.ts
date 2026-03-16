@@ -46,4 +46,25 @@ describe("registerUser", () => {
     expect(() => registerUser(testUser)).toThrow();
     expect(() => registerUser(testUser)).toThrow(/mail|email/i);
   });
+
+  it("should throw error when email already exists", () => {
+    const firstUser = {
+      name: "First User",
+      email: "existing@example.com",
+      password: "password123",
+    };
+
+    registerUser(firstUser);
+
+    const secondUser = {
+      name: "Second User",
+      email: "existing@example.com",
+      password: "anotherpassword123",
+    };
+
+    expect(() => registerUser(secondUser)).toThrow();
+    expect(() => registerUser(secondUser)).toThrow(
+      /already exists|user_already_exist/i,
+    );
+  });
 });
