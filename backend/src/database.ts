@@ -18,4 +18,19 @@ dataBase.exec(`
   )
 `);
 
+dataBase.exec(`
+  CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY,
+    userId TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    xpAwarded INTEGER DEFAULT 0
+  )
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_messages_userId ON messages(userId)
+`);
+
 export default dataBase;

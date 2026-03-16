@@ -61,10 +61,7 @@ class ApiService {
   ): Promise<ReadableStream<Uint8Array> | undefined> {
     const request = this.prepareRequest(options, signal);
 
-    const result = await this.fetchWithRetry(
-      `${this.apiUrl}${endpoint}`,
-      request,
-    );
+    const result = await fetch(`${this.apiUrl}${endpoint}`, request);
 
     if (!result.ok) await this.handleError(result);
 

@@ -5,10 +5,30 @@ import "./database";
 import { registerUser, loginUser } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
+import { getChatHistory, resetChat, sendChatMessage } from "./ai/ai.service";
+import { ISendMessagePayload } from "./ai/ai.types";
+import { verifyToken } from "./utils/verify-token";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const LANG = EN;
+
+/** Simple auth helper to extract userId from request */
+const getUserId = (request: express.Request): string => {
+  const authHeader = request.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new Error(LANG.errors.unauthorized, { cause: "MISSING_TOKEN" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  if (!token) {
+    throw new Error(LANG.errors.unauthorized, { cause: "EMPTY_TOKEN" });
+  }
+
+  const decoded = verifyToken(token);
+  return decoded.id;
+};
 
 app.use(
   cors({
@@ -93,6 +113,97 @@ app.post("/api/auth/login", (request, response) => {
       status: statusCode,
       message: error instanceof Error ? error.message : LANG.errors.login_error,
     });
+  }
+});
+
+app.post("/api/ai/chat", async (request, response) => {
+  const controller = new AbortController();
+
+  response.on("close", () => {
+    controller.abort();
+  });
+
+  try {
+    const userId = getUserId(request);
+    const message: ISendMessagePayload = request.body;
+
+    const stream = sendChatMessage(userId, message, controller.signal);
+
+    response.setHeader("Content-Type", "text/event-stream");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    response.setHeader("X-Accel-Buffering", "no");
+
+    for await (const chunk of stream) {
+      if (response.writableEnded) {
+        controller.abort();
+        break;
+      }
+      response.write(`data: ${JSON.stringify(chunk)}\n\n`, (error) => {
+        if (error) {
+          console.error("Write error during SSE streaming:", error);
+          controller.abort();
+        }
+      });
+    }
+
+    response.end();
+  } catch (error) {
+    if (controller.signal?.aborted) return;
+
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    if (response.headersSent) {
+      console.error("Stream failed", error);
+      response.write(
+        `data: ${JSON.stringify({ error: LANG.errors.stream_interrupted })}\n\n`,
+      );
+      response.end();
+    } else {
+      const status = isAuthError ? 401 : 500;
+      const message =
+        error instanceof Error ? error.message : LANG.errors.internal_error;
+      response.status(status).json({ success: false, message });
+    }
+  }
+});
+
+app.get("/api/ai/chat", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const history = getChatHistory(userId);
+    response.json({ success: true, data: history });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+    response.status(status).json({ success: false, message });
+  }
+});
+
+app.delete("/api/ai/chat", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    resetChat(userId);
+    response.json({ success: true });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+    response.status(status).json({ success: false, message });
   }
 });
 

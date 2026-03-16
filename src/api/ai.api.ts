@@ -20,7 +20,8 @@ class AIApi {
 
     const response = await apiService.sendStream(ENDPOINTS.AI.CHAT, {
       method: "POST",
-      body: JSON.stringify(content),
+      body: JSON.stringify({ content }),
+      signal: abortSignal,
     });
 
     if (!response) return;

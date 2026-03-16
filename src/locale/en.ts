@@ -89,6 +89,7 @@ export const EN = {
     restart_icon: "⟲",
     restart_text: "Restart",
     stop_generation: "You stopped generation",
+    input_placeholder: "Message AI...",
     welcome: `Welcome to **codeVibeCheck** AI Interviewer! 🚀
 
 I'll simulate a **real frontend interview**, test your knowledge, and give **actionable feedback**.

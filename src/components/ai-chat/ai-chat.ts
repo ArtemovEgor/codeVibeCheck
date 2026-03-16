@@ -277,7 +277,7 @@ export default class AIChat extends BaseComponent implements Page {
 
     const inputNode = this.messageField?.getNode();
     if (inputNode) {
-      inputNode.placeholder = "Message AI...";
+      inputNode.placeholder = EN.ai_chat.input_placeholder;
       inputNode.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
           event.preventDefault();

@@ -11,5 +11,10 @@ export const EN = {
     password_length: "The password must be at least 6 characters long",
     mail_error: "Incorrect email",
     user_already_exist: "A user with this email already exists",
+    unauthorized: "Unauthorized",
+    invalid_token: "Invalid or expired token",
+    invalid_payload: "Invalid token payload",
+    stream_interrupted: "Stream interrupted",
+    internal_error: "Internal Server Error",
   },
 };
