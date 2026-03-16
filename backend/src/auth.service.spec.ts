@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { registerUser } from "./auth.service";
+import database from "./database";
+
+beforeEach(() => {
+  database.prepare("DELETE FROM users").run();
+});
 
 describe("registerUser", () => {
   it("should register a new user with valid data", () => {
@@ -17,5 +22,17 @@ describe("registerUser", () => {
     expect(result.token).toBeDefined();
     expect(result.user.id).toBeDefined();
     expect(result.user.createdAt).toBeDefined();
+  });
+
+  it("should throw error when password is too short", () => {
+    const testUser = {
+      name: "Test User",
+      email: "test@example.com",
+      password: "123",
+    };
+
+    expect(() => registerUser(testUser)).toThrow();
+
+    expect(() => registerUser(testUser)).toThrow(/password/i);
   });
 });
