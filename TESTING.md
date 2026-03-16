@@ -19,4 +19,16 @@ npm test
 | `src/services/widget-engine.spec.ts`                            | Регистрация стратегий, рендер виджетов       |
 | `src/components/widgets/true-false/true-false-strategy.spec.ts` | Валидация правильного и неправильного ответа |
 
-PR с тестами: https://github.com/ArtemovEgor/codeVibeCheck/pull/56
+#### @ArtemovEgor
+
+Что тестирую: Backend Auth, Utils (Markdown, URL, Tokenizer)
+
+| Файл                                     | Описание                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------- |
+| `backend/src/utils/verify-token.spec.ts` | Валидация JWT: корректная подпись, срок действия, структура payload |
+| `src/utils/generate-path.spec.ts`        | Подстановка параметров в URL, обработка спецсимволов и пустых полей |
+| `src/utils/markdown.spec.ts`             | Рендеринг Markdown, подсветка синтаксиса (hljs) и санация (XSS)     |
+| `src/utils/tokenize-string.spec.ts`      | Логика разбиения строк на чанки                                     |
+
+PR с тестами фронтенда: https://github.com/ArtemovEgor/codeVibeCheck/pull/59
+PR c тестами бэкенда: https://github.com/ArtemovEgor/codeVibeCheck/pull/57
