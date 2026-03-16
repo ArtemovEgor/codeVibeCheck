@@ -19,7 +19,13 @@ const getUserId = (request: express.Request): string => {
   if (!authHeader?.startsWith("Bearer ")) {
     throw new Error("Unauthorized", { cause: "MISSING_TOKEN" });
   }
+
   const token = authHeader.split(" ")[1];
+
+  if (!token) {
+    throw new Error("Unauthorized", { cause: "EMPTY_TOKEN" });
+  }
+
   const decoded = verifyToken(token);
   return decoded.id;
 };
