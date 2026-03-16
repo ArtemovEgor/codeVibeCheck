@@ -135,8 +135,18 @@ app.post("/api/ai/chat", async (request, response) => {
     response.setHeader("X-Accel-Buffering", "no");
 
     for await (const chunk of stream) {
-      response.write(`data: ${JSON.stringify(chunk)}\n\n`);
+      if (response.writableEnded) {
+        controller.abort();
+        break;
+      }
+      response.write(`data: ${JSON.stringify(chunk)}\n\n`, (error) => {
+        if (error) {
+          console.error("Write error during SSE streaming:", error);
+          controller.abort();
+        }
+      });
     }
+
     response.end();
   } catch (error) {
     if (controller.signal?.aborted) return;

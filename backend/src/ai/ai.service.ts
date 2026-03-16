@@ -1,8 +1,8 @@
 import Groq from "groq-sdk";
 import { ChatCompletionChunk } from "groq-sdk/resources/chat/completions";
 import { IChatMessage, ISendMessagePayload } from "./ai.types";
-import aiDataBase from "../ai.database";
 import crypto from "node:crypto";
+import aiDataBase from "./ai.database";
 
 const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
