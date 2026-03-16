@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { registerUser } from "./auth.service";
+import { loginUser, registerUser } from "./auth.service";
 import database from "./database";
 
 beforeEach(() => {
@@ -66,5 +66,27 @@ describe("registerUser", () => {
     expect(() => registerUser(secondUser)).toThrow(
       /already exists|user_already_exist/i,
     );
+  });
+});
+
+describe("loginUser", () => {
+  it("should login with correct credentials", () => {
+    const testUser = {
+      name: "Test User",
+      email: "login@test.com",
+      password: "password123",
+    };
+
+    registerUser(testUser);
+
+    const result = loginUser({
+      email: "login@test.com",
+      password: "password123",
+    });
+
+    expect(result.user).toBeDefined();
+    expect(result.user.email).toBe("login@test.com");
+    expect(result.user.name).toBe("Test User");
+    expect(result.token).toBeDefined();
   });
 });
