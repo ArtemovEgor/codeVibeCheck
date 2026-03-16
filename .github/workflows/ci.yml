@@ -32,6 +32,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Run Unit Tests
+        run: npm test
+
       - name: Type check and Build
         run: npm run build
 
