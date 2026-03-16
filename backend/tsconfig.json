@@ -10,8 +10,9 @@
     "rootDir": "./src",
     "declaration": false,
     "sourceMap": true,
-    "types": ["node"]
+    "types": ["node"],
+    "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

@@ -49,17 +49,21 @@ export default tseslint.config(
     files: ["backend/src/**/*.{ts,js}"],
     languageOptions: {
       globals: {
-        ...globals.node, // node instead of browser
+        ...globals.node,
       },
       parserOptions: {
-        projectService: true, // Use backend/tsconfig.json
-        tsconfigRootDir: "./backend",
+        project: "./backend/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     rules: {
-      "no-console": "off", // Enable console.log
-      "unicorn/no-null": "off", // Enable null
-      "max-lines-per-function": "off", // Optional
+      "no-console": "off",
+      "unicorn/no-null": "off",
+      "max-lines-per-function": "off",
+      "no-undef": "off",
+      "n/no-unsupported-features/node-builtins": "off",
+      "unicorn/prefer-module": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 
