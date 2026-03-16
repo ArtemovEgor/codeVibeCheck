@@ -1,17 +1,22 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-prod";
-
 export function verifyToken(token: string): { id: string } {
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+    throw new Error("JWT_SECRET is not defined in environment variables");
+  }
+
+  let decoded;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    if (typeof decoded === "string" || !decoded) {
-      throw new Error("Invalid token payload");
-    }
-
-    return decoded as { id: string };
+    decoded = jwt.verify(token, secret);
   } catch (error) {
     throw new Error("Invalid or expired token", { cause: error });
   }
+
+  if (typeof decoded === "string" || !decoded || !decoded.id) {
+    throw new Error("Invalid token payload");
+  }
+
+  return decoded as { id: string };
 }
