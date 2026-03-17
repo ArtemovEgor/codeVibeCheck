@@ -8,6 +8,7 @@ import { NotificationType } from "@/constants/notification";
 import Notification from "../notification/notification";
 import "./auth-form.scss";
 import type { IFieldConfig } from "@/types/types";
+import type { IApiError } from "../../types/shared/api.types";
 
 export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
   private fields = new Map<
@@ -188,8 +189,8 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
       await this.handleSubmit();
       router.navigate(ROUTES.DASHBOARD);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      Notification.show(message, NotificationType.ERROR);
+      const apiError = error as IApiError;
+      Notification.show(apiError.message, NotificationType.ERROR);
     } finally {
       this.validateForm();
     }
