@@ -13,9 +13,15 @@ export default class Notification extends BaseComponent {
     ) as HTMLElement;
 
     if (!container) {
-      container = document.createElement("div");
-      container.className = "notifications-container";
-      document.body.append(container);
+      container = new BaseComponent({
+        tag: "div",
+        className: "notifications-container",
+        parent: document.body,
+        attributes: {
+          popover: "manual",
+        },
+      }).getNode();
+      container.showPopover();
     }
 
     this.container = container;
@@ -30,6 +36,9 @@ export default class Notification extends BaseComponent {
       text: message,
       parent: container,
     });
+
+    container.hidePopover();
+    container.showPopover();
 
     const node = notification.getNode();
 
