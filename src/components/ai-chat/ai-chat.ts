@@ -12,7 +12,7 @@ import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
 import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
-import { RESTART_TIMEOUT_MS /*XP_THRESHOLDS*/ } from "./ai-chat.constants";
+import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
@@ -234,7 +234,25 @@ export default class AIChat extends BaseComponent implements Page {
     this.xpValueElement?.setText(String(this.currentXp));
   }
 
-  /* Commenting out the XP logic for now
+  private async syncXP(): Promise<void> {
+    try {
+      const history = await aiApi.getChatHistory();
+
+      const actualTotalXp = history.reduce(
+        (sum, message) => sum + (message.xpAwarded || 0),
+        0,
+      );
+
+      const xpDelta = actualTotalXp - this.currentXp;
+
+      if (xpDelta > 0) {
+        this.addXP(xpDelta);
+      }
+    } catch (error) {
+      console.warn("Failed to sync XP:", error);
+    }
+  }
+
   private addXP(xp: number) {
     this.currentXp += xp;
     this.updateXP();
@@ -260,7 +278,6 @@ export default class AIChat extends BaseComponent implements Page {
       xpContainer.classList.add("chat-xp--animate");
     }
   }
-  */
 
   private renderMessageField(): void {
     const wrapper = new BaseComponent({
@@ -340,14 +357,12 @@ export default class AIChat extends BaseComponent implements Page {
       .querySelector(".chat-message__content") as HTMLElement | undefined;
 
     this.scrollToBottom();
-
     this.blockInput(true);
-    this.abortController?.abort();
-    this.abortController = new AbortController();
-    const abortSignal = this.abortController.signal;
+    const abortSignal = this.createNewAbortSignal();
 
     try {
       await this.renderMessageText(responseContainer, { content }, abortSignal);
+      await this.syncXP();
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         this.addStopNotice(responseContainer);
@@ -361,6 +376,12 @@ export default class AIChat extends BaseComponent implements Page {
       this.scrollToBottom();
       this.blockInput(false);
     }
+  }
+
+  private createNewAbortSignal() {
+    this.abortController?.abort();
+    this.abortController = new AbortController();
+    return this.abortController.signal;
   }
 
   private async renderMessageText(
