@@ -39,6 +39,15 @@ export async function* sendChatMessage(
   });
 
   const rawHistory = getChatHistory(userId);
+
+  prepareSummary(rawHistory, findLastSummaryIndex(rawHistory))
+    .then((summary) => {
+      if (summary) {
+        saveSummary(summary, userId);
+      }
+    })
+    .catch((error) => console.warn("[BACKGROUND SUMMARIZATION ERROR]:", error));
+
   const historyContext: ChatCompletionMessageParam[] = rawHistory
     .slice(-10)
     .map((m) => ({
@@ -160,4 +169,84 @@ function getScore(response: string): IScoreData | undefined {
     console.warn("Failed to parse final JSON:", error);
     return undefined;
   }
+}
+
+function findLastSummaryIndex(messageHistory: IChatMessage[]): number {
+  let lastSummaryIndex = -1;
+  for (let index = messageHistory.length - 1; index >= 0; index--) {
+    const m = messageHistory[index];
+    if (m.role === "system" && m.content.startsWith("[SUMMARY]")) {
+      lastSummaryIndex = index;
+      break;
+    }
+  }
+  return lastSummaryIndex;
+}
+
+async function prepareSummary(
+  messageHistory: IChatMessage[],
+  startIndex: number,
+): Promise<string | undefined> {
+  let currentSummary = "";
+  let unsummarizedMessages: IChatMessage[] = messageHistory;
+
+  if (startIndex !== -1) {
+    currentSummary = messageHistory[startIndex].content
+      .replace("[SUMMARY]\n", "")
+      .trim();
+    unsummarizedMessages = messageHistory.slice(startIndex + 1);
+  }
+
+  if (unsummarizedMessages.length >= 10) {
+    const messagesToProcess = unsummarizedMessages.slice(0, 10);
+
+    return generateSummary(currentSummary, messagesToProcess);
+  }
+}
+
+async function generateSummary(
+  oldSummary: string,
+  messagesToSummarize: IChatMessage[],
+): Promise<string | undefined> {
+  const transcript = messagesToSummarize
+    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+    .join("\n\n");
+
+  const prompt =
+    `${SYSTEM_PROMPTS.summarize}\n\n` +
+    `=== EXISTING PROFILE ===\n${oldSummary || "No profile yet."}\n\n` +
+    `=== NEW TRANSCRIPT SEGMENT ===\n${transcript}`;
+
+  try {
+    const response = await client.chat.completions.create({
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.1,
+    });
+
+    const newSummary = response.choices[0]?.message?.content?.trim();
+
+    return newSummary;
+  } catch (error) {
+    console.error("[SUMMARY ERROR] Failed to generate summary:", error);
+    return undefined;
+  }
+}
+
+function saveSummary(summary: string, userId: string) {
+  const insertQuery = dataBase.prepare(`
+    INSERT INTO messages (id, userId, role, content, createdAt, xpAwarded)
+    VALUES (@id, @userId, @role, @content, @createdAt, @xpAwarded)
+  `);
+
+  insertQuery.run({
+    id: crypto.randomUUID(),
+    userId: userId,
+    role: "system",
+    content: `[SUMMARY]\n${summary}`,
+    createdAt: new Date().toISOString(),
+    xpAwarded: 0,
+  });
+
+  console.log(`[SUMMARY] Successfully updated profile for user ${userId}`);
 }
