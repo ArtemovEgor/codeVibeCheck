@@ -25,6 +25,9 @@ export class NotFoundContent extends BaseComponent implements Page {
     const background = new BaseComponent({
       tag: "div",
       className: "not-found__background",
+      attributes: {
+        "aria-hidden": "true",
+      },
     });
 
     for (const [side, code] of Object.entries(EN.not_found.code_blocks)) {
