@@ -9,6 +9,7 @@ RUN apk add --no-cache python3 make g++ git
 COPY package*.json ./
 
 # 3. Copy the backend workspace specifically
+RUN npm pkg delete scripts.prepare
 COPY backend/ ./backend/
 
 # 4. Install dependencies using the workspace flag
