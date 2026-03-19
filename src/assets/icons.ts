@@ -33,3 +33,45 @@ export const SIDEBAR_ICONS = {
       <circle cx="12" cy="7" r="4" />
     </svg>`,
 } as const;
+
+export const NOT_FOUND = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+    <defs>
+      <linearGradient id="cyber-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#a855f7" />
+      </linearGradient>
+
+      <filter id="hard-digital-glitch" x="-20%" y="-20%" width="140%" height="140%">
+
+        <feTurbulence type="turbulence" baseFrequency="0 0.15" numOctaves="1" seed="1" result="smooth-noise">
+          <animate attributeName="seed" values="1;2;3;4;1" dur="0.4s" calcMode="discrete" repeatCount="indefinite" />
+        </feTurbulence>
+
+        <feComponentTransfer in="smooth-noise" result="hard-noise">
+          <feFuncR type="discrete" tableValues="0.5 0.5 0.5 0 1" />
+          <feFuncG type="discrete" tableValues="0.5 0.5 0.5 0 1" />
+        </feComponentTransfer>
+
+        <feDisplacementMap in="SourceGraphic" in2="hard-noise" scale="60" xChannelSelector="R" yChannelSelector="A" result="displaced-source" />
+
+        <feMerge>
+          <feMergeNode in="glow" />
+          <feMergeNode in="displaced-source" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    <text x="50%" y="50%" 
+          dominant-baseline="central" 
+          text-anchor="middle"
+          font-family="system-ui, -apple-system, sans-serif" 
+          font-weight="900" 
+          font-size="340"
+          letter-spacing="-15" 
+          fill="url(#cyber-grad)" 
+          filter="url(#hard-digital-glitch)">
+      404
+    </text>
+  </svg>
+`;
