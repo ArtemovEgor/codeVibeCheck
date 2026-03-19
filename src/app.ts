@@ -54,9 +54,7 @@ export default class App {
     router.register(ROUTES.LIBRARY, () => new Library(), {
       isProtected: true,
     });
-    router.register(ROUTES.NOT_FOUND, () => new NotFoundContent(), {
-      isProtected: true,
-    });
+    router.register(ROUTES.NOT_FOUND, () => new NotFoundContent(), {});
   }
 
   private restoreTheme(): void {

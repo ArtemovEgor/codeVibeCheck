@@ -30,6 +30,7 @@
 
     svg {
       width: 680px;
+      height: auto;
 
       @include mobile {
         width: 480px;

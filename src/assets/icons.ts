@@ -35,7 +35,7 @@ export const SIDEBAR_ICONS = {
 } as const;
 
 export const NOT_FOUND = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" width="100%" height="100%">
     <defs>
       <linearGradient id="cyber-grad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#3b82f6" />
