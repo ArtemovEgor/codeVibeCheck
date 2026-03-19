@@ -29,7 +29,8 @@
     user-select: none;
 
     svg {
-      width: 680px;
+      width: 100%;
+      max-width: 680px;
       height: auto;
 
       @include mobile {
