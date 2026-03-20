@@ -86,9 +86,9 @@ export async function* sendChatMessage(
         }
 
         currentParsedText = currentParsedText
-          .replaceAll(/\\n/, "\n")
-          .replaceAll(/\\"/, '"')
-          .replaceAll(/\\\\/, "\\");
+          .replaceAll(String.raw`\n`, "\n")
+          .replaceAll(String.raw`\"`, '"')
+          .replaceAll(String.raw`\\`, "\\");
 
         const newDelta = currentParsedText.slice(extractedText.length);
 
