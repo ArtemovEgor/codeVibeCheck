@@ -307,9 +307,7 @@ export class PracticePage extends BaseComponent implements Page {
     this.currentIndex++;
 
     if (this.currentIndex >= this.widgets.length) {
-      // TODO: results screen
-      console.log("Topic completed!");
-      router.navigate(ROUTES.LIBRARY);
+      this.showCompletedScreen();
       return;
     }
 
