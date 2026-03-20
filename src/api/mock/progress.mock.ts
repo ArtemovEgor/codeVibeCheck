@@ -148,6 +148,25 @@ class ProgressMock {
     storageService.setStorage(STORAGE_KEYS.USER_STATS, stats);
   }
 
+  public async resetTopic(topicId: string): Promise<IApiResponse<void>> {
+    await delay();
+    const all = this.getProgressFromStorage();
+    const index = all.findIndex((p) => p.topicId === topicId);
+
+    if (index !== -1) {
+      all[index] = {
+        topicId,
+        completedWidgetIds: [],
+        xpEarned: 0,
+        isCompleted: false,
+        isUnlocked: true,
+      };
+      storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
+    }
+
+    return { success: true, data: undefined };
+  }
+
   /**
    * Creates a new progress entry for a topic on first widget answer.
    * isCompleted defaults to false — only updateTopicProgress can set it to true.

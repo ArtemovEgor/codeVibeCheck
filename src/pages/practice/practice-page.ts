@@ -12,6 +12,9 @@ import { router } from "@/router/router";
 import { progressApi } from "@/api/progress.api";
 import type { IUserStats, IUserTopicProgress } from "@/types/shared/user.types";
 import { PracticeStats } from "@/components/layout/practice-stats/practice-stats";
+import { TopicCompletedCard } from "@/components/topic-completed-card/topic-completed-card";
+import Notification from "@/components/notification/notification";
+import { NotificationType } from "@/constants/notification";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
@@ -51,8 +54,13 @@ export class PracticePage extends BaseComponent implements Page {
     this.userStats = await this.loadGlobalStats();
     this.progress = await this.loadProgress();
 
+    if (this.progress?.isCompleted) {
+      this.showCompletedScreen();
+      return;
+    }
+
     if (this.progress && !this.progress.isUnlocked) {
-      console.log("Not unlocked!");
+      Notification.show(EN.widgets.locked, NotificationType.ERROR);
       router.navigate(ROUTES.LIBRARY);
       return;
     }
@@ -266,6 +274,26 @@ export class PracticePage extends BaseComponent implements Page {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  private showCompletedScreen(): void {
+    if (!this.widgetArea || !this.progress) return;
+    this.widgetArea.getNode().replaceChildren();
+    this.widgetArea.addChildren([
+      new TopicCompletedCard(
+        this.progress,
+        () => this.retryTopic(),
+        () => router.navigate(ROUTES.LIBRARY),
+      ),
+    ]);
+  }
+
+  private async retryTopic(): Promise<void> {
+    await progressApi.resetTopic(this.topicId);
+    this.progress = undefined;
+    this.currentIndex = 0;
+    this.renderCurrentWidget();
+    this.renderRightPanel();
   }
 
   private goToNext(): void {

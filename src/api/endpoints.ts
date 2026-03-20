@@ -25,5 +25,6 @@ export const ENDPOINTS = {
     GET_BY_TOPIC: (topicId: string) => `/api/progress/${topicId}`,
     UPDATE: "/api/progress",
     GET_STATS: "/api/progress/stats",
+    RESET_TOPIC: (topicId: string) => `/api/progress/${topicId}/reset`,
   },
 };

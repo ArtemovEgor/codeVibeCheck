@@ -147,6 +147,13 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
       total_xp: (xp: number) => `Total: ${xp} XP`,
       streak: (days: number) => `🔥 ${days} day streak`,
     },
+    completed: {
+      title: "Topic Completed!",
+      xp: (xp: number) => `You earned ${xp} XP`,
+      back: "Back to Library",
+      retry: "Retry",
+    },
+    locked: "This topic is locked. Complete required topics first.",
   },
   breadcrumbs: {
     separator: " › ",

@@ -63,6 +63,16 @@ class ProgressApi {
 
     return response.data;
   }
+
+  public async resetTopic(topicId: string): Promise<void> {
+    const response = apiService.isMockMode
+      ? await progressMock.resetTopic(topicId)
+      : await apiService.send<IApiResponse<void>>(
+          ENDPOINTS.PROGRESS.RESET_TOPIC(topicId),
+          { method: "DELETE" },
+        );
+    return response.data;
+  }
 }
 
 export const progressApi = new ProgressApi();
