@@ -16,6 +16,7 @@ import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
+import { TypingIndicator } from "../typing-indicator/typing-indicator";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory?: BaseComponent;
@@ -336,9 +337,7 @@ export default class AIChat extends BaseComponent implements Page {
     const content = this.messageField?.getNode().value;
     if (!content) return;
 
-    if (this.messageField) {
-      this.messageField.getNode().value = "";
-    }
+    if (this.messageField) this.messageField.getNode().value = "";
 
     this.renderMessage({
       id: "",
@@ -356,26 +355,37 @@ export default class AIChat extends BaseComponent implements Page {
       .getNode()
       .querySelector(".chat-message__content") as HTMLElement | undefined;
 
+    const indicator = new TypingIndicator(responseContainer);
+
     this.scrollToBottom();
     this.blockInput(true);
     const abortSignal = this.createNewAbortSignal();
 
     try {
       await this.renderMessageText(responseContainer, { content }, abortSignal);
+      indicator.destroy();
       await this.syncXP();
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        this.addStopNotice(responseContainer);
-        if (this.messageField) this.messageField.getNode().value = content;
-        return;
-      }
-
-      const apiError = error as IApiError;
-      Notification.show(apiError.message, NotificationType.ERROR);
+      this.handleStreamError(error, responseContainer, content);
     } finally {
       this.scrollToBottom();
       this.blockInput(false);
     }
+  }
+
+  private handleStreamError(
+    error: unknown,
+    responseContainer: HTMLElement | undefined,
+    content: string,
+  ): void {
+    if (error instanceof Error && error.name === "AbortError") {
+      this.addStopNotice(responseContainer);
+      if (this.messageField) this.messageField.getNode().value = content;
+      return;
+    }
+
+    const apiError = error as IApiError;
+    Notification.show(apiError.message, NotificationType.ERROR);
   }
 
   private createNewAbortSignal() {
