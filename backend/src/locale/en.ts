@@ -16,5 +16,6 @@ export const EN = {
     invalid_payload: "Invalid token payload",
     stream_interrupted: "Stream interrupted",
     internal_error: "Internal Server Error",
+    ai_score_error: "Failed to evaluate the answer",
   },
 };

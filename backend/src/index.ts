@@ -158,9 +158,9 @@ app.post("/api/ai/chat", async (request, response) => {
 
     if (response.headersSent) {
       console.error("Stream failed", error);
-      response.write(
-        `data: ${JSON.stringify({ error: LANG.errors.stream_interrupted })}\n\n`,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : LANG.errors.stream_interrupted;
+      response.write(`data: ${JSON.stringify({ error: errorMessage })}\n\n`);
       response.end();
     } else {
       const status = isAuthError ? 401 : 500;
