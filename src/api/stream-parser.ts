@@ -1,3 +1,26 @@
+function extractContentFromPayload(payload: string): string | undefined {
+  try {
+    const parsed = JSON.parse(payload);
+
+    if (parsed.error) {
+      throw new Error("STREAM_API_ERROR:" + parsed.error);
+    }
+
+    return parsed.choices?.[0]?.delta?.content;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.startsWith("STREAM_API_ERROR:")
+    ) {
+      throw new Error(error.message.replace("STREAM_API_ERROR:", ""), {
+        cause: error,
+      });
+    }
+    console.warn("Failed to parse SSE chunk:", payload, error);
+    return undefined;
+  }
+}
+
 export async function* parseSSEStream(
   stream: ReadableStream<Uint8Array>,
 ): AsyncGenerator<string> {
@@ -21,15 +44,9 @@ export async function* parseSSEStream(
         const payload = line.replace(/^data: /, "");
 
         if (payload === "[DONE]") return;
-        try {
-          const parsed = JSON.parse(payload);
-          const content = parsed.choices?.[0]?.delta?.content;
 
-          if (content) yield content;
-        } catch (error) {
-          console.warn("Failed to parse SSE chunk:", payload, error);
-          continue;
-        }
+        const content = extractContentFromPayload(payload);
+        if (content) yield content;
       }
     }
   } finally {

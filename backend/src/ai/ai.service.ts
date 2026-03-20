@@ -7,6 +7,8 @@ import { IChatMessage, IScoreData, ISendMessagePayload } from "./ai.types";
 import crypto from "node:crypto";
 import dataBase from "../database";
 import { SYSTEM_PROMPTS } from "./prompts";
+import { CHUNK_YIELD_DELAY } from "./ai.constants";
+import { EN } from "../locale/en";
 
 const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -93,7 +95,9 @@ export async function* sendChatMessage(
         if (newDelta.length > 0) {
           extractedText += newDelta;
 
-          await new Promise((resolve) => setTimeout(resolve, 50));
+          await new Promise((resolve) =>
+            setTimeout(resolve, CHUNK_YIELD_DELAY),
+          );
 
           const fakeChunk = {
             ...chunk,
@@ -167,7 +171,7 @@ function getScore(response: string): IScoreData | undefined {
     };
   } catch (error) {
     console.warn("Failed to parse final JSON:", error);
-    return undefined;
+    throw new Error(EN.errors.ai_score_error, { cause: error });
   }
 }
 
