@@ -7,7 +7,7 @@ import type {
 import { storageService } from "@/services/storage-service";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { delay } from "./delay";
-import { MOCK_TOPICS } from "@/api/mock/widgets.mock.data.ts";
+import { MOCK_TOPICS } from "@/api/mock/widgets.mock.data";
 
 const NOT_FOUND_STATUS = 404;
 const INTERNAL_SERVER_ERROR = 500;

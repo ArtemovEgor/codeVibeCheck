@@ -1,8 +1,5 @@
-import BaseComponent from "@/components/base/base-component.ts";
-import type {
-  IUserStats,
-  IUserTopicProgress,
-} from "@/types/shared/user.types.ts";
+import BaseComponent from "@/components/base/base-component";
+import type { IUserStats, IUserTopicProgress } from "@/types/shared/user.types";
 import "./practice-stats.scss";
 import { EN } from "@/locale/en";
 
