@@ -240,9 +240,16 @@ export class PracticePage extends BaseComponent implements Page {
   private renderRightPanel(): void {
     if (!this.rightPanel) return;
     this.rightPanel.getNode().replaceChildren();
-    this.rightPanel.addChildren([
-      new PracticeStats(this.progress, this.userStats),
-    ]);
+
+    const progress = this.progress ?? {
+      topicId: this.topicId,
+      completedWidgetIds: [],
+      xpEarned: 0,
+      isCompleted: false,
+      isUnlocked: true,
+    };
+
+    this.rightPanel.addChildren([new PracticeStats(progress, this.userStats)]);
   }
 
   private async handleAnswer(answer: WidgetAnswer): Promise<void> {
