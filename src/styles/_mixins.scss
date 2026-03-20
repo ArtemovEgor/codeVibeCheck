@@ -469,6 +469,7 @@
 
 @mixin toast-container {
   position: fixed;
+  inset: unset;
   bottom: var(--space-6);
   right: var(--space-6);
   z-index: var(--z-toast);
@@ -476,6 +477,12 @@
   flex-direction: column;
   gap: var(--space-3);
   pointer-events: none;
+  margin: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  overflow: visible;
+  color: inherit;
 }
 
 @mixin toast {

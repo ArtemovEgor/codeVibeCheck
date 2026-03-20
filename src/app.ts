@@ -1,6 +1,7 @@
 import { apiService } from "./api/api-service";
 import AIChat from "./components/ai-chat/ai-chat";
 import AuthModal from "./components/auth-modal/auth-modal";
+import { NotFoundContent } from "./components/not-found-content/not-found-content";
 import { QuizStrategy } from "./components/widgets/quiz/quiz-strategy";
 import { TrueFalseStrategy } from "./components/widgets/true-false/true-false-strategy";
 import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
@@ -53,6 +54,7 @@ export default class App {
     router.register(ROUTES.LIBRARY, () => new Library(), {
       isProtected: true,
     });
+    router.register(ROUTES.NOT_FOUND, () => new NotFoundContent(), {});
   }
 
   private restoreTheme(): void {

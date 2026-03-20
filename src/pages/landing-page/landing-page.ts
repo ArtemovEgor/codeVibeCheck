@@ -1,7 +1,6 @@
 import BaseComponent from "@/components/base/base-component";
 import Link from "@/components/link/link";
 import "./landing-page.scss";
-import { Header } from "@/components/layout/header/header";
 import { EN } from "@/locale/en";
 import { ICONS } from "@/assets/icons";
 import type Page from "../page";
@@ -16,7 +15,6 @@ export class LandingPage extends BaseComponent implements Page {
 
   public init(): void {
     this.addChildren([
-      new Header(),
       this.createHero(),
       this.createFeatures(),
       this.createCTA(),

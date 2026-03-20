@@ -145,4 +145,40 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
   breadcrumbs: {
     separator: " › ",
   },
+  not_found: {
+    header: "PAGE NOT FOUND",
+    text: "Looks like a ReferenceError. This URL's vibe is 'undefined'",
+    button_text: "Back to the main page",
+    code_blocks: {
+      left: `
+function handleMissingPage(url: string): never {
+  let attempts = 0;
+  
+  while (attempts < 9999) {
+    console.log("Searching for the page...");
+    attempts++;
+    // if (url === '/admin') { grantAccess(); } // commented out for security xD
+  }
+
+  // If we reach here, we are doomed.
+  const theVoid = new Error("404");
+  theVoid.stack = \`
+    TypeError: Cannot read properties of undefined (reading 'vibe')
+    at resolveLocation (/app/src/router.ts:42:15)
+    at Object.navigate (/app/node_modules/react-router/dist/index.js:1337:0)
+    at User.makeMistake (/life/choices.ts:101:1)
+  \`;
+  
+  throw theVoid;
+}
+      `,
+      right: `
+while (page.status === 404) {
+  developer.drinkCoffee();
+  system.questionReality();
+}
+// Unreachable code detected
+      `,
+    },
+  },
 } as const;
