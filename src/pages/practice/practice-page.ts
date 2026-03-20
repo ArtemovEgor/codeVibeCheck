@@ -10,8 +10,8 @@ import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
 import { router } from "@/router/router";
 import { progressApi } from "@/api/progress.api";
-import type { IUserTopicProgress } from "@/types/shared/user.types";
-import { PracticeStats } from "@/components/layout/practice-stats/practice-stats.ts";
+import type { IUserStats, IUserTopicProgress } from "@/types/shared/user.types";
+import { PracticeStats } from "@/components/layout/practice-stats/practice-stats";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
@@ -19,6 +19,7 @@ export class PracticePage extends BaseComponent implements Page {
   private widgets: Widget[] = [];
   private topic: ITopic | undefined = undefined;
   private progress: IUserTopicProgress | undefined = undefined;
+  private userStats: IUserStats | undefined = undefined;
 
   private mainArea: BaseComponent | undefined = undefined;
   private rightPanel: BaseComponent | undefined = undefined;
@@ -47,9 +48,17 @@ export class PracticePage extends BaseComponent implements Page {
       router.navigate(ROUTES.LIBRARY);
       return;
     }
+    this.userStats = await this.loadGlobalStats();
     this.progress = await this.loadProgress();
+
+    if (this.progress && !this.progress.isUnlocked) {
+      console.log("Not unlocked!");
+      router.navigate(ROUTES.LIBRARY);
+      return;
+    }
+
     this.currentIndex = this.progress
-      ? await this.loadCurrentIndex(this.progress)
+      ? this.loadCurrentIndex(this.progress)
       : 0;
     this.renderHeader();
     this.renderCurrentWidget();
@@ -146,9 +155,16 @@ export class PracticePage extends BaseComponent implements Page {
     }
   }
 
-  private async loadCurrentIndex(
-    progress: IUserTopicProgress,
-  ): Promise<number> {
+  private async loadGlobalStats(): Promise<IUserStats | undefined> {
+    try {
+      return await progressApi.getUserStats();
+    } catch (error) {
+      console.error("Stats loading failed", error);
+      return undefined;
+    }
+  }
+
+  private loadCurrentIndex(progress: IUserTopicProgress): number {
     let lastCompleted = -1;
     for (let index = this.widgets.length - 1; index >= 0; index--) {
       if (progress.completedWidgetIds.includes(this.widgets[index].id)) {
@@ -184,7 +200,7 @@ export class PracticePage extends BaseComponent implements Page {
   private async loadWidgets(): Promise<Widget[]> {
     try {
       const { data } = await widgetsApi.getWidgetsByTopicId(this.topicId);
-      return data;
+      return data.filter((w) => widgetEngine.getStrategy(w.type) !== undefined);
     } catch (error) {
       console.error(error);
       return [];
@@ -217,7 +233,7 @@ export class PracticePage extends BaseComponent implements Page {
     if (!this.rightPanel) return;
     this.rightPanel.getNode().replaceChildren();
     this.rightPanel.addChildren([
-      new PracticeStats(this.progress, this.widgets),
+      new PracticeStats(this.progress, this.userStats),
     ]);
   }
 
@@ -235,8 +251,12 @@ export class PracticePage extends BaseComponent implements Page {
         topicId: this.topicId,
         widgetId: widget.id,
         xpEarned: verdict.xpEarned,
+        totalWidgets: this.widgets.length,
       });
 
+      this.progress = await this.loadProgress();
+
+      this.userStats = await this.loadGlobalStats();
       this.renderRightPanel();
 
       widgetEngine.showVerdict(widget, verdict);

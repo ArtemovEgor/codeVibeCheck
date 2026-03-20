@@ -1,6 +1,7 @@
 import type { IApiResponse } from "@/types/shared";
 import type {
   IUpdateProgressPayload,
+  IUserStats,
   IUserTopicProgress,
 } from "@/types/shared/user.types";
 import { apiService } from "./api-service";
@@ -44,6 +45,19 @@ class ProgressApi {
           {
             method: "POST",
             body: JSON.stringify(payload),
+          },
+        );
+
+    return response.data;
+  }
+
+  public async getUserStats(): Promise<IUserStats> {
+    const response = apiService.isMockMode
+      ? await progressMock.getUserStats()
+      : await apiService.send<IApiResponse<IUserStats>>(
+          ENDPOINTS.PROGRESS.GET_STATS,
+          {
+            method: "GET",
           },
         );
 

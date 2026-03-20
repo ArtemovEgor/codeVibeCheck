@@ -24,5 +24,6 @@ export const ENDPOINTS = {
     GET_ALL: "/api/progress",
     GET_BY_TOPIC: (topicId: string) => `/api/progress/${topicId}`,
     UPDATE: "/api/progress",
+    GET_STATS: "/api/progress/stats",
   },
 };
