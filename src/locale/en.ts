@@ -128,6 +128,8 @@ Even cats don't have doubts, but not you, you are just a human. An imitation of 
 
 Can a human understand machine code? Can a human... vibe code a major bug and push in into production on Friday evening?`,
     ],
+    ai_verdict:
+      "### 🏆 Persona: Mock Master\n* **Verdict:** Hire\n* **The Vibe:** Flawless mock execution.",
   },
   widgets: {
     submit: "Submit",

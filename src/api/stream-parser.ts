@@ -1,4 +1,8 @@
-function extractContentFromPayload(payload: string): string | undefined {
+export type StreamEvent =
+  | { type: "text_chunk"; content: string }
+  | { type: "final_report"; content: string };
+
+function extractContentFromPayload(payload: string): StreamEvent | undefined {
   try {
     const parsed = JSON.parse(payload);
 
@@ -6,7 +10,16 @@ function extractContentFromPayload(payload: string): string | undefined {
       throw new Error("STREAM_API_ERROR:" + parsed.error);
     }
 
-    return parsed.choices?.[0]?.delta?.content;
+    if (parsed.type === "final_report") {
+      return { type: "final_report", content: parsed.content };
+    }
+
+    const content = parsed.choices?.[0]?.delta?.content;
+    if (content) {
+      return { type: "text_chunk", content };
+    }
+
+    return undefined;
   } catch (error) {
     if (
       error instanceof Error &&
@@ -23,7 +36,7 @@ function extractContentFromPayload(payload: string): string | undefined {
 
 export async function* parseSSEStream(
   stream: ReadableStream<Uint8Array>,
-): AsyncGenerator<string> {
+): AsyncGenerator<StreamEvent> {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
   let buffer = "";

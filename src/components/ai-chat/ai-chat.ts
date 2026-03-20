@@ -27,6 +27,7 @@ export default class AIChat extends BaseComponent implements Page {
   private sendButton?: Button;
   private stopButton?: Button;
   private abortController?: AbortController;
+  private isInterviewOver = false;
 
   constructor() {
     super({
@@ -128,6 +129,8 @@ export default class AIChat extends BaseComponent implements Page {
       this.abortController?.abort();
       await aiApi.resetChat();
 
+      this.isInterviewOver = false;
+      this.blockInput(false);
       this.currentXp = 0;
       if (this.messagesContainer) {
         this.messagesContainer.getNode().replaceChildren();
@@ -185,10 +188,27 @@ export default class AIChat extends BaseComponent implements Page {
 
   private handleChatHistory(chatHistory: IChatMessage[]): void {
     for (const message of chatHistory) {
+      if (message.role === "system") {
+        if (message.content.startsWith("[SUMMARY]\n")) {
+          continue;
+        }
+        if (message.content.startsWith("[FINAL_REPORT]\n")) {
+          this.renderFinalReport(
+            message.content.replace("[FINAL_REPORT]\n", ""),
+          );
+          continue;
+        }
+      }
+
       this.renderMessage(message);
       this.currentXp += message.xpAwarded || 0;
     }
     this.scrollToBottom(false);
+
+    if (this.isInterviewOver) {
+      this.blockInput(true);
+      this.stopButton?.toggleClass("message-field__button--hidden", true);
+    }
   }
 
   private scrollToBottom(smooth = true): void {
@@ -362,13 +382,26 @@ export default class AIChat extends BaseComponent implements Page {
     const abortSignal = this.createNewAbortSignal();
 
     try {
-      await this.renderMessageText(responseContainer, { content }, abortSignal);
-      indicator.destroy();
+      await this.renderMessageText(
+        responseContainer,
+        { content },
+        abortSignal,
+        indicator,
+      );
       await this.syncXP();
     } catch (error) {
+      indicator.destroy();
       this.handleStreamError(error, responseContainer, content);
     } finally {
-      this.scrollToBottom();
+      this.finalizeSend();
+    }
+  }
+
+  private finalizeSend(): void {
+    this.scrollToBottom();
+    if (this.isInterviewOver) {
+      this.stopButton?.toggleClass("message-field__button--hidden", true);
+    } else {
       this.blockInput(false);
     }
   }
@@ -398,16 +431,46 @@ export default class AIChat extends BaseComponent implements Page {
     responseContainer: HTMLElement | undefined,
     { content }: ISendMessagePayload,
     abortSignal: AbortSignal,
+    indicator: TypingIndicator,
   ): Promise<void> {
     this.scrollToBottom();
     let accumulated = "";
+    let isFirstChunk = true;
 
-    for await (const token of aiApi.sendChatMessage({ content }, abortSignal)) {
-      accumulated += token;
-      const html = renderMarkdown(accumulated);
+    for await (const event of aiApi.sendChatMessage({ content }, abortSignal)) {
+      if (isFirstChunk) {
+        indicator.destroy();
+        isFirstChunk = false;
+      }
 
-      if (responseContainer) responseContainer.innerHTML = html;
+      if (event.type === "text_chunk") {
+        accumulated += event.content;
+        const html = renderMarkdown(accumulated);
+        if (responseContainer) responseContainer.innerHTML = html;
+        this.scrollToBottom();
+      } else if (event.type === "final_report") {
+        this.renderFinalReport(event.content);
+      }
     }
+  }
+
+  private renderFinalReport(reportMarkdown: string): void {
+    this.isInterviewOver = true;
+
+    const wrapper = new BaseComponent({
+      tag: "div",
+      className: "chat-message chat-message--report",
+      parent: this.messagesContainer,
+    });
+
+    const contentElement = new BaseComponent({
+      tag: "div",
+      className: "chat-message__content chat-message__content--report",
+      parent: wrapper,
+    });
+
+    contentElement.getNode().innerHTML = renderMarkdown(reportMarkdown);
+    this.scrollToBottom();
   }
 
   private blockInput(isBlocked: boolean): void {

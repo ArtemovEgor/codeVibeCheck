@@ -1,13 +1,15 @@
 import Groq from "groq-sdk";
+import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
 import {
-  ChatCompletionChunk,
-  ChatCompletionMessageParam,
-} from "groq-sdk/resources/chat/completions";
-import { IChatMessage, IScoreData, ISendMessagePayload } from "./ai.types";
+  AppStreamChunk,
+  IChatMessage,
+  IScoreData,
+  ISendMessagePayload,
+} from "./ai.types";
 import crypto from "node:crypto";
 import dataBase from "../database";
 import { SYSTEM_PROMPTS } from "./prompts";
-import { CHUNK_YIELD_DELAY } from "./ai.constants";
+import { CHUNK_YIELD_DELAY, MAX_CHAT_TURNS } from "./ai.constants";
 import { EN } from "../locale/en";
 
 const client = new Groq({
@@ -25,7 +27,13 @@ export async function* sendChatMessage(
   userId: string,
   message: ISendMessagePayload,
   signal?: AbortSignal,
-): AsyncGenerator<ChatCompletionChunk> {
+): AsyncGenerator<AppStreamChunk> {
+  const countQuery = dataBase.prepare(
+    "SELECT COUNT(*) as count FROM messages WHERE userId = ? AND role = 'user'",
+  );
+  const { count: currentTurn } = countQuery.get(userId) as { count: number };
+  const isFinalTurn = currentTurn >= MAX_CHAT_TURNS;
+
   const insertQuery = dataBase.prepare(`
     INSERT INTO messages (id, userId, role, content, createdAt, xpAwarded)
     VALUES (@id, @userId, @role, @content, @createdAt, @xpAwarded)
@@ -52,10 +60,18 @@ export async function* sendChatMessage(
 
   const historyContext: ChatCompletionMessageParam[] = rawHistory
     .slice(-10)
-    .map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
+    .map((m) => {
+      let finalContent = m.content;
+
+      if (m.role === "user" && isFinalTurn && m.id === rawHistory.at(-1)?.id) {
+        finalContent = `${m.content}\n\n[FINAL TURN]`;
+      }
+
+      return {
+        role: m.role,
+        content: finalContent,
+      };
+    });
 
   const stream = await client.chat.completions.create(
     {
@@ -85,12 +101,27 @@ export async function* sendChatMessage(
           currentParsedText = currentParsedText.slice(0, endMatch.index);
         }
 
-        currentParsedText = currentParsedText
-          .replaceAll(String.raw`\n`, "\n")
-          .replaceAll(String.raw`\"`, '"')
-          .replaceAll(String.raw`\\`, "\\");
+        const trailingSlashes =
+          currentParsedText.match(/\\+$/)?.[0].length || 0;
+        if (trailingSlashes % 2 !== 0) continue;
 
-        const newDelta = currentParsedText.slice(extractedText.length);
+        const escapeMap: Record<string, string> = {
+          n: "\n",
+          r: "\r",
+          t: "\t",
+          b: "\b",
+          f: "\f",
+          '"': '"',
+          "\\": "\\",
+          "/": "/",
+        };
+
+        const unescapedMessage = currentParsedText.replaceAll(
+          /\\(["\\/bfnrt])/g,
+          (_, char: string) => escapeMap[char] || char,
+        );
+
+        const newDelta = unescapedMessage.slice(extractedText.length);
 
         if (newDelta.length > 0) {
           extractedText += newDelta;
@@ -124,6 +155,24 @@ export async function* sendChatMessage(
     createdAt: new Date().toISOString(),
     xpAwarded: scoreData?.score || 0,
   });
+
+  if (isFinalTurn) {
+    const finalReport = await generateFinalReport(userId);
+
+    insertQuery.run({
+      id: crypto.randomUUID(),
+      userId: userId,
+      role: "system",
+      content: `[FINAL_REPORT]\n${finalReport}`,
+      createdAt: new Date().toISOString(),
+      xpAwarded: 0,
+    });
+
+    yield {
+      type: "final_report",
+      content: finalReport,
+    };
+  }
 }
 
 /**
@@ -253,4 +302,43 @@ function saveSummary(summary: string, userId: string) {
   });
 
   console.log(`[SUMMARY] Successfully updated profile for user ${userId}`);
+}
+
+async function generateFinalReport(userId: string): Promise<string> {
+  const rawHistory = getChatHistory(userId);
+  const lastSummaryIndex = findLastSummaryIndex(rawHistory);
+
+  let profileContext = "No existing profile summary";
+  let unsummarizedMessages = rawHistory;
+
+  if (lastSummaryIndex !== -1) {
+    profileContext = rawHistory[lastSummaryIndex].content;
+    unsummarizedMessages = rawHistory.slice(lastSummaryIndex + 1);
+  }
+
+  const transcript = unsummarizedMessages
+    .filter((m) => m.role !== "system")
+    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+    .join("\n\n");
+
+  const prompt = `=== CUMULATIVE SUMMARY ===\n${profileContext}\n\n=== RECENT TRANSCRIPT ===\n${transcript}`;
+
+  try {
+    const response = await client.chat.completions.create({
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPTS.final_judge },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.2,
+    });
+
+    return (
+      response.choices[0]?.message?.content?.trim() ||
+      "Failed to generate report."
+    );
+  } catch (error) {
+    console.error("[FINAL REPORT ERROR]:", error);
+    return "Error generating final report. Please try again.";
+  }
 }

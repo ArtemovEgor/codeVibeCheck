@@ -4,8 +4,13 @@ import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { storageService } from "../../services/storage-service";
 import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
-import { MOCK_STREAM_DELAY, MOCK_XP_AWARD } from "@/constants/mock";
+import {
+  MOCK_REPORT_DELAY,
+  MOCK_STREAM_DELAY,
+  MOCK_XP_AWARD,
+} from "@/constants/mock";
 import { tokenizeString } from "@/utils/tokenize-string";
+import type { StreamEvent } from "../stream-parser";
 
 class AIMock {
   private currentMessageIndex = 0;
@@ -13,7 +18,7 @@ class AIMock {
   public async *sendChatMessage(
     { content }: ISendMessagePayload,
     abortSignal?: AbortSignal,
-  ): AsyncGenerator<string> {
+  ): AsyncGenerator<StreamEvent> {
     const history = this.getChatsFromStorage();
     const dateSent = Date.now().toString();
 
@@ -32,13 +37,23 @@ class AIMock {
     await delay();
 
     const text = EN.mock.ai_response[this.currentMessageIndex];
+    const isFinalTurn =
+      this.currentMessageIndex === EN.mock.ai_response.length - 1;
     if (this.currentMessageIndex < EN.mock.ai_response.length - 1) {
       this.currentMessageIndex += 1;
     } else {
       this.currentMessageIndex = 0;
     }
 
-    yield* await this.handleResponse(text, abortSignal);
+    yield* this.handleResponse(text, abortSignal);
+
+    if (isFinalTurn) {
+      await delay(MOCK_REPORT_DELAY);
+      yield {
+        type: "final_report",
+        content: EN.mock.ai_verdict,
+      };
+    }
   }
 
   public async getChatHistory(): Promise<IChatMessage[]> {
@@ -59,14 +74,14 @@ class AIMock {
   private async *handleResponse(
     message: string,
     abortSignal?: AbortSignal,
-  ): AsyncGenerator<string> {
+  ): AsyncGenerator<StreamEvent> {
     let fullText = "";
     const tokens = tokenizeString(message);
     for (const token of tokens) {
       abortSignal?.throwIfAborted();
       await delay(MOCK_STREAM_DELAY);
       fullText += token;
-      yield token;
+      yield { type: "text_chunk", content: token };
     }
 
     const dateReceived = Date.now().toString();

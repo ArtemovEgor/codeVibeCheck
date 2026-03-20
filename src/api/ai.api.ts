@@ -6,13 +6,13 @@ import {
 import { apiService } from "./api-service";
 import { ENDPOINTS } from "./endpoints";
 import { aiMock } from "./mock/ai.mock";
-import { parseSSEStream } from "./stream-parser";
+import { parseSSEStream, type StreamEvent } from "./stream-parser";
 
 class AIApi {
   public async *sendChatMessage(
     { content }: ISendMessagePayload,
     abortSignal?: AbortSignal,
-  ): AsyncGenerator<string> {
+  ): AsyncGenerator<StreamEvent> {
     if (apiService.isMockMode) {
       yield* aiMock.sendChatMessage({ content }, abortSignal);
       return;
