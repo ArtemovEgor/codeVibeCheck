@@ -9,12 +9,21 @@ import { VerdictCard } from "@/components/widgets/verdict-card/verdict-card";
 import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
 import { router } from "@/router/router";
+import { progressApi } from "@/api/progress.api";
+import type { IUserStats, IUserTopicProgress } from "@/types/shared/user.types";
+import { PracticeStats } from "@/components/layout/practice-stats/practice-stats";
+import { TopicCompletedCard } from "@/components/topic-completed-card/topic-completed-card";
+import Notification from "@/components/notification/notification";
+import { NotificationType } from "@/constants/notification";
+import type { IApiError } from "@/types/shared";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
   private currentIndex = 0;
   private widgets: Widget[] = [];
   private topic: ITopic | undefined = undefined;
+  private progress: IUserTopicProgress | undefined = undefined;
+  private userStats: IUserStats | undefined = undefined;
 
   private mainArea: BaseComponent | undefined = undefined;
   private rightPanel: BaseComponent | undefined = undefined;
@@ -43,8 +52,26 @@ export class PracticePage extends BaseComponent implements Page {
       router.navigate(ROUTES.LIBRARY);
       return;
     }
+    this.userStats = await this.loadGlobalStats();
+    this.progress = await this.loadProgress();
+
+    if (this.progress?.isCompleted) {
+      this.showCompletedScreen();
+      return;
+    }
+
+    if (this.progress && !this.progress.isUnlocked) {
+      Notification.show(EN.widgets.locked, NotificationType.ERROR);
+      router.navigate(ROUTES.LIBRARY);
+      return;
+    }
+
+    this.currentIndex = this.progress
+      ? this.loadCurrentIndex(this.progress)
+      : 0;
     this.renderHeader();
     this.renderCurrentWidget();
+    this.renderRightPanel();
   }
 
   private renderLayout(): void {
@@ -72,14 +99,6 @@ export class PracticePage extends BaseComponent implements Page {
     this.widgetArea = new BaseComponent({
       className: "practice-page__widget-area",
       parent: this.mainArea,
-    });
-
-    // TODO: add stats
-    new BaseComponent({
-      tag: "p",
-      className: "practice-page__panel-placeholder",
-      text: EN.widgets.placeholder,
-      parent: this.rightPanel,
     });
   }
 
@@ -136,6 +155,40 @@ export class PracticePage extends BaseComponent implements Page {
     this.updateProgress();
   }
 
+  private async loadProgress(): Promise<IUserTopicProgress | undefined> {
+    try {
+      return await progressApi.getByTopicId(this.topicId);
+    } catch (error) {
+      const apiError = error as IApiError;
+      if (apiError.status === 404) {
+        return await progressApi.initTopic(this.topicId);
+      }
+      console.error(error);
+      return undefined;
+    }
+  }
+
+  private async loadGlobalStats(): Promise<IUserStats | undefined> {
+    try {
+      return await progressApi.getUserStats();
+    } catch (error) {
+      console.error("Stats loading failed", error);
+      return undefined;
+    }
+  }
+
+  private loadCurrentIndex(progress: IUserTopicProgress): number {
+    let lastCompleted = -1;
+    for (let index = this.widgets.length - 1; index >= 0; index--) {
+      if (progress.completedWidgetIds.includes(this.widgets[index].id)) {
+        lastCompleted = index;
+        break;
+      }
+    }
+    const nextIndex = lastCompleted + 1;
+    return nextIndex >= this.widgets.length ? 0 : nextIndex;
+  }
+
   private updateProgress(): void {
     const total = this.widgets.length;
     const current = this.currentIndex + 1;
@@ -160,7 +213,7 @@ export class PracticePage extends BaseComponent implements Page {
   private async loadWidgets(): Promise<Widget[]> {
     try {
       const { data } = await widgetsApi.getWidgetsByTopicId(this.topicId);
-      return data;
+      return data.filter((w) => widgetEngine.getStrategy(w.type) !== undefined);
     } catch (error) {
       console.error(error);
       return [];
@@ -170,16 +223,31 @@ export class PracticePage extends BaseComponent implements Page {
   private renderCurrentWidget(): void {
     if (this.currentIndex < 0 || this.currentIndex >= this.widgets.length)
       return;
+
     const currentWidget = this.widgets[this.currentIndex];
 
     const widgetComponent = widgetEngine.renderWidget(
       currentWidget,
       (answer: WidgetAnswer) => this.handleAnswer(answer),
     );
-    if (!widgetComponent || !this.widgetArea) return;
+
+    if (!widgetComponent) {
+      this.goToNext();
+      return;
+    }
+
+    if (!this.widgetArea) return;
 
     this.widgetArea.getNode().replaceChildren();
     this.widgetArea.addChildren([widgetComponent]);
+  }
+
+  private renderRightPanel(): void {
+    if (!this.rightPanel) return;
+    this.rightPanel.getNode().replaceChildren();
+    this.rightPanel.addChildren([
+      new PracticeStats(this.progress, this.userStats),
+    ]);
   }
 
   private async handleAnswer(answer: WidgetAnswer): Promise<void> {
@@ -192,6 +260,18 @@ export class PracticePage extends BaseComponent implements Page {
         answer,
       );
 
+      await progressApi.update({
+        topicId: this.topicId,
+        widgetId: widget.id,
+        xpEarned: verdict.xpEarned,
+        totalWidgets: this.widgets.length,
+      });
+
+      this.progress = await this.loadProgress();
+
+      this.userStats = await this.loadGlobalStats();
+      this.renderRightPanel();
+
       widgetEngine.showVerdict(widget, verdict);
 
       const verdictCard = new VerdictCard(verdict, () => this.goToNext());
@@ -201,13 +281,31 @@ export class PracticePage extends BaseComponent implements Page {
     }
   }
 
+  private showCompletedScreen(): void {
+    if (!this.widgetArea || !this.progress) return;
+    this.widgetArea.getNode().replaceChildren();
+    this.widgetArea.addChildren([
+      new TopicCompletedCard(
+        this.progress,
+        () => this.retryTopic(),
+        () => router.navigate(ROUTES.LIBRARY),
+      ),
+    ]);
+  }
+
+  private async retryTopic(): Promise<void> {
+    await progressApi.resetTopic(this.topicId);
+    this.progress = await this.loadProgress();
+    this.currentIndex = 0;
+    this.renderCurrentWidget();
+    this.renderRightPanel();
+  }
+
   private goToNext(): void {
     this.currentIndex++;
 
     if (this.currentIndex >= this.widgets.length) {
-      // TODO: results screen
-      console.log("Topic completed!");
-      router.navigate(ROUTES.LIBRARY);
+      this.showCompletedScreen();
       return;
     }
 

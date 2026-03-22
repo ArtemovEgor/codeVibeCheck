@@ -1,0 +1,88 @@
+import type { IApiResponse } from "@/types/shared";
+import type {
+  IUpdateProgressPayload,
+  IUserStats,
+  IUserTopicProgress,
+} from "@/types/shared/user.types";
+import { apiService } from "./api-service";
+import { ENDPOINTS } from "./endpoints";
+import { progressMock } from "./mock/progress.mock";
+
+class ProgressApi {
+  public async getAll(): Promise<IUserTopicProgress[]> {
+    const response = apiService.isMockMode
+      ? await progressMock.getAll()
+      : await apiService.send<IApiResponse<IUserTopicProgress[]>>(
+          ENDPOINTS.PROGRESS.GET_ALL,
+          {
+            method: "GET",
+          },
+        );
+
+    return response.data;
+  }
+
+  public async getByTopicId(topicId: string): Promise<IUserTopicProgress> {
+    const response = apiService.isMockMode
+      ? await progressMock.getByTopicId(topicId)
+      : await apiService.send<IApiResponse<IUserTopicProgress>>(
+          ENDPOINTS.PROGRESS.GET_BY_TOPIC(topicId),
+          {
+            method: "GET",
+          },
+        );
+
+    return response.data;
+  }
+
+  public async initTopic(topicId: string): Promise<IUserTopicProgress> {
+    const response = apiService.isMockMode
+      ? await progressMock.initTopic(topicId)
+      : await apiService.send<IApiResponse<IUserTopicProgress>>(
+          ENDPOINTS.PROGRESS.INIT_TOPIC(topicId),
+          { method: "POST" },
+        );
+    return response.data;
+  }
+
+  public async update(
+    payload: IUpdateProgressPayload,
+  ): Promise<IUserTopicProgress> {
+    const response = apiService.isMockMode
+      ? await progressMock.update(payload)
+      : await apiService.send<IApiResponse<IUserTopicProgress>>(
+          ENDPOINTS.PROGRESS.UPDATE,
+          {
+            method: "POST",
+            body: JSON.stringify(payload),
+          },
+        );
+
+    return response.data;
+  }
+
+  public async getUserStats(): Promise<IUserStats> {
+    const response = apiService.isMockMode
+      ? await progressMock.getUserStats()
+      : await apiService.send<IApiResponse<IUserStats>>(
+          ENDPOINTS.PROGRESS.GET_STATS,
+          {
+            method: "GET",
+          },
+        );
+
+    return response.data;
+  }
+
+  public async resetTopic(topicId: string): Promise<void> {
+    const response = apiService.isMockMode
+      ? await progressMock.resetTopic(topicId)
+      : await apiService.send<IApiResponse<void>>(
+          ENDPOINTS.PROGRESS.RESET_TOPIC(topicId),
+          { method: "DELETE" },
+        );
+    return response.data;
+  }
+}
+
+export const progressApi = new ProgressApi();
