@@ -59,6 +59,37 @@ class ProgressMock {
   }
 
   /**
+   * Initializes progress for a topic when the user first visits it.
+   * If progress already exists — returns it unchanged (idempotent).
+   * If not — creates a new entry with empty completedWidgetIds and
+   * isUnlocked calculated based on completed requiredTopicIds.
+   * Called only when getByTopicId returns 404.
+   */
+  public async initTopic(
+    topicId: string,
+  ): Promise<IApiResponse<IUserTopicProgress>> {
+    await delay();
+    const all = this.getProgressFromStorage();
+    const existing = all.find((p) => p.topicId === topicId);
+
+    if (existing) return { success: true, data: existing };
+
+    const completedTopicIds = this.getCompletedTopicIds(all);
+    const newProgress: IUserTopicProgress = {
+      topicId,
+      completedWidgetIds: [],
+      xpEarned: 0,
+      isCompleted: false,
+      isUnlocked: this.calculateIsUnlocked(topicId, completedTopicIds),
+    };
+
+    all.push(newProgress);
+    storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
+
+    return { success: true, data: newProgress };
+  }
+
+  /**
    * Updates progress after the user submits a widget answer.
    * If progress exists — updates completedWidgetIds, xpEarned, isCompleted.
    * If not — creates a new progress entry via createTopicProgress().
@@ -148,19 +179,19 @@ class ProgressMock {
     storageService.setStorage(STORAGE_KEYS.USER_STATS, stats);
   }
 
+  /**
+   * Resets progress for a specific topic by removing the entry from storage.
+   * After reset, the next call to getByTopicId will return 404,
+   * which triggers initTopic to create a fresh entry with correct isUnlocked.
+   * If no progress found for the topic — does nothing.
+   */
   public async resetTopic(topicId: string): Promise<IApiResponse<void>> {
     await delay();
     const all = this.getProgressFromStorage();
     const index = all.findIndex((p) => p.topicId === topicId);
 
     if (index !== -1) {
-      all[index] = {
-        topicId,
-        completedWidgetIds: [],
-        xpEarned: 0,
-        isCompleted: false,
-        isUnlocked: true,
-      };
+      all.splice(index, 1);
       storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
     }
 

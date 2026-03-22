@@ -35,6 +35,16 @@ class ProgressApi {
     return response.data;
   }
 
+  public async initTopic(topicId: string): Promise<IUserTopicProgress> {
+    const response = apiService.isMockMode
+      ? await progressMock.initTopic(topicId)
+      : await apiService.send<IApiResponse<IUserTopicProgress>>(
+          ENDPOINTS.PROGRESS.INIT_TOPIC(topicId),
+          { method: "POST" },
+        );
+    return response.data;
+  }
+
   public async update(
     payload: IUpdateProgressPayload,
   ): Promise<IUserTopicProgress> {

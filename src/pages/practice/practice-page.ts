@@ -15,6 +15,7 @@ import { PracticeStats } from "@/components/layout/practice-stats/practice-stats
 import { TopicCompletedCard } from "@/components/topic-completed-card/topic-completed-card";
 import Notification from "@/components/notification/notification";
 import { NotificationType } from "@/constants/notification";
+import type { IApiError } from "@/types/shared";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
@@ -158,6 +159,10 @@ export class PracticePage extends BaseComponent implements Page {
     try {
       return await progressApi.getByTopicId(this.topicId);
     } catch (error) {
+      const apiError = error as IApiError;
+      if (apiError.status === 404) {
+        return await progressApi.initTopic(this.topicId);
+      }
       console.error(error);
       return undefined;
     }
@@ -240,16 +245,9 @@ export class PracticePage extends BaseComponent implements Page {
   private renderRightPanel(): void {
     if (!this.rightPanel) return;
     this.rightPanel.getNode().replaceChildren();
-
-    const progress = this.progress ?? {
-      topicId: this.topicId,
-      completedWidgetIds: [],
-      xpEarned: 0,
-      isCompleted: false,
-      isUnlocked: true,
-    };
-
-    this.rightPanel.addChildren([new PracticeStats(progress, this.userStats)]);
+    this.rightPanel.addChildren([
+      new PracticeStats(this.progress, this.userStats),
+    ]);
   }
 
   private async handleAnswer(answer: WidgetAnswer): Promise<void> {
@@ -297,7 +295,7 @@ export class PracticePage extends BaseComponent implements Page {
 
   private async retryTopic(): Promise<void> {
     await progressApi.resetTopic(this.topicId);
-    this.progress = undefined;
+    this.progress = await this.loadProgress();
     this.currentIndex = 0;
     this.renderCurrentWidget();
     this.renderRightPanel();
