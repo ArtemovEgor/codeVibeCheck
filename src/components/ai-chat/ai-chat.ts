@@ -470,7 +470,63 @@ export default class AIChat extends BaseComponent implements Page {
     });
 
     contentElement.getNode().innerHTML = renderMarkdown(reportMarkdown);
+    this.renderReportCTAs(wrapper, reportMarkdown);
     this.scrollToBottom();
+  }
+
+  private renderReportCTAs(
+    parent: BaseComponent,
+    reportMarkdown: string,
+  ): void {
+    const ctaContainer = new BaseComponent({
+      tag: "div",
+      className: "chat-message__cta-container",
+      parent: parent,
+    });
+
+    new Button({
+      className: "button--try-again",
+      parent: ctaContainer,
+      onClick: () => this.restartChat(),
+      text: EN.ai_chat.try_again_button,
+    });
+
+    new Button({
+      className: "button--share",
+      parent: ctaContainer,
+      onClick: () => this.handleShareResult(reportMarkdown),
+      text: EN.ai_chat.share_button,
+    });
+  }
+
+  private async handleShareResult(reportMarkdown: string): Promise<void> {
+    const cleanText = reportMarkdown.replaceAll(/[*#]/g, "").trim();
+    const shareTitle = EN.ai_chat.share_text_1;
+    const shareText = `${EN.ai_chat.share_text_2}\n\n${cleanText}`;
+    const shareUrl = "https://codevibecheck.com";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+        console.warn("Share API failed:", error);
+      }
+      try {
+        await navigator.clipboard.writeText(shareText);
+        Notification.show(EN.ai_chat.share_copied, NotificationType.SUCCESS);
+      } catch (clipboardError) {
+        console.error("Clipboard failed:", clipboardError);
+        Notification.show(EN.ai_chat.share_not_copied, NotificationType.ERROR);
+      }
+    }
   }
 
   private blockInput(isBlocked: boolean): void {
