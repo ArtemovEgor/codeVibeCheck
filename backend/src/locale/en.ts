@@ -1,6 +1,7 @@
 export const EN = {
   messages: {
     server_status: "Backend is work! DataBase Connected!",
+    no_profile_summary: "No existing profile summary",
   },
   errors: {
     all_fields_required: "All fields are required",
