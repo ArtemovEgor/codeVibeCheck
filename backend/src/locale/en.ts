@@ -6,6 +6,7 @@ export const EN = {
   errors: {
     all_fields_required: "All fields are required",
     registration_error: "Registration error",
+    final_report_error: "Error generating final report. Please try again.",
     email_password_required: "Email and password are required",
     login_error: "Login Error",
     incorrect_mail_password: "Incorrect email or password",

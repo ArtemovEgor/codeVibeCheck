@@ -339,6 +339,6 @@ async function generateFinalReport(userId: string): Promise<string> {
     );
   } catch (error) {
     console.error("[FINAL REPORT ERROR]:", error);
-    return "Error generating final report. Please try again.";
+    throw new Error(EN.errors.final_report_error, { cause: error });
   }
 }
