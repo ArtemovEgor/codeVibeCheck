@@ -6,9 +6,11 @@ import {
   WIDGET_TYPES,
   type ILocalizedString,
   type ITrueFalseAnswer,
+  type ITrueFalsePayload,
   type IVerdict,
   type IWidgetStrategy,
   type Widget,
+  type WidgetAnswerValue,
 } from "@/types/shared/widget.types";
 import "./true-false-strategy.scss";
 
@@ -144,7 +146,8 @@ export class TrueFalseStrategy implements IWidgetStrategy {
         );
     }
 
-    const correctValue = widget.payload.correctValue;
+    const correctValue = verdict.correctAnswer as boolean;
+
     if (!verdict.isCorrect && correctValue !== undefined) {
       const correctIndex = OPTIONS.findIndex(
         (option) => option.value === correctValue,
@@ -155,5 +158,10 @@ export class TrueFalseStrategy implements IWidgetStrategy {
           .classList.add("widget__option--correct");
       }
     }
+  }
+
+  public getCorrectValue(widget: Widget): WidgetAnswerValue {
+    const payload = widget.payload as ITrueFalsePayload;
+    return payload.correctValue;
   }
 }

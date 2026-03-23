@@ -58,7 +58,7 @@ export interface ITrueFalsePayload {
 export interface ICodeCompletionPayload {
   code: string; // "const result = arr.___(x => x > 0);"
   hints: ILocalizedString[];
-  correctValues: string[]; // ["filter"]
+  correctValues?: string[]; // ["filter"]
 }
 
 /**
@@ -67,7 +67,7 @@ export interface ICodeCompletionPayload {
 export interface ICodeOrderingPayload {
   description: ILocalizedString;
   lines: string[];
-  correctOrder: number[];
+  correctOrder?: number[];
 }
 
 /**
@@ -127,6 +127,13 @@ export type WidgetAnswer =
   | ICodeCompletionAnswer
   | ICodeOrderingAnswer;
 
+export type WidgetAnswerValue =
+  | number
+  | number[]
+  | string
+  | boolean
+  | undefined;
+
 /**
  * Interface for implementing new widget rendering strategies.
  */
@@ -138,6 +145,7 @@ export interface IWidgetStrategy {
   ): BaseComponent;
   validate(answer: WidgetAnswer, widget: Widget): boolean;
   showVerdict(verdict: IVerdict, widget: Widget): void;
+  getCorrectValue(widget: Widget): WidgetAnswerValue;
 }
 
 /**
@@ -160,5 +168,5 @@ export interface IVerdict {
   isCorrect: boolean;
   explanation?: ILocalizedString;
   xpEarned: number;
-  streakUpdated: boolean;
+  correctAnswer?: WidgetAnswerValue;
 }

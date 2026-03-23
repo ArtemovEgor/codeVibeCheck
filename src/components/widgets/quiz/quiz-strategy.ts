@@ -3,9 +3,11 @@ import {
   WIDGET_TYPES,
   type ILocalizedString,
   type IQuizAnswer,
+  type IQuizPayload,
   type IVerdict,
   type IWidgetStrategy,
   type Widget,
+  type WidgetAnswerValue,
 } from "@/types/shared/widget.types";
 import "./quiz-strategy.scss";
 import { Button } from "@/components/button/button";
@@ -128,11 +130,17 @@ export class QuizStrategy implements IWidgetStrategy {
         );
     }
 
-    const correctIndex = widget.payload.correctIndex;
+    const correctIndex = verdict.correctAnswer as number;
+
     if (!verdict.isCorrect && correctIndex !== undefined) {
       this.optionButtons[correctIndex]
         ?.getNode()
         .classList.add("widget__option--correct");
     }
+  }
+
+  public getCorrectValue(widget: Widget): WidgetAnswerValue {
+    const payload = widget.payload as IQuizPayload;
+    return payload.correctIndex;
   }
 }
