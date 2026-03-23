@@ -308,7 +308,7 @@ async function generateFinalReport(userId: string): Promise<string> {
   const rawHistory = getChatHistory(userId);
   const lastSummaryIndex = findLastSummaryIndex(rawHistory);
 
-  let profileContext = SYSTEM_PROMPTS.no_profile_summary;
+  let profileContext: string = SYSTEM_PROMPTS.no_profile_summary;
   let unsummarizedMessages = rawHistory;
 
   if (lastSummaryIndex !== -1) {
