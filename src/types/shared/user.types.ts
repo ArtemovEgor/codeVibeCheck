@@ -40,7 +40,7 @@ export interface IAuthResponse {
   readonly token: string;
 }
 
-// ── Stats ───────────────────────────────────────────────────────────────────
+// ── Chat Stats ───────────────────────────────────────────────────────────────────
 
 /** User statistics from AI chat sessions */
 export interface IUserChatStats {
