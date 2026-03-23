@@ -20,4 +20,12 @@ export const ENDPOINTS = {
     GET_BY_ID: (id: string) => `/api/widgets/${id}`, // GET -> Widget
     SUBMIT_ANSWER: (id: string) => `/api/widgets/${id}/submit`, // POST - WidgetAnswer -> IVerdict
   },
+  PROGRESS: {
+    GET_ALL: "/api/progress",
+    GET_BY_TOPIC: (topicId: string) => `/api/progress/${topicId}`,
+    INIT_TOPIC: (topicId: string) => `/api/progress/${topicId}/init`, // POST
+    UPDATE: "/api/progress",
+    GET_STATS: "/api/progress/stats",
+    RESET_TOPIC: (topicId: string) => `/api/progress/${topicId}/reset`,
+  },
 };

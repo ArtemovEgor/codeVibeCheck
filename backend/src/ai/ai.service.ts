@@ -9,7 +9,7 @@ import {
 import crypto from "node:crypto";
 import dataBase from "../database";
 import { SYSTEM_PROMPTS } from "./prompts";
-import { CHUNK_YIELD_DELAY, MAX_CHAT_TURNS } from "./ai.constants";
+import { AI_MODELS, CHUNK_YIELD_DELAY, MAX_CHAT_TURNS } from "./ai.constants";
 import { EN } from "../locale/en";
 
 const client = new Groq({
@@ -75,7 +75,7 @@ export async function* sendChatMessage(
 
   const stream = await client.chat.completions.create(
     {
-      model: "openai/gpt-oss-120b",
+      model: AI_MODELS.answering,
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.interviewer },
         ...historyContext,
@@ -272,7 +272,7 @@ async function generateSummary(
 
   try {
     const response = await client.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      model: AI_MODELS.summarization,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
     });
@@ -308,7 +308,7 @@ async function generateFinalReport(userId: string): Promise<string> {
   const rawHistory = getChatHistory(userId);
   const lastSummaryIndex = findLastSummaryIndex(rawHistory);
 
-  let profileContext = "No existing profile summary";
+  let profileContext: string = SYSTEM_PROMPTS.no_profile_summary;
   let unsummarizedMessages = rawHistory;
 
   if (lastSummaryIndex !== -1) {
@@ -325,7 +325,7 @@ async function generateFinalReport(userId: string): Promise<string> {
 
   try {
     const response = await client.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      model: AI_MODELS.summarization,
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.final_judge },
         { role: "user", content: prompt },
@@ -339,6 +339,6 @@ async function generateFinalReport(userId: string): Promise<string> {
     );
   } catch (error) {
     console.error("[FINAL REPORT ERROR]:", error);
-    return "Error generating final report. Please try again.";
+    throw new Error(EN.errors.final_report_error, { cause: error });
   }
 }

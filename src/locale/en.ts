@@ -90,6 +90,12 @@ export const EN = {
     restart_text: "Restart",
     stop_generation: "You stopped generation",
     input_placeholder: "Message AI...",
+    try_again_button: "Try Again 🔄",
+    share_button: "Share Result 🚀",
+    share_text_1: "Frontend interview with AI.",
+    share_text_2: "I passed a technical frontend interview with AI. My result:",
+    share_copied: "The result is added to your clipboard",
+    share_not_copied: "Failed to copy the result",
     welcome: `Welcome to **codeVibeCheck** AI Interviewer! 🚀
 
 I'll simulate a **real frontend interview**, test your knowledge, and give **actionable feedback**.
@@ -143,6 +149,19 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
       true: "True",
       false: "False",
     },
+    stats: {
+      xp_earned: "XP Earned",
+      xp_value: (xp: number) => `🔸 ${xp} XP`,
+      total_xp: (xp: number) => `Total: ${xp} XP`,
+      streak: (days: number) => `🔥 ${days} day streak`,
+    },
+    completed: {
+      title: "Topic Completed!",
+      xp: (xp: number) => `You earned ${xp} XP`,
+      back: "Back to Library",
+      retry: "Retry",
+    },
+    locked: "This topic is locked. Complete required topics first.",
   },
   breadcrumbs: {
     separator: " › ",
