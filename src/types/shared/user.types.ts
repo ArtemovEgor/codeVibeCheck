@@ -39,3 +39,14 @@ export interface IAuthResponse {
   /** JWT access token */
   readonly token: string;
 }
+
+// ── Stats ───────────────────────────────────────────────────────────────────
+
+/** User statistics from AI chat sessions */
+export interface IUserChatStats {
+  readonly userId: string;
+  readonly totalXp: number;
+  readonly chatSessionsCompleted: number;
+  readonly lastChatXpEarned: number;
+  readonly lastSessionResult?: string;
+}
