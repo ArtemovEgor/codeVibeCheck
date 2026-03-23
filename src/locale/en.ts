@@ -31,6 +31,7 @@ export const EN = {
     },
     error: {
       unknown_api_error: "Unknown error",
+      network_error: "An error occured. Please try again",
     },
   },
   sidebar: {
