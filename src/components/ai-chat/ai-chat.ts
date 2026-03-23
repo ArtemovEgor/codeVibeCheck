@@ -519,13 +519,14 @@ export default class AIChat extends BaseComponent implements Page {
         }
         console.warn("Share API failed:", error);
       }
-      try {
-        await navigator.clipboard.writeText(shareText);
-        Notification.show(EN.ai_chat.share_copied, NotificationType.SUCCESS);
-      } catch (clipboardError) {
-        console.error("Clipboard failed:", clipboardError);
-        Notification.show(EN.ai_chat.share_not_copied, NotificationType.ERROR);
-      }
+    }
+    try {
+      const clipboardText = `${shareTitle}\n\n${shareText}\n\n${shareUrl}`;
+      await navigator.clipboard.writeText(clipboardText);
+      Notification.show(EN.ai_chat.share_copied, NotificationType.SUCCESS);
+    } catch (clipboardError) {
+      console.error("Clipboard failed:", clipboardError);
+      Notification.show(EN.ai_chat.share_not_copied, NotificationType.ERROR);
     }
   }
 
