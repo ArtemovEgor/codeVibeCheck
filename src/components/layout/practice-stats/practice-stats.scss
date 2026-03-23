@@ -1,0 +1,62 @@
+.practice-stats {
+  @include card;
+  @include flex-column;
+  gap: var(--space-4);
+
+  @include bounce-in;
+
+  &__block {
+    @include flex-column;
+    gap: var(--space-1);
+  }
+
+  &__label {
+    @include label;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: var(--text-xs);
+  }
+
+  &__value {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    span {
+      color: var(--accent-warning);
+    }
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: var(--border);
+    margin-block: var(--space-1);
+    opacity: 0.5;
+  }
+
+  &__total {
+    @include flex-column;
+    gap: var(--space-3);
+
+    &-xp {
+      @include label;
+      font-size: var(--text-sm);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+  }
+
+  &__streak {
+    @include badge-warning;
+    border-radius: var(--radius-full);
+    padding-inline: var(--space-3);
+
+    &--high {
+      @include skeleton-pulse;
+    }
+  }
+}

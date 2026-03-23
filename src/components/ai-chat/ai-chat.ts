@@ -16,6 +16,7 @@ import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
+import { TypingIndicator } from "../typing-indicator/typing-indicator";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory?: BaseComponent;
@@ -356,9 +357,7 @@ export default class AIChat extends BaseComponent implements Page {
     const content = this.messageField?.getNode().value;
     if (!content) return;
 
-    if (this.messageField) {
-      this.messageField.getNode().value = "";
-    }
+    if (this.messageField) this.messageField.getNode().value = "";
 
     this.renderMessage({
       id: "",
@@ -375,6 +374,8 @@ export default class AIChat extends BaseComponent implements Page {
     })
       .getNode()
       .querySelector(".chat-message__content") as HTMLElement | undefined;
+
+    const indicator = new TypingIndicator(responseContainer);
 
     this.scrollToBottom();
     this.blockInput(true);
@@ -450,6 +451,82 @@ export default class AIChat extends BaseComponent implements Page {
       } else if (event.type === "final_report") {
         this.renderFinalReport(event.content);
       }
+    }
+  }
+
+  private renderFinalReport(reportMarkdown: string): void {
+    this.isInterviewOver = true;
+
+    const wrapper = new BaseComponent({
+      tag: "div",
+      className: "chat-message chat-message--report",
+      parent: this.messagesContainer,
+    });
+
+    const contentElement = new BaseComponent({
+      tag: "div",
+      className: "chat-message__content chat-message__content--report",
+      parent: wrapper,
+    });
+
+    contentElement.getNode().innerHTML = renderMarkdown(reportMarkdown);
+    this.renderReportCTAs(wrapper, reportMarkdown);
+    this.scrollToBottom();
+  }
+
+  private renderReportCTAs(
+    parent: BaseComponent,
+    reportMarkdown: string,
+  ): void {
+    const ctaContainer = new BaseComponent({
+      tag: "div",
+      className: "chat-message__cta-container",
+      parent: parent,
+    });
+
+    new Button({
+      className: "button--try-again",
+      parent: ctaContainer,
+      onClick: () => this.restartChat(),
+      text: EN.ai_chat.try_again_button,
+    });
+
+    new Button({
+      className: "button--share",
+      parent: ctaContainer,
+      onClick: () => this.handleShareResult(reportMarkdown),
+      text: EN.ai_chat.share_button,
+    });
+  }
+
+  private async handleShareResult(reportMarkdown: string): Promise<void> {
+    const cleanText = reportMarkdown.replaceAll(/[*#]/g, "").trim();
+    const shareTitle = EN.ai_chat.share_text_1;
+    const shareText = `${EN.ai_chat.share_text_2}\n\n${cleanText}`;
+    const shareUrl = "https://codevibecheck.com";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+        console.warn("Share API failed:", error);
+      }
+    }
+    try {
+      const clipboardText = `${shareTitle}\n\n${shareText}\n\n${shareUrl}`;
+      await navigator.clipboard.writeText(clipboardText);
+      Notification.show(EN.ai_chat.share_copied, NotificationType.SUCCESS);
+    } catch (clipboardError) {
+      console.error("Clipboard failed:", clipboardError);
+      Notification.show(EN.ai_chat.share_not_copied, NotificationType.ERROR);
     }
   }
 
