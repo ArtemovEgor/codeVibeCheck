@@ -11,3 +11,5 @@ Project team:
 - [Egor Artemov](https://github.com/ArtemovEgor)
 
 Deploy: [https://artemovegor.github.io/codeVibeCheck/](https://artemovegor.github.io/codeVibeCheck/)
+
+Checkpoint 5 video: [https://youtu.be/mbapDcRV8bA](https://youtu.be/mbapDcRV8bA)
