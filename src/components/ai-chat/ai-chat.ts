@@ -447,7 +447,6 @@ export default class AIChat extends BaseComponent implements Page {
         accumulated += event.content;
         const html = renderMarkdown(accumulated);
         if (responseContainer) responseContainer.innerHTML = html;
-        this.scrollToBottom();
       } else if (event.type === "final_report") {
         this.renderFinalReport(event.content);
       }
