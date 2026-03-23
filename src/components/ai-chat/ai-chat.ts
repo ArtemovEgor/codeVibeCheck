@@ -16,7 +16,6 @@ import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
-import { TypingIndicator } from "../typing-indicator/typing-indicator";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory?: BaseComponent;
@@ -357,7 +356,9 @@ export default class AIChat extends BaseComponent implements Page {
     const content = this.messageField?.getNode().value;
     if (!content) return;
 
-    if (this.messageField) this.messageField.getNode().value = "";
+    if (this.messageField) {
+      this.messageField.getNode().value = "";
+    }
 
     this.renderMessage({
       id: "",
@@ -374,8 +375,6 @@ export default class AIChat extends BaseComponent implements Page {
     })
       .getNode()
       .querySelector(".chat-message__content") as HTMLElement | undefined;
-
-    const indicator = new TypingIndicator(responseContainer);
 
     this.scrollToBottom();
     this.blockInput(true);
