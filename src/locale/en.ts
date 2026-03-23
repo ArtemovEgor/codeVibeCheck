@@ -90,6 +90,12 @@ export const EN = {
     restart_text: "Restart",
     stop_generation: "You stopped generation",
     input_placeholder: "Message AI...",
+    try_again_button: "Try Again 🔄",
+    share_button: "Share Result 🚀",
+    share_text_1: "Frontend interview with AI.",
+    share_text_2: "I passed a technical frontend interview with AI. My result:",
+    share_copied: "The result is added to your clipboard",
+    share_not_copied: "Failed to copy the result",
     welcome: `Welcome to **codeVibeCheck** AI Interviewer! 🚀
 
 I'll simulate a **real frontend interview**, test your knowledge, and give **actionable feedback**.
@@ -128,6 +134,8 @@ Even cats don't have doubts, but not you, you are just a human. An imitation of 
 
 Can a human understand machine code? Can a human... vibe code a major bug and push in into production on Friday evening?`,
     ],
+    ai_verdict:
+      "### 🏆 Persona: Mock Master\n* **Verdict:** Hire\n* **The Vibe:** Flawless mock execution.",
   },
   widgets: {
     submit: "Submit",

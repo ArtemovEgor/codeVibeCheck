@@ -16,6 +16,7 @@ import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
+import { TypingIndicator } from "../typing-indicator/typing-indicator";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory?: BaseComponent;
@@ -26,6 +27,7 @@ export default class AIChat extends BaseComponent implements Page {
   private sendButton?: Button;
   private stopButton?: Button;
   private abortController?: AbortController;
+  private isInterviewOver = false;
 
   constructor() {
     super({
@@ -127,6 +129,8 @@ export default class AIChat extends BaseComponent implements Page {
       this.abortController?.abort();
       await aiApi.resetChat();
 
+      this.isInterviewOver = false;
+      this.blockInput(false);
       this.currentXp = 0;
       if (this.messagesContainer) {
         this.messagesContainer.getNode().replaceChildren();
@@ -184,10 +188,27 @@ export default class AIChat extends BaseComponent implements Page {
 
   private handleChatHistory(chatHistory: IChatMessage[]): void {
     for (const message of chatHistory) {
+      if (message.role === "system") {
+        if (message.content.startsWith("[SUMMARY]\n")) {
+          continue;
+        }
+        if (message.content.startsWith("[FINAL_REPORT]\n")) {
+          this.renderFinalReport(
+            message.content.replace("[FINAL_REPORT]\n", ""),
+          );
+          continue;
+        }
+      }
+
       this.renderMessage(message);
       this.currentXp += message.xpAwarded || 0;
     }
     this.scrollToBottom(false);
+
+    if (this.isInterviewOver) {
+      this.blockInput(true);
+      this.stopButton?.toggleClass("message-field__button--hidden", true);
+    }
   }
 
   private scrollToBottom(smooth = true): void {
@@ -336,9 +357,7 @@ export default class AIChat extends BaseComponent implements Page {
     const content = this.messageField?.getNode().value;
     if (!content) return;
 
-    if (this.messageField) {
-      this.messageField.getNode().value = "";
-    }
+    if (this.messageField) this.messageField.getNode().value = "";
 
     this.renderMessage({
       id: "",
@@ -356,26 +375,50 @@ export default class AIChat extends BaseComponent implements Page {
       .getNode()
       .querySelector(".chat-message__content") as HTMLElement | undefined;
 
+    const indicator = new TypingIndicator(responseContainer);
+
     this.scrollToBottom();
     this.blockInput(true);
     const abortSignal = this.createNewAbortSignal();
 
     try {
-      await this.renderMessageText(responseContainer, { content }, abortSignal);
+      await this.renderMessageText(
+        responseContainer,
+        { content },
+        abortSignal,
+        indicator,
+      );
       await this.syncXP();
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        this.addStopNotice(responseContainer);
-        if (this.messageField) this.messageField.getNode().value = content;
-        return;
-      }
-
-      const apiError = error as IApiError;
-      Notification.show(apiError.message, NotificationType.ERROR);
+      indicator.destroy();
+      this.handleStreamError(error, responseContainer, content);
     } finally {
-      this.scrollToBottom();
+      this.finalizeSend();
+    }
+  }
+
+  private finalizeSend(): void {
+    this.scrollToBottom();
+    if (this.isInterviewOver) {
+      this.stopButton?.toggleClass("message-field__button--hidden", true);
+    } else {
       this.blockInput(false);
     }
+  }
+
+  private handleStreamError(
+    error: unknown,
+    responseContainer: HTMLElement | undefined,
+    content: string,
+  ): void {
+    if (error instanceof Error && error.name === "AbortError") {
+      this.addStopNotice(responseContainer);
+      if (this.messageField) this.messageField.getNode().value = content;
+      return;
+    }
+
+    const apiError = error as IApiError;
+    Notification.show(apiError.message, NotificationType.ERROR);
   }
 
   private createNewAbortSignal() {
@@ -388,15 +431,102 @@ export default class AIChat extends BaseComponent implements Page {
     responseContainer: HTMLElement | undefined,
     { content }: ISendMessagePayload,
     abortSignal: AbortSignal,
+    indicator: TypingIndicator,
   ): Promise<void> {
     this.scrollToBottom();
     let accumulated = "";
+    let isFirstChunk = true;
 
-    for await (const token of aiApi.sendChatMessage({ content }, abortSignal)) {
-      accumulated += token;
-      const html = renderMarkdown(accumulated);
+    for await (const event of aiApi.sendChatMessage({ content }, abortSignal)) {
+      if (isFirstChunk) {
+        indicator.destroy();
+        isFirstChunk = false;
+      }
 
-      if (responseContainer) responseContainer.innerHTML = html;
+      if (event.type === "text_chunk") {
+        accumulated += event.content;
+        const html = renderMarkdown(accumulated);
+        if (responseContainer) responseContainer.innerHTML = html;
+        this.scrollToBottom();
+      } else if (event.type === "final_report") {
+        this.renderFinalReport(event.content);
+      }
+    }
+  }
+
+  private renderFinalReport(reportMarkdown: string): void {
+    this.isInterviewOver = true;
+
+    const wrapper = new BaseComponent({
+      tag: "div",
+      className: "chat-message chat-message--report",
+      parent: this.messagesContainer,
+    });
+
+    const contentElement = new BaseComponent({
+      tag: "div",
+      className: "chat-message__content chat-message__content--report",
+      parent: wrapper,
+    });
+
+    contentElement.getNode().innerHTML = renderMarkdown(reportMarkdown);
+    this.renderReportCTAs(wrapper, reportMarkdown);
+    this.scrollToBottom();
+  }
+
+  private renderReportCTAs(
+    parent: BaseComponent,
+    reportMarkdown: string,
+  ): void {
+    const ctaContainer = new BaseComponent({
+      tag: "div",
+      className: "chat-message__cta-container",
+      parent: parent,
+    });
+
+    new Button({
+      className: "button--try-again",
+      parent: ctaContainer,
+      onClick: () => this.restartChat(),
+      text: EN.ai_chat.try_again_button,
+    });
+
+    new Button({
+      className: "button--share",
+      parent: ctaContainer,
+      onClick: () => this.handleShareResult(reportMarkdown),
+      text: EN.ai_chat.share_button,
+    });
+  }
+
+  private async handleShareResult(reportMarkdown: string): Promise<void> {
+    const cleanText = reportMarkdown.replaceAll(/[*#]/g, "").trim();
+    const shareTitle = EN.ai_chat.share_text_1;
+    const shareText = `${EN.ai_chat.share_text_2}\n\n${cleanText}`;
+    const shareUrl = "https://codevibecheck.com";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+        console.warn("Share API failed:", error);
+      }
+    }
+    try {
+      const clipboardText = `${shareTitle}\n\n${shareText}\n\n${shareUrl}`;
+      await navigator.clipboard.writeText(clipboardText);
+      Notification.show(EN.ai_chat.share_copied, NotificationType.SUCCESS);
+    } catch (clipboardError) {
+      console.error("Clipboard failed:", clipboardError);
+      Notification.show(EN.ai_chat.share_not_copied, NotificationType.ERROR);
     }
   }
 

@@ -1,3 +1,5 @@
+import { ChatCompletionChunk } from "groq-sdk/resources/chat/completions";
+
 export interface ISendMessagePayload {
   readonly content: string;
 }
@@ -20,3 +22,10 @@ export interface IScoreData {
   difficulty_adjustment: "increase" | "decrease" | "stay";
   next_phase: string;
 }
+
+export interface IFinalReportEvent {
+  type: "final_report";
+  content: string;
+}
+
+export type AppStreamChunk = ChatCompletionChunk | IFinalReportEvent;
