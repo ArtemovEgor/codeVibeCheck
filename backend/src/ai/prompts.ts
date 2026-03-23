@@ -49,6 +49,8 @@ OUTPUT FORMAT (Markdown):
 
   no_profile_summary: "No existing profile summary",
 
+  no_profile_summary: "No existing profile summary",
+
   final_judge: `
 You are the Lead Architect reviewing an interview session. 
 Based on the Cumulative Summary below, generate a Final Vibe Report.

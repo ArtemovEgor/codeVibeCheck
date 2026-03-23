@@ -1,7 +1,12 @@
 import Database from "better-sqlite3";
 import path from "node:path";
+import fs from "node:fs";
 
-const databasePath = path.resolve(__dirname, "../database.sqlite");
+const databasePath = path.resolve(__dirname, "../data/database.sqlite");
+
+if (!fs.existsSync(path.dirname(databasePath))) {
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+}
 
 const dataBase = new Database(databasePath);
 

@@ -50,3 +50,33 @@ export interface IUserChatStats {
   readonly lastChatXpEarned: number;
   readonly lastSessionResult?: string;
 }
+
+// ── Progress ────────────────────────────────────────────────────────────────────
+
+/** Progress of a user for a specific topic.
+ * Returned by GET /api/progress/:topicId
+ * isCompleted and isUnlocked are calculated by the server */
+export interface IUserTopicProgress {
+  topicId: string;
+  completedWidgetIds: string[];
+  xpEarned: number;
+  isCompleted: boolean;
+  isUnlocked: boolean;
+}
+
+/** Payload sent after the user submits a widget answer.
+ * xpEarned is sourced from IVerdict.xpEarned */
+export interface IUpdateProgressPayload {
+  topicId: string;
+  widgetId: string;
+  xpEarned: number;
+  totalWidgets: number;
+}
+
+/** Overall user statistics aggregated across all topics and sessions.
+ * totalXp includes XP from repeat passes, unlike IUserTopicProgress.xpEarned */
+export interface IUserStats {
+  totalXp: number;
+  completedTopics: number;
+  streak: number;
+}
