@@ -530,25 +530,6 @@ export default class AIChat extends BaseComponent implements Page {
     }
   }
 
-  private renderFinalReport(reportMarkdown: string): void {
-    this.isInterviewOver = true;
-
-    const wrapper = new BaseComponent({
-      tag: "div",
-      className: "chat-message chat-message--report",
-      parent: this.messagesContainer,
-    });
-
-    const contentElement = new BaseComponent({
-      tag: "div",
-      className: "chat-message__content chat-message__content--report",
-      parent: wrapper,
-    });
-
-    contentElement.getNode().innerHTML = renderMarkdown(reportMarkdown);
-    this.scrollToBottom();
-  }
-
   private blockInput(isBlocked: boolean): void {
     const inputNode = this.messageField?.getNode();
     if (inputNode) inputNode.disabled = isBlocked;
