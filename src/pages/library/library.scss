@@ -1,0 +1,33 @@
+.library {
+  @include container;
+  padding-block: var(--space-8);
+  @include fade-in;
+
+  &__header {
+    margin-bottom: var(--space-8);
+
+    &-title {
+      @include heading(var(--text-3xl));
+      margin-bottom: var(--space-2);
+    }
+
+    &-subtitle {
+      @include label;
+      font-size: var(--text-base);
+    }
+  }
+
+  &__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+
+    @include tablet {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include desktop {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}

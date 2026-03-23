@@ -1,0 +1,88 @@
+.topic-card {
+  @include card;
+  @include flex-column;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 200px;
+  @include hover-lift;
+
+  &--locked {
+    opacity: 0.6;
+    filter: grayscale(0.8);
+    cursor: not-allowed;
+    pointer-events: none;
+    border-style: dashed;
+  }
+
+  &__header {
+    @include flex-between;
+    align-items: flex-start;
+  }
+
+  &__title {
+    @include heading(var(--text-lg));
+    @include line-clamp(2);
+    margin: 0;
+  }
+
+  &__difficulty {
+    display: flex;
+    gap: 4px;
+    padding-top: var(--space-1);
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--border);
+
+    &--active {
+      background-color: var(--accent-secondary);
+      box-shadow: 0 0 8px var(--accent-secondary);
+    }
+  }
+
+  &__xp {
+    @include badge(var(--accent-primary-light), var(--accent-primary));
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  &__footer {
+    @include flex-column;
+    gap: var(--space-4);
+    margin-top: auto;
+  }
+
+  &__progress {
+    &-track {
+      @include progress-track;
+      height: 6px;
+    }
+
+    &-fill {
+      @include progress-fill;
+    }
+
+    &-text {
+      @include label;
+      font-size: var(--text-xs);
+      align-self: flex-end;
+    }
+  }
+
+  &__button {
+    width: 100%;
+  }
+
+  &__locked {
+    @include label;
+    @include flex-center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2);
+    background: var(--bg-surface-hover);
+    border-radius: var(--radius-md);
+  }
+}
