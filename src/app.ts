@@ -1,11 +1,14 @@
 import { apiService } from "./api/api-service";
 import AIChat from "./components/ai-chat/ai-chat";
 import AuthModal from "./components/auth-modal/auth-modal";
+import Notification from "./components/notification/notification";
 import { NotFoundContent } from "./components/not-found-content/not-found-content";
 import { QuizStrategy } from "./components/widgets/quiz/quiz-strategy";
 import { TrueFalseStrategy } from "./components/widgets/true-false/true-false-strategy";
 import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
+import { NotificationType } from "./constants/notification";
 import { ROUTES } from "./constants/routes";
+import { EN } from "./locale/en";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
 import { LandingPage } from "./pages/landing-page/landing-page";
 import { Library } from "./pages/library/library";
@@ -21,6 +24,23 @@ export default class App {
     this.restoreTheme();
     this.registerWidgets();
     this.initRoutes();
+    this.initGlobalListeners();
+  }
+
+  private initGlobalListeners(): void {
+    globalThis.addEventListener("auth:logout", () => {
+      globalThis.addEventListener(
+        "hashchange",
+        () => {
+          Notification.show(
+            EN.common.error.session_expired,
+            NotificationType.ERROR,
+          );
+        },
+        { once: true },
+      );
+      router.navigate(ROUTES.LANDING);
+    });
   }
 
   private initRoutes(): void {

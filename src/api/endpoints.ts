@@ -4,7 +4,6 @@ export const ENDPOINTS = {
     LOGIN: "/api/auth/login", // POST — LoginCredentials → AuthResponse
     REGISTER: "/api/auth/register", // POST — RegisterCredentials → AuthResponse
     ME: "/api/auth/me", // GET  — → User (requires token)
-    LOGOUT: "/api/auth/logout", // POST — → { success: true }
   },
   PROFILE: {
     CHAT_STATS: "/api/profile/chat-stats", // GET → IUserChatStats (requires token)
