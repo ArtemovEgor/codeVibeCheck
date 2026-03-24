@@ -152,13 +152,8 @@ export class Sidebar extends BaseComponent {
     });
 
     logoutButton.on("click", async () => {
-      try {
-        await authApi.logout();
-      } catch (error) {
-        console.warn("Logout request failed:", error);
-      } finally {
-        router.navigate(ROUTES.LANDING);
-      }
+      await authApi.logout();
+      router.navigate(ROUTES.LANDING);
     });
   }
 
