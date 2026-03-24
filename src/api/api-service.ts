@@ -61,11 +61,21 @@ class ApiService {
   ): Promise<ReadableStream<Uint8Array> | undefined> {
     const request = this.prepareRequest(options, signal);
 
-    const result = await fetch(`${this.apiUrl}${endpoint}`, request);
+    try {
+      const result = await fetch(`${this.apiUrl}${endpoint}`, request);
 
-    if (!result.ok) await this.handleError(result);
+      if (!result.ok) await this.handleError(result);
 
-    return result.body ?? undefined;
+      return result.body ?? undefined;
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") throw error;
+
+      throw {
+        success: false,
+        status: 0,
+        message: EN.common.error.network_error,
+      } as IApiError;
+    }
   }
 
   private prepareRequest(
@@ -125,7 +135,16 @@ class ApiService {
         );
       }
     }
-    throw lastError;
+
+    if (lastError instanceof Error && lastError.name === "AbortError") {
+      throw lastError;
+    }
+
+    throw {
+      success: false,
+      status: 0,
+      message: EN.common.error.network_error,
+    } as IApiError;
   }
 
   private async handleError(result: Response): Promise<void> {
