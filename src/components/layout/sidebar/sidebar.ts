@@ -139,10 +139,7 @@ export class Sidebar extends BaseComponent {
       parent: this.userWrap,
     });
 
-    sidebarFooterWrap.addChildren([
-      new BaseComponent({ className: "sidebar__divider" }),
-      new ThemeSwitcher(),
-    ]);
+    sidebarFooterWrap.addChildren([new ThemeSwitcher()]);
 
     const logoutButton = new BaseComponent({
       tag: "button",
