@@ -71,12 +71,7 @@ class AuthApi {
       apiService.clearToken();
       return;
     }
-
-    try {
-      await apiService.send(ENDPOINTS.AUTH.LOGOUT, { method: "POST" });
-    } finally {
-      apiService.clearToken();
-    }
+    apiService.clearToken();
   }
 }
 
