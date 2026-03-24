@@ -7,6 +7,7 @@
 
 export type {
   IUser,
+  IUserChatStats,
   ILoginCredentials,
   IRegisterCredentials,
   IAuthResponse,
