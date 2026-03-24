@@ -35,7 +35,18 @@ dataBase.exec(`
 `);
 
 dataBase.exec(`
-  CREATE INDEX IF NOT EXISTS idx_messages_userId ON messages(userId)
+  CREATE TABLE IF NOT EXISTS user_stats (
+    userId TEXT PRIMARY KEY,
+    totalXp INTEGER DEFAULT 0,
+    chatSessionsCompleted INTEGER DEFAULT 0,
+    lastChatXpEarned INTEGER DEFAULT 0,
+    lastSessionResult TEXT,
+    FOREIGN KEY (userId) REFERENCES users(id)
+  )
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_user_stats_userId ON user_stats(userId)
 `);
 
 export default dataBase;
