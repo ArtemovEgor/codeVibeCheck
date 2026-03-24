@@ -208,7 +208,7 @@ while (page.status === 404) {
   },
   library: {
     start: "Start",
-    continue: "Continue",
+    continue: "Resume",
     retry: "Retry",
   },
 } as const;

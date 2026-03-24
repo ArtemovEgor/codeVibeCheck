@@ -68,12 +68,17 @@ export class Library extends BaseComponent implements Page {
       parent: this,
     });
 
-    for (const topic of this.topics) {
-      let progress = this.progress.find((p) => p.topicId === topic.id);
-      if (!progress) progress = await progressApi.initTopic(topic.id);
-      const implementedTotal =
-        this.widgetCounts.get(topic.id) ?? topic.widgetIds.length;
-      grid.addChildren([new TopicCard(topic, progress, implementedTotal)]);
+    const allProgress = await Promise.all(
+      this.topics.map(async (topic) => {
+        let p = this.progress.find((p) => p.topicId === topic.id);
+        if (!p) p = await progressApi.initTopic(topic.id);
+        return { topic, progress: p };
+      }),
+    );
+
+    for (const { topic, progress } of allProgress) {
+      const total = this.widgetCounts.get(topic.id) ?? topic.widgetIds.length;
+      grid.addChildren([new TopicCard(topic, progress, total)]);
     }
   }
 }
