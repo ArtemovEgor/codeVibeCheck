@@ -58,10 +58,10 @@ button {
 a {
   color: var(--accent-primary);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: opacity var(--transition-fast);
 
   &:hover {
-    color: var(--accent-primary-hover);
+    opacity: var(--hover-opacity);
   }
 }
 
