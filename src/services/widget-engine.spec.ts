@@ -7,6 +7,7 @@ const mockStrategy: IWidgetStrategy = {
   render: () => new BaseComponent({ className: "mock" }),
   validate: () => true,
   showVerdict: vi.fn(),
+  getCorrectValue: vi.fn(),
 };
 
 const mockWidget = {
