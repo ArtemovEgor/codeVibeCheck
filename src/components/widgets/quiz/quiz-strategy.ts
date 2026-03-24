@@ -130,9 +130,13 @@ export class QuizStrategy implements IWidgetStrategy {
         );
     }
 
-    const correctIndex = verdict.correctAnswer as number;
+    const correctIndex = verdict.correctAnswer;
 
-    if (!verdict.isCorrect && correctIndex !== undefined) {
+    if (
+      !verdict.isCorrect &&
+      correctIndex !== undefined &&
+      typeof correctIndex === "number"
+    ) {
       this.optionButtons[correctIndex]
         ?.getNode()
         .classList.add("widget__option--correct");

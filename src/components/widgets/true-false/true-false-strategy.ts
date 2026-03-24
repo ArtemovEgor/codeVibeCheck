@@ -146,9 +146,13 @@ export class TrueFalseStrategy implements IWidgetStrategy {
         );
     }
 
-    const correctValue = verdict.correctAnswer as boolean;
+    const correctValue = verdict.correctAnswer;
 
-    if (!verdict.isCorrect && correctValue !== undefined) {
+    if (
+      !verdict.isCorrect &&
+      correctValue !== undefined &&
+      typeof correctValue === "boolean"
+    ) {
       const correctIndex = OPTIONS.findIndex(
         (option) => option.value === correctValue,
       );
