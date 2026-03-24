@@ -96,7 +96,7 @@ class WidgetMock {
         isCorrect,
         explanation: this.getExplanation(widget),
         xpEarned: this.calculateXp(widget, isCorrect),
-        streakUpdated: isCorrect,
+        correctAnswer: strategy.getCorrectValue(widget),
       },
     };
   }
