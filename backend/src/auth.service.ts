@@ -12,7 +12,7 @@ import { EN } from "./locale/en";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-prod";
 const SALT_ROUNDS = 10;
-const TOKEN_EXPIRED = "1h";
+const TOKEN_EXPIRED = "3s";
 const LANG = EN;
 
 /**

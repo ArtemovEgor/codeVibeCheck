@@ -125,7 +125,7 @@ class ApiService {
         return response;
       } catch (error) {
         lastError = error;
-        if (attempt === maxRetries) throw lastError;
+        if (attempt === maxRetries) break;
 
         console.warn(
           `Network error. Retrying request to ${url} (attempt ${attempt + 1})`,
@@ -154,7 +154,7 @@ class ApiService {
       message: result.statusText,
     }));
 
-    if (result.status === 401) {
+    if (result.status === 401 && this.token) {
       this.clearToken();
       globalThis.dispatchEvent(new Event("auth:logout"));
     }
