@@ -6,9 +6,6 @@ export const ENDPOINTS = {
     ME: "/api/auth/me", // GET  — → User (requires token)
     LOGOUT: "/api/auth/logout", // POST — → { success: true }
   },
-  PROFILE: {
-    CHAT_STATS: "/api/profile/chat-stats", // GET → IUserChatStats (requires token)
-  },
   AI: {
     CHAT: "/api/ai/chat", // POST — { content } → IAIResponse
     CHAT_HISTORY: "/api/ai/chat/", // GET — → IChatMessage[]

@@ -9,10 +9,8 @@ import {
 import crypto from "node:crypto";
 import dataBase from "../database";
 import { SYSTEM_PROMPTS } from "./prompts";
-import { AI_MODELS, CHUNK_YIELD_DELAY, MAX_CHAT_TURNS } from "./ai.constants";
-import { convertChatScoreToXP } from "./ai-scoring";
+import { CHUNK_YIELD_DELAY, MAX_CHAT_TURNS } from "./ai.constants";
 import { EN } from "../locale/en";
-import type { IUserChatStats } from "../types";
 
 const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -77,7 +75,7 @@ export async function* sendChatMessage(
 
   const stream = await client.chat.completions.create(
     {
-      model: AI_MODELS.answering,
+      model: "openai/gpt-oss-120b",
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.interviewer },
         ...historyContext,
@@ -155,7 +153,7 @@ export async function* sendChatMessage(
     role: "assistant",
     content: extractedText,
     createdAt: new Date().toISOString(),
-    xpAwarded: scoreData ? convertChatScoreToXP(scoreData.score) : 0,
+    xpAwarded: scoreData?.score || 0,
   });
 
   if (isFinalTurn) {
@@ -169,8 +167,6 @@ export async function* sendChatMessage(
       createdAt: new Date().toISOString(),
       xpAwarded: 0,
     });
-
-    await saveSessionStats(userId, finalReport);
 
     yield {
       type: "final_report",
@@ -276,7 +272,7 @@ async function generateSummary(
 
   try {
     const response = await client.chat.completions.create({
-      model: AI_MODELS.summarization,
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
     });
@@ -312,7 +308,7 @@ async function generateFinalReport(userId: string): Promise<string> {
   const rawHistory = getChatHistory(userId);
   const lastSummaryIndex = findLastSummaryIndex(rawHistory);
 
-  let profileContext: string = SYSTEM_PROMPTS.no_profile_summary;
+  let profileContext = "No existing profile summary";
   let unsummarizedMessages = rawHistory;
 
   if (lastSummaryIndex !== -1) {
@@ -329,7 +325,7 @@ async function generateFinalReport(userId: string): Promise<string> {
 
   try {
     const response = await client.chat.completions.create({
-      model: AI_MODELS.summarization,
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.final_judge },
         { role: "user", content: prompt },
@@ -343,64 +339,6 @@ async function generateFinalReport(userId: string): Promise<string> {
     );
   } catch (error) {
     console.error("[FINAL REPORT ERROR]:", error);
-    throw new Error(EN.errors.final_report_error, { cause: error });
-  }
-}
-
-/**
- * Gets user statistics from the database
- * @param userId - ID of the user
- * @returns User statistics or undefined if not found
- */
-export function getUserChatStats(userId: string): IUserChatStats | undefined {
-  const query = dataBase.prepare("SELECT * FROM user_stats WHERE userId = ?");
-  const stats = query.get(userId) as IUserChatStats | undefined;
-
-  return stats;
-}
-
-/**
- * Saves session statistics after AI chat completion
- * @param userId - ID of the user
- * @param finalReport - Textual result of the chat session
- */
-async function saveSessionStats(
-  userId: string,
-  finalReport: string,
-): Promise<void> {
-  try {
-    const sessionHistory = getChatHistory(userId);
-    const sessionXpTotal = sessionHistory.reduce(
-      (sum, message) => sum + (message.xpAwarded || 0),
-      0,
-    );
-
-    const existingStats = getUserChatStats(userId);
-
-    if (existingStats) {
-      const updateQuery = dataBase.prepare(`
-        UPDATE user_stats 
-        SET totalXp = totalXp + ?,
-            chatSessionsCompleted = chatSessionsCompleted + 1,
-            lastChatXpEarned = ?,
-            lastSessionResult = ?
-        WHERE userId = ?
-      `);
-
-      updateQuery.run(sessionXpTotal, sessionXpTotal, finalReport, userId);
-    } else {
-      const insertQuery = dataBase.prepare(`
-        INSERT INTO user_stats (userId, totalXp, chatSessionsCompleted, lastChatXpEarned, lastSessionResult)
-        VALUES (?, ?, ?, ?, ?)
-      `);
-
-      insertQuery.run(userId, sessionXpTotal, 1, sessionXpTotal, finalReport);
-    }
-
-    console.log(
-      `[SESSION STATS] Saved ${sessionXpTotal} XP for user ${userId}`,
-    );
-  } catch (error) {
-    console.error("[SESSION STATS ERROR]:", error); // Don't throw - stats save shouldn't break the chat flow
+    return "Error generating final report. Please try again.";
   }
 }

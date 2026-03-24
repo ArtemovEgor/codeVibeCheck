@@ -5,12 +5,7 @@ import "./database";
 import { registerUser, loginUser } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
-import {
-  getChatHistory,
-  resetChat,
-  sendChatMessage,
-  getUserChatStats,
-} from "./ai/ai.service";
+import { getChatHistory, resetChat, sendChatMessage } from "./ai/ai.service";
 import { ISendMessagePayload } from "./ai/ai.types";
 import { verifyToken } from "./utils/verify-token";
 
@@ -199,37 +194,6 @@ app.delete("/api/ai/chat", (request, response) => {
     const userId = getUserId(request);
     resetChat(userId);
     response.json({ success: true });
-  } catch (error) {
-    const isAuthError =
-      error instanceof Error &&
-      (error.message === LANG.errors.unauthorized ||
-        error.message === LANG.errors.invalid_token);
-
-    const status = isAuthError ? 401 : 500;
-    const message =
-      error instanceof Error ? error.message : LANG.errors.internal_error;
-    response.status(status).json({ success: false, message });
-  }
-});
-
-app.get("/api/profile/chat-stats", (request, response) => {
-  try {
-    const userId = getUserId(request);
-    const stats = getUserChatStats(userId);
-
-    if (!stats) {
-      return response.json({
-        success: true,
-        data: {
-          userId,
-          totalXp: 0,
-          chatSessionsCompleted: 0,
-          lastChatXpEarned: 0,
-        },
-      });
-    }
-
-    response.json({ success: true, data: stats });
   } catch (error) {
     const isAuthError =
       error instanceof Error &&

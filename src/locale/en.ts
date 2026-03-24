@@ -92,25 +92,18 @@ export const EN = {
     restart_text: "Restart",
     stop_generation: "You stopped generation",
     input_placeholder: "Message AI...",
-    try_again_button: "Try Again 🔄",
-    share_button: "Share Result 🚀",
-    share_text_1: "Frontend interview with AI.",
-    share_text_2: "I passed a technical frontend interview with AI. My result:",
-    share_copied: "The result is added to your clipboard",
-    share_not_copied: "Failed to copy the result",
     welcome: `Welcome to **codeVibeCheck** AI Interviewer! 🚀
 
-I'm here to have a **real technical conversation** — ask questions, evaluate your answers, and give you instant feedback on your vibe and skills.
+I'll simulate a **real frontend interview**, test your knowledge, and give **actionable feedback**.
 
-**Here's what happens:**
-- I ask questions about **JS/TS**, one at a time
-- You share your thought process (not just answers!)
-- I give real-time feedback and rate your vibe
-- After 20 questions — you get a **full assessment**: competency score + persona
+**How it works:**
+1. I ask questions **one at a time**
+2. You share your thought process
+3. After the session — you get an **objective score**
 
-The best part? No stress. This is a safe place to think out loud, make mistakes, and learn. Real interviews are messy — so is this one.
+Don't worry about being perfect — this is a safe space to learn.
 
-**Ready?** Just send something as a confirmation and let's start.`,
+**Ready?** Tell me your level and let's go!`,
   },
   mock: {
     ai_response: [
