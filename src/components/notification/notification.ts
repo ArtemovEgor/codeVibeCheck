@@ -6,7 +6,7 @@ export default class Notification extends BaseComponent {
   private static container: HTMLElement;
 
   private static getContainer(): HTMLElement {
-    if (this.container) return this.container;
+    if (this.container && this.container.isConnected) return this.container;
 
     let container = document.querySelector(
       ".notifications-container",

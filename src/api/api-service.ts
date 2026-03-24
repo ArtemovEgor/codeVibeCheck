@@ -61,21 +61,11 @@ class ApiService {
   ): Promise<ReadableStream<Uint8Array> | undefined> {
     const request = this.prepareRequest(options, signal);
 
-    try {
-      const result = await fetch(`${this.apiUrl}${endpoint}`, request);
+    const result = await fetch(`${this.apiUrl}${endpoint}`, request);
 
-      if (!result.ok) await this.handleError(result);
+    if (!result.ok) await this.handleError(result);
 
-      return result.body ?? undefined;
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") throw error;
-
-      throw {
-        success: false,
-        status: 0,
-        message: EN.common.error.network_error,
-      } as IApiError;
-    }
+    return result.body ?? undefined;
   }
 
   private prepareRequest(
@@ -135,16 +125,7 @@ class ApiService {
         );
       }
     }
-
-    if (lastError instanceof Error && lastError.name === "AbortError") {
-      throw lastError;
-    }
-
-    throw {
-      success: false,
-      status: 0,
-      message: EN.common.error.network_error,
-    } as IApiError;
+    throw lastError;
   }
 
   private async handleError(result: Response): Promise<void> {
@@ -153,6 +134,11 @@ class ApiService {
       status: result.status,
       message: result.statusText,
     }));
+
+    if (result.status === 401) {
+      this.clearToken();
+      globalThis.dispatchEvent(new Event("auth:logout"));
+    }
 
     throw error;
   }

@@ -31,6 +31,7 @@ export const EN = {
     },
     error: {
       unknown_api_error: "Unknown error",
+      session_expired: "Your session has expired. Please log in again.",
       network_error: "An error occured. Please try again",
     },
   },
