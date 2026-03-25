@@ -207,9 +207,10 @@ while (page.status === 404) {
       `,
     },
   },
-  library: {
+  topic: {
     start: "Start",
     continue: "Resume",
     retry: "Retry",
+    require: "Requires",
   },
 } as const;

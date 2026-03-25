@@ -9,14 +9,14 @@ import "./topic-card.scss";
 
 const MAX_DIFFICULTY = 3;
 const COLORS = [
-  "#6366f1",
+  "#38a5e4",
   "#8b5cf6",
   "#ec4899",
   "#f59e0b",
   "#10b981",
   "#3b82f6",
   "#ef4444",
-  "#14b8a6",
+  "#e727ce",
 ];
 
 const TOPIC_ICONS: Record<string, string> = {
@@ -29,7 +29,12 @@ const TOPIC_ICONS: Record<string, string> = {
 };
 
 export class TopicCard extends BaseComponent {
-  constructor(topic: ITopic, progress: IUserTopicProgress, total: number) {
+  constructor(
+    topic: ITopic,
+    progress: IUserTopicProgress,
+    total: number,
+    titlesMap?: Map<string, string>,
+  ) {
     super({ tag: "article", className: "topic-card" });
 
     const isLocked = !progress.isUnlocked;
@@ -47,7 +52,7 @@ export class TopicCard extends BaseComponent {
     );
 
     this.renderHeader(topic, isLocked);
-    this.renderContent(topic);
+    this.renderContent(topic, isLocked, titlesMap);
     this.renderProgress(percent, progress.xpEarned, total);
     this.renderFooter(progress, topic);
   }
@@ -94,7 +99,11 @@ export class TopicCard extends BaseComponent {
     }
   }
 
-  private renderContent(topic: ITopic): void {
+  private renderContent(
+    topic: ITopic,
+    isLocked: boolean,
+    titlesMap?: Map<string, string>,
+  ): void {
     new BaseComponent({
       tag: "h3",
       className: "topic-card__title",
@@ -108,6 +117,19 @@ export class TopicCard extends BaseComponent {
       text: topic.description.en,
       parent: this,
     });
+
+    if (isLocked && topic.requiredTopicIds.length > 0 && titlesMap) {
+      const names = topic.requiredTopicIds
+        .map((id) => titlesMap.get(id) ?? id)
+        .join(", ");
+
+      new BaseComponent({
+        className: "topic-card__requires",
+        tag: "span",
+        text: `${EN.topic.require}: ${names}`,
+        parent: this,
+      });
+    }
   }
 
   private renderProgress(percent: number, xp: number, total: number): void {
@@ -162,10 +184,10 @@ export class TopicCard extends BaseComponent {
     });
 
     const buttonText = progress.isCompleted
-      ? EN.library.retry
+      ? EN.topic.retry
       : progress.completedWidgetIds.length > 0
-        ? EN.library.continue
-        : EN.library.start;
+        ? EN.topic.continue
+        : EN.topic.start;
 
     const button = new Button({
       className: "topic-card__button",

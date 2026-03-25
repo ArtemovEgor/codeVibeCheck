@@ -9,7 +9,9 @@
 
   &:hover:not(&--locked) {
     border-color: var(--accent-primary);
-    box-shadow: var(--shadow-glow);
+    box-shadow:
+      0 12px 24px -8px rgba(0, 0, 0, 0.15),
+      0 0 20px color-mix(in srgb, var(--accent-primary) 10%, transparent);
     transform: translateY(-4px);
   }
 
@@ -30,9 +32,13 @@
     color: var(--accent-primary);
 
     &--colored {
-      background-color: color-mix(in srgb, var(--icon-accent) 12%, transparent);
+      background-color: color-mix(in srgb, var(--icon-accent) 15%, transparent);
       border-color: color-mix(in srgb, var(--icon-accent) 30%, transparent);
       color: var(--icon-accent);
+      box-shadow:
+        0 0 15px -3px color-mix(in srgb, var(--icon-accent) 40%, transparent),
+        inset 0 0 10px -2px
+          color-mix(in srgb, var(--icon-accent) 30%, transparent);
     }
   }
 
@@ -60,7 +66,8 @@
     margin-top: var(--space-1);
   }
 
-  &__desc {
+  &__desc,
+  &__requires {
     @include label;
     @include line-clamp(2);
     min-height: 2.8rem;
@@ -102,13 +109,14 @@
     text-align: right;
     @include label;
     font-size: 10px;
-    opacity: 0.7;
+    opacity: var(--active-opacity);
   }
 
   &--locked {
-    filter: grayscale(0.8);
-    opacity: 0.6;
+    filter: grayscale(0.8) brightness(0.9);
+    opacity: var(--active-opacity);
     pointer-events: none;
+    cursor: not-allowed;
 
     .topic-card__icon-wrapper {
       background-color: transparent;

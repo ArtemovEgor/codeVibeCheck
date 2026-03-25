@@ -76,9 +76,17 @@ export class Library extends BaseComponent implements Page {
       }),
     );
 
+    const titlesMap = new Map(this.topics.map((t) => [t.id, t.title.en]));
+
+    let index = 0;
     for (const { topic, progress } of allProgress) {
       const total = this.widgetCounts.get(topic.id) ?? topic.widgetIds.length;
-      grid.addChildren([new TopicCard(topic, progress, total)]);
+      const card = new TopicCard(topic, progress, total, titlesMap);
+
+      card.getNode().style.setProperty("--stagger-index", index.toString());
+
+      grid.addChildren([card]);
+      index++;
     }
   }
 }
