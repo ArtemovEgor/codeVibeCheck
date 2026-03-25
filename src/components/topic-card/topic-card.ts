@@ -8,10 +8,30 @@ import { EN } from "@/locale/en";
 import "./topic-card.scss";
 
 const MAX_DIFFICULTY = 3;
+const COLORS = [
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#f59e0b",
+  "#10b981",
+  "#3b82f6",
+  "#ef4444",
+  "#14b8a6",
+];
+
+const TOPIC_ICONS: Record<string, string> = {
+  "core-js": "JS",
+  "array-methods": "[ ]",
+  async: "{…}",
+  closures: "(x)",
+  typescript: "TS",
+  proto: "__",
+};
 
 export class TopicCard extends BaseComponent {
   constructor(topic: ITopic, progress: IUserTopicProgress, total: number) {
     super({ tag: "article", className: "topic-card" });
+
     const isLocked = !progress.isUnlocked;
 
     if (isLocked) {
@@ -37,13 +57,23 @@ export class TopicCard extends BaseComponent {
       className: "topic-card__header",
       parent: this,
     });
+
     const iconContainer = new BaseComponent({
       className: "topic-card__icon-wrapper",
       parent: header,
     });
+
+    if (!isLocked) {
+      const color = this.getAccentColor(topic.id);
+      iconContainer.getNode().style.setProperty("--icon-accent", color);
+      iconContainer
+        .getNode()
+        .classList.add("topic-card__icon-wrapper--colored");
+    }
+
     new BaseComponent({
       className: "topic-card__icon",
-      text: isLocked ? "🔒" : this.getIcon(topic.id),
+      text: isLocked ? EN.widgets.stats.locked : this.getIconText(topic),
       parent: iconContainer,
     });
 
@@ -55,6 +85,7 @@ export class TopicCard extends BaseComponent {
       className: "topic-card__difficulty",
       parent,
     });
+
     for (let index = 1; index <= MAX_DIFFICULTY; index++) {
       new BaseComponent({
         className: `topic-card__diff-dot ${index <= level ? "active" : ""}`,
@@ -70,6 +101,7 @@ export class TopicCard extends BaseComponent {
       text: topic.title.en,
       parent: this,
     });
+
     new BaseComponent({
       tag: "p",
       className: "topic-card__desc",
@@ -88,12 +120,14 @@ export class TopicCard extends BaseComponent {
       className: "topic-card__stats",
       parent: wrapper,
     });
+
     new BaseComponent({
       tag: "span",
       className: "topic-card__xp",
-      text: `${xp} XP`,
+      text: EN.widgets.stats.xp_value(xp),
       parent: stats,
     });
+
     new BaseComponent({
       tag: "span",
       className: "topic-card__percent",
@@ -105,16 +139,19 @@ export class TopicCard extends BaseComponent {
       className: "topic-card__bar",
       parent: wrapper,
     });
+
     const fill = new BaseComponent({
       className: "topic-card__fill",
       parent: bar,
     });
+
     fill.getNode().style.width = `${percent}%`;
 
     const info = new BaseComponent({
       className: "topic-card__info",
       parent: wrapper,
     });
+
     new BaseComponent({ tag: "span", text: `Items: ${total}`, parent: info });
   }
 
@@ -123,6 +160,7 @@ export class TopicCard extends BaseComponent {
       className: "topic-card__footer",
       parent: this,
     });
+
     const buttonText = progress.isCompleted
       ? EN.library.retry
       : progress.completedWidgetIds.length > 0
@@ -147,12 +185,15 @@ export class TopicCard extends BaseComponent {
     });
   }
 
-  private getIcon(id: string): string {
-    const icons: Record<string, string> = {
-      "core-js": "JS",
-      async: "{...}",
-      typescript: "TS",
-    };
-    return icons[id] || "{}";
+  private getIconText(topic: ITopic): string {
+    return TOPIC_ICONS[topic.id] ?? topic.title.en.slice(0, 2).toUpperCase();
+  }
+
+  private getAccentColor(id: string): string {
+    const hash = [...id].reduce(
+      (accumulator, c) => accumulator + (c.codePointAt(0) || 0),
+      0,
+    );
+    return COLORS[hash % COLORS.length];
   }
 }
