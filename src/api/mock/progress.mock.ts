@@ -48,6 +48,7 @@ class ProgressMock {
         topicId,
         completedWidgetIds: [],
         xpEarned: 0,
+        everCompleted: false,
         isCompleted: false,
         isUnlocked: this.calculateIsUnlocked(topicId, completedTopicIds),
       };
@@ -79,6 +80,7 @@ class ProgressMock {
       topicId,
       completedWidgetIds: [],
       xpEarned: 0,
+      everCompleted: false,
       isCompleted: false,
       isUnlocked: this.calculateIsUnlocked(topicId, completedTopicIds),
     };
@@ -146,6 +148,7 @@ class ProgressMock {
       existing.completedWidgetIds.length === payload.totalWidgets;
 
     if (existing.isCompleted) {
+      existing.everCompleted = true;
       this.unlockDependentTopics(all);
     }
   }
@@ -173,25 +176,27 @@ class ProgressMock {
     stats.totalXp += payload.xpEarned;
 
     if (isCompleted) {
-      stats.completedTopics = all.filter((p) => p.isCompleted).length;
+      stats.completedTopics = all.filter((p) => p.everCompleted).length;
     }
 
     storageService.setStorage(STORAGE_KEYS.USER_STATS, stats);
   }
 
   /**
-   * Resets progress for a specific topic by removing the entry from storage.
-   * After reset, the next call to getByTopicId will return 404,
-   * which triggers initTopic to create a fresh entry with correct isUnlocked.
+   * Resets progress for a specific topic without removing the entry.
+   * Clears completedWidgetIds, xpEarned and isCompleted.
+   * everCompleted and isUnlocked are preserved — so dependent topics stay unlocked.
    * If no progress found for the topic — does nothing.
    */
   public async resetTopic(topicId: string): Promise<IApiResponse<void>> {
     await delay();
     const all = this.getProgressFromStorage();
-    const index = all.findIndex((p) => p.topicId === topicId);
+    const existing = all.find((p) => p.topicId === topicId);
 
-    if (index !== -1) {
-      all.splice(index, 1);
+    if (existing) {
+      existing.completedWidgetIds = [];
+      existing.xpEarned = 0;
+      existing.isCompleted = false;
       storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
     }
 
@@ -212,6 +217,7 @@ class ProgressMock {
       topicId: payload.topicId,
       completedWidgetIds: [payload.widgetId],
       xpEarned: payload.xpEarned,
+      everCompleted: false,
       isCompleted: false,
       isUnlocked: this.calculateIsUnlocked(payload.topicId, completedTopicIds),
     });
@@ -238,7 +244,7 @@ class ProgressMock {
    */
   private getCompletedTopicIds(all: IUserTopicProgress[]): string[] {
     return all
-      .filter((topic) => topic.isCompleted)
+      .filter((topic) => topic.everCompleted)
       .map((topic) => topic.topicId);
   }
 

@@ -79,7 +79,7 @@ class ProgressApi {
       ? await progressMock.resetTopic(topicId)
       : await apiService.send<IApiResponse<void>>(
           ENDPOINTS.PROGRESS.RESET_TOPIC(topicId),
-          { method: "DELETE" },
+          { method: "PATCH" },
         );
     return response.data;
   }

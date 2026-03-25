@@ -62,19 +62,35 @@ export class Library extends BaseComponent implements Page {
     );
   }
 
-  private async renderTopics(): Promise<void> {
+  private renderTopics(): void {
     const grid = new BaseComponent({
       className: "library__grid",
       parent: this,
     });
 
-    const allProgress = await Promise.all(
-      this.topics.map(async (topic) => {
-        let p = this.progress.find((p) => p.topicId === topic.id);
-        if (!p) p = await progressApi.initTopic(topic.id);
-        return { topic, progress: p };
-      }),
+    const completedTopicIds = new Set(
+      this.progress.filter((p) => p.everCompleted).map((p) => p.topicId),
     );
+
+    const allProgress = this.topics.map((topic) => {
+      let p = this.progress.find((p) => p.topicId === topic.id);
+      if (!p) {
+        const isUnlocked = topic.requiredTopicIds.every((requestId) =>
+          completedTopicIds.has(requestId),
+        );
+
+        p = {
+          topicId: topic.id,
+          completedWidgetIds: [],
+          everCompleted: false,
+          isCompleted: false,
+          isUnlocked: isUnlocked,
+          xpEarned: 0,
+        };
+      }
+
+      return { topic, progress: p };
+    });
 
     const titlesMap = new Map(this.topics.map((t) => [t.id, t.title.en]));
 
