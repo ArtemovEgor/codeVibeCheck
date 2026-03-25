@@ -6,6 +6,7 @@ import { router } from "@/router/router";
 import { ROUTES } from "@/constants/routes";
 import { EN } from "@/locale/en";
 import "./topic-card.scss";
+import { progressApi } from "@/api/progress.api";
 
 const MAX_DIFFICULTY = 3;
 const COLORS = [
@@ -201,10 +202,24 @@ export class TopicCard extends BaseComponent {
       button.getNode().classList.add("btn--primary");
     }
 
-    button.on("click", () => {
-      const path = ROUTES.PRACTICE.replace(":topicId", topic.id);
-      router.navigate(path);
+    button.on("click", async () => {
+      if (progress.isCompleted) {
+        await this.handleRetry(topic.id);
+      } else {
+        const path = ROUTES.PRACTICE.replace(":topicId", topic.id);
+        router.navigate(path);
+      }
     });
+  }
+
+  private async handleRetry(topicId: string): Promise<void> {
+    try {
+      await progressApi.resetTopic(topicId);
+      const path = ROUTES.PRACTICE.replace(":topicId", topicId);
+      router.navigate(path);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   private getIconText(topic: ITopic): string {

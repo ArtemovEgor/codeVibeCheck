@@ -39,7 +39,7 @@ export class PracticeStats extends BaseComponent {
     new BaseComponent({
       tag: "span",
       className: "practice-stats__value",
-      text: EN.widgets.stats.xp_value(xpEarned),
+      text: EN.widgets.stats.xp_icon + EN.widgets.stats.xp_value(xpEarned),
       parent: xpBlock,
     });
 
