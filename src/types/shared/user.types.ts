@@ -60,6 +60,7 @@ export interface IUserTopicProgress {
   topicId: string;
   completedWidgetIds: string[];
   xpEarned: number;
+  everCompleted: boolean;
   isCompleted: boolean;
   isUnlocked: boolean;
 }

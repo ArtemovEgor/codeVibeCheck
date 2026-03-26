@@ -1,0 +1,53 @@
+.library {
+  @include container;
+  padding-block: var(--space-8);
+  @include fade-in;
+
+  &__header {
+    margin-bottom: var(--space-8);
+
+    &-title {
+      @include heading(var(--text-3xl));
+      margin-bottom: var(--space-2);
+    }
+
+    &-subtitle {
+      @include label;
+      font-size: var(--text-base);
+    }
+  }
+
+  &__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+
+    @include tablet {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include desktop {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .topic-card {
+    --card-opacity: 1;
+    opacity: 0;
+    transform: translateY(15px);
+    animation: cardAppear 0.4s ease-out forwards;
+    animation-delay: calc(var(--stagger-index, 0) * 50ms);
+
+    &--locked {
+      --card-opacity: 0.6;
+      filter: grayscale(0.8);
+    }
+
+    @keyframes cardAppear {
+      to {
+        opacity: var(--card-opacity);
+        transform: translateY(0);
+      }
+    }
+  }
+}
