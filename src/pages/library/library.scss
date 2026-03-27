@@ -12,6 +12,12 @@
     @include flex-center;
   }
 
+  &__search-input-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+  }
+
   &__search-input {
     @include input-base;
     max-width: 500px;
@@ -22,6 +28,35 @@
     &::placeholder {
       color: var(--text-secondary);
       opacity: 1;
+    }
+  }
+
+  &__search-clear {
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    @include flex-center;
+    background: var(--bg-surface-hover);
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: var(--text-lg);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--transition-fast),
+      color var(--transition-fast);
+
+    &--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    &:hover {
+      color: var(--text-primary);
     }
   }
 
@@ -56,6 +91,7 @@
   }
 
   &__scroll-top {
+    @include flex-center;
     position: fixed;
     bottom: var(--space-8);
     right: var(--space-8);

@@ -11,6 +11,7 @@ import Notification from "@/components/notification/notification";
 import { NotificationType } from "@/constants/notification";
 import type { IApiError } from "@/types/shared";
 import { EN } from "@/locale/en";
+import { Button } from "@/components/button/button";
 
 export class Library extends BaseComponent implements Page {
   private topics: ITopic[] = [];
@@ -135,34 +136,57 @@ export class Library extends BaseComponent implements Page {
 
   private renderSearch(): void {
     const searchContainer = new BaseComponent({
-      tag: "div",
       className: "library__search-wrapper",
       parent: this,
+    });
+
+    const inputWrapper = new BaseComponent({
+      className: "library__search-input-wrapper",
+      parent: searchContainer,
     });
 
     const searchInput = new BaseComponent<HTMLInputElement>({
       tag: "input",
       className: "library__search-input",
-      parent: searchContainer,
-      attributes: {
-        placeholder: EN.search.placeholder,
-      },
+      parent: inputWrapper,
+      attributes: { placeholder: EN.search.placeholder },
+    });
+
+    const clearButton = new BaseComponent({
+      className: "library__search-clear",
+      text: "×",
+      parent: inputWrapper,
     });
 
     searchInput.on("input", () => {
-      const searchString = searchInput.getNode().value.toLowerCase().trim();
+      const value = searchInput.getNode().value.toLowerCase().trim();
+      this.filterCards(value);
+      this.toggleClearButton(clearButton, value);
+    });
 
-      for (const { element, title } of this.cardElements) {
-        const isVisible =
-          searchString === "" || title.toLowerCase().includes(searchString);
-        element.classList.toggle("library__card--hidden", !isVisible);
-      }
+    clearButton.on("click", () => {
+      searchInput.getNode().value = "";
+      this.filterCards("");
+      this.toggleClearButton(clearButton, "");
     });
   }
 
+  private filterCards(searchString: string): void {
+    for (const { element, title } of this.cardElements) {
+      const isVisible =
+        searchString === "" || title.toLowerCase().includes(searchString);
+      element.classList.toggle("library__card--hidden", !isVisible);
+    }
+  }
+
+  private toggleClearButton(button: BaseComponent, value: string): void {
+    button
+      .getNode()
+      .classList.toggle("library__search-clear--visible", value.length > 0);
+  }
+
   private renderScrollToTop(): void {
-    const button = new BaseComponent({
-      tag: "button",
+    const button = new Button({
       className: "library__scroll-top",
       text: EN.arrow_up,
       parent: this,
