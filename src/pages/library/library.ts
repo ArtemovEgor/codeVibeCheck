@@ -18,6 +18,7 @@ export class Library extends BaseComponent implements Page {
   private progress: IUserTopicProgress[] = [];
   private widgetCounts = new Map<string, number>();
   private scrollHandler: (() => void) | undefined = undefined;
+  private emptyState: BaseComponent | undefined = undefined;
   private cardElements: {
     topicId: string;
     element: HTMLElement;
@@ -106,6 +107,13 @@ export class Library extends BaseComponent implements Page {
       grid.addChildren([card]);
       index++;
     }
+
+    this.emptyState = new BaseComponent({
+      tag: "p",
+      className: "library__empty",
+      text: EN.search.empty,
+      parent: this,
+    });
   }
 
   private getAllTopicProgress() {
@@ -172,11 +180,18 @@ export class Library extends BaseComponent implements Page {
   }
 
   private filterCards(searchString: string): void {
+    let hasVisible = false;
+
     for (const { element, title } of this.cardElements) {
       const isVisible =
         searchString === "" || title.toLowerCase().includes(searchString);
       element.classList.toggle("library__card--hidden", !isVisible);
+      if (isVisible) hasVisible = true;
     }
+
+    this.emptyState
+      ?.getNode()
+      .classList.toggle("library__empty--visible", !hasVisible);
   }
 
   private toggleClearButton(button: BaseComponent, value: string): void {

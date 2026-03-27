@@ -119,6 +119,18 @@
       transform: translateY(-2px);
     }
   }
+
+  &__empty {
+    display: none;
+    text-align: center;
+    padding-block: var(--space-16);
+    @include label;
+    font-size: var(--text-base);
+
+    &--visible {
+      display: block;
+    }
+  }
 }
 
 @keyframes cardAppear {

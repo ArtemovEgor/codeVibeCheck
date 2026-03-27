@@ -215,6 +215,7 @@ while (page.status === 404) {
   },
   search: {
     placeholder: "Search topics...",
+    empty: "No topics found",
   },
   arrow_up: "↑",
 } as const;
