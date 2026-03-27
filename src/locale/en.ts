@@ -154,7 +154,7 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
     },
     stats: {
       xp_earned: "XP Earned",
-      xp_icon: `🔸`,
+      xp_icon: "🔸",
       xp_value: (xp: number) => `${xp} XP`,
       total_xp: (xp: number) => `Total: ${xp} XP`,
       streak: (days: number) => `🔥 ${days} day streak`,
@@ -213,4 +213,8 @@ while (page.status === 404) {
     retry: "Retry",
     require: "Requires",
   },
+  search: {
+    placeholder: "Search topics...",
+  },
+  arrow_up: "↑",
 } as const;

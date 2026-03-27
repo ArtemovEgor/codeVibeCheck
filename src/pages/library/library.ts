@@ -7,11 +7,21 @@ import { progressApi } from "@/api/progress.api";
 import { TopicCard } from "@/components/topic-card/topic-card";
 import "./library.scss";
 import widgetEngine from "@/services/widget-engine";
+import Notification from "@/components/notification/notification";
+import { NotificationType } from "@/constants/notification";
+import type { IApiError } from "@/types/shared";
+import { EN } from "@/locale/en";
 
 export class Library extends BaseComponent implements Page {
   private topics: ITopic[] = [];
   private progress: IUserTopicProgress[] = [];
   private widgetCounts = new Map<string, number>();
+  private scrollHandler: (() => void) | undefined = undefined;
+  private cardElements: {
+    topicId: string;
+    element: HTMLElement;
+    title: string;
+  }[] = [];
 
   constructor() {
     super({ tag: "div", className: "library" });
@@ -27,13 +37,16 @@ export class Library extends BaseComponent implements Page {
     // TODO: remove loadWidgetCounts() when all widget strategy types are implemented and pass topic.widgetIds.length directly to TopicCard
     await this.loadWidgetCounts();
     this.renderTopics();
+    this.renderScrollToTop();
   }
 
   private async loadTopics(): Promise<ITopic[]> {
     try {
       const { data } = await widgetsApi.getTopics();
       return data;
-    } catch {
+    } catch (error) {
+      const apiError = error as IApiError;
+      Notification.show(apiError.message, NotificationType.ERROR);
       return [];
     }
   }
@@ -41,7 +54,8 @@ export class Library extends BaseComponent implements Page {
   private async loadProgress(): Promise<IUserTopicProgress[]> {
     try {
       return await progressApi.getAll();
-    } catch {
+    } catch (error) {
+      console.warn(error);
       return [];
     }
   }
@@ -63,16 +77,42 @@ export class Library extends BaseComponent implements Page {
   }
 
   private renderTopics(): void {
+    this.getNode().replaceChildren();
+    this.renderSearch();
+
     const grid = new BaseComponent({
       className: "library__grid",
       parent: this,
     });
 
+    this.cardElements = [];
+    const allProgress = this.getAllTopicProgress();
+    const titlesMap = new Map(this.topics.map((t) => [t.id, t.title.en]));
+
+    let index = 0;
+    for (const { topic, progress } of allProgress) {
+      const total = this.widgetCounts.get(topic.id) ?? topic.widgetIds.length;
+      const card = new TopicCard(topic, progress, total, titlesMap);
+
+      card.getNode().style.setProperty("--stagger-index", index.toString());
+
+      this.cardElements.push({
+        topicId: topic.id,
+        element: card.getNode(),
+        title: topic.title.en,
+      });
+
+      grid.addChildren([card]);
+      index++;
+    }
+  }
+
+  private getAllTopicProgress() {
     const completedTopicIds = new Set(
       this.progress.filter((p) => p.everCompleted).map((p) => p.topicId),
     );
 
-    const allProgress = this.topics.map((topic) => {
+    return this.topics.map((topic) => {
       let p = this.progress.find((p) => p.topicId === topic.id);
       if (!p) {
         const isUnlocked = topic.requiredTopicIds.every((requestId) =>
@@ -91,18 +131,68 @@ export class Library extends BaseComponent implements Page {
 
       return { topic, progress: p };
     });
+  }
 
-    const titlesMap = new Map(this.topics.map((t) => [t.id, t.title.en]));
+  private renderSearch(): void {
+    const searchContainer = new BaseComponent({
+      tag: "div",
+      className: "library__search-wrapper",
+      parent: this,
+    });
 
-    let index = 0;
-    for (const { topic, progress } of allProgress) {
-      const total = this.widgetCounts.get(topic.id) ?? topic.widgetIds.length;
-      const card = new TopicCard(topic, progress, total, titlesMap);
+    const searchInput = new BaseComponent<HTMLInputElement>({
+      tag: "input",
+      className: "library__search-input",
+      parent: searchContainer,
+      attributes: {
+        placeholder: EN.search.placeholder,
+      },
+    });
 
-      card.getNode().style.setProperty("--stagger-index", index.toString());
+    searchInput.on("input", () => {
+      const searchString = searchInput.getNode().value.toLowerCase().trim();
 
-      grid.addChildren([card]);
-      index++;
+      for (const { element, title } of this.cardElements) {
+        const isVisible =
+          searchString === "" || title.toLowerCase().includes(searchString);
+        element.classList.toggle("library__card--hidden", !isVisible);
+      }
+    });
+  }
+
+  private renderScrollToTop(): void {
+    const button = new BaseComponent({
+      tag: "button",
+      className: "library__scroll-top",
+      text: EN.arrow_up,
+      parent: this,
+    });
+
+    const scrollContainer = this.getNode().parentElement;
+    if (!scrollContainer) return;
+
+    this.scrollHandler = (): void => {
+      button
+        .getNode()
+        .classList.toggle(
+          "library__scroll-top--visible",
+          scrollContainer.scrollTop > 300,
+        );
+    };
+
+    scrollContainer.addEventListener("scroll", this.scrollHandler);
+
+    button.on("click", () =>
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" }),
+    );
+  }
+
+  public destroy(): void {
+    const scrollContainer = this.getNode().parentElement;
+    if (this.scrollHandler && scrollContainer) {
+      scrollContainer.removeEventListener("scroll", this.scrollHandler);
+      this.scrollHandler = undefined;
     }
+    super.destroy();
   }
 }
