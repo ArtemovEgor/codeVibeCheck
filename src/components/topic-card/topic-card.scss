@@ -6,6 +6,10 @@
   padding: var(--space-6);
   border: 1px solid var(--border);
   position: relative;
+  transition:
+    var(--transition-colors),
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
 
   &:hover:not(&--locked) {
     border-color: var(--accent-primary);
@@ -66,12 +70,16 @@
     margin-top: var(--space-1);
   }
 
-  &__desc,
-  &__requires {
+  &__desc {
     @include label;
     @include line-clamp(2);
     min-height: 2.8rem;
     color: var(--text-secondary);
+  }
+
+  &__requires {
+    @include badge(var(--accent-warning-light), var(--text-primary));
+    margin-top: calc(-1 * var(--space-2));
   }
 
   &__progress-wrapper {
@@ -117,6 +125,7 @@
     opacity: var(--active-opacity);
     pointer-events: none;
     cursor: not-allowed;
+    transform: none;
 
     .topic-card__icon-wrapper {
       background-color: transparent;
@@ -128,6 +137,22 @@
     margin-top: var(--space-2);
     .btn {
       width: 100%;
+    }
+  }
+
+  &--completed {
+    border-color: var(--accent-success);
+
+    .topic-card__fill {
+      background: var(--gradient-success);
+      box-shadow: 0 0 12px var(--accent-success);
+    }
+
+    &:hover {
+      border-color: var(--accent-success);
+      box-shadow:
+        0 12px 24px -8px rgba(0, 0, 0, 0.15),
+        0 0 20px color-mix(in srgb, var(--accent-success) 15%, transparent);
     }
   }
 }

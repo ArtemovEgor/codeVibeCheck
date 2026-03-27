@@ -109,10 +109,21 @@ export class Library extends BaseComponent implements Page {
     }
 
     this.emptyState = new BaseComponent({
-      tag: "p",
       className: "library__empty",
-      text: EN.search.empty,
       parent: this,
+    });
+
+    new BaseComponent({
+      tag: "p",
+      text: EN.search.icon,
+      className: "library__empty-icon",
+      parent: this.emptyState,
+    });
+
+    new BaseComponent({
+      tag: "p",
+      text: EN.search.empty,
+      parent: this.emptyState,
     });
   }
 
@@ -162,7 +173,7 @@ export class Library extends BaseComponent implements Page {
 
     const clearButton = new BaseComponent({
       className: "library__search-clear",
-      text: "×",
+      text: EN.search.clear,
       parent: inputWrapper,
     });
 

@@ -297,6 +297,7 @@ export class PracticePage extends BaseComponent implements Page {
     await progressApi.resetTopic(this.topicId);
     this.progress = await this.loadProgress();
     this.currentIndex = 0;
+    this.updateProgress();
     this.renderCurrentWidget();
     this.renderRightPanel();
   }

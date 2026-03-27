@@ -156,9 +156,10 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
       xp_earned: "XP Earned",
       xp_icon: "🔸",
       xp_value: (xp: number) => `${xp} XP`,
-      total_xp: (xp: number) => `Total: ${xp} XP`,
+      total_xp: (xp: number) => `⚡ Total: ${xp} XP`,
       streak: (days: number) => `🔥 ${days} day streak`,
       locked: "🔒",
+      completed_topics: (count: number) => `🏆 Completed Topics: ${count}`,
     },
     completed: {
       title: "Topic Completed!",
@@ -216,6 +217,8 @@ while (page.status === 404) {
   search: {
     placeholder: "Search topics...",
     empty: "No topics found",
+    icon: "🔍",
+    clear: "×",
   },
   arrow_up: "↑",
 } as const;
