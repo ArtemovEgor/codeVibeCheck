@@ -1,13 +1,14 @@
 import { MAX_RETRIES } from "@/constants/api";
-import { TOKEN_KEY } from "@/constants/app";
+import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { EN } from "@/locale/en";
+import { storageService } from "@/services/storage-service";
 import type { IApiError } from "@/types/shared";
 
 class ApiService {
   private apiMode = import.meta.env.VITE_API_MODE || "mock";
   private apiUrl = import.meta.env.VITE_API_URL;
   private token: string | undefined =
-    localStorage.getItem(TOKEN_KEY) ?? undefined;
+    storageService.getStorage<string>(STORAGE_KEYS.TOKEN, "") || undefined;
 
   public get isMockMode(): boolean {
     return this.apiMode === "mock";
@@ -15,7 +16,7 @@ class ApiService {
 
   /** Save JWT token (called after successful login) */
   public setToken(token: string): void {
-    localStorage.setItem(TOKEN_KEY, token);
+    storageService.setStorage(STORAGE_KEYS.TOKEN, token);
     this.token = token;
   }
 
@@ -25,7 +26,7 @@ class ApiService {
 
   /** Clear JWT token (called on logout) */
   public clearToken(): void {
-    localStorage.removeItem(TOKEN_KEY);
+    storageService.removeStorage(STORAGE_KEYS.TOKEN);
     this.token = undefined;
   }
 

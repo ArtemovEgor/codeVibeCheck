@@ -10,9 +10,7 @@ import {
 import { MOCK_TOPICS, MOCK_WIDGETS } from "./widgets.mock.data";
 import widgetEngine from "@/services/widget-engine";
 import { XP_BY_DIFFICULTY } from "@/constants/game";
-
-const delay = (ms = Number(import.meta.env.VITE_MOCK_DELAY)) =>
-  new Promise((r) => setTimeout(r, ms));
+import { delay } from "./delay";
 
 const NOT_FOUND_STATUS = 404;
 
