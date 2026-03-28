@@ -5,7 +5,7 @@ import Notification from "./components/notification/notification";
 import { NotFoundContent } from "./components/not-found-content/not-found-content";
 import { QuizStrategy } from "./components/widgets/quiz/quiz-strategy";
 import { TrueFalseStrategy } from "./components/widgets/true-false/true-false-strategy";
-import { DEFAULT_THEME, THEME_STORAGE_KEY } from "./constants/app";
+import { DEFAULT_THEME } from "./constants/app";
 import { NotificationType } from "./constants/notification";
 import { ROUTES } from "./constants/routes";
 import { EN } from "./locale/en";
@@ -15,6 +15,8 @@ import { Library } from "./pages/library/library";
 import { PracticePage } from "./pages/practice/practice-page";
 import { router } from "./router/router";
 import widgetEngine from "./services/widget-engine";
+import { storageService } from "./services/storage-service";
+import { STORAGE_KEYS } from "./constants/storage-keys";
 
 export default class App {
   private readonly parentNode: HTMLElement;
@@ -78,7 +80,7 @@ export default class App {
   }
 
   private restoreTheme(): void {
-    const saved = localStorage.getItem(THEME_STORAGE_KEY) ?? DEFAULT_THEME;
+    const saved = storageService.getStorage(STORAGE_KEYS.THEME, DEFAULT_THEME);
     document.documentElement.dataset.theme = saved;
   }
 

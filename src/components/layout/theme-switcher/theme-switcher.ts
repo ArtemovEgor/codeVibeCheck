@@ -1,7 +1,9 @@
 import BaseComponent from "@/components/base/base-component";
 import { Button } from "@/components/button/button";
 import "./theme-switcher.scss";
-import { DEFAULT_THEME, THEME_STORAGE_KEY } from "@/constants/app";
+import { DEFAULT_THEME } from "@/constants/app";
+import { storageService } from "@/services/storage-service";
+import { STORAGE_KEYS } from "@/constants/storage-keys";
 
 type Theme = "light" | "dark";
 
@@ -44,31 +46,27 @@ export class ThemeSwitcher extends BaseComponent {
   }
 
   private initEvents(): void {
-    const current =
-      (localStorage.getItem(THEME_STORAGE_KEY) as Theme) ?? DEFAULT_THEME;
+    const current = storageService.getStorage(
+      STORAGE_KEYS.THEME,
+      DEFAULT_THEME,
+    ) as Theme;
 
-    (current === THEMES.LIGHT ? this.lightBtn : this.darkBtn).toggleClass(
-      "theme-switcher__btn--active",
-      true,
-    );
-
-    this.lightBtn.on("click", () =>
-      this.handleThemeSwitch(THEMES.LIGHT, this.lightBtn, this.darkBtn),
-    );
-    this.darkBtn.on("click", () =>
-      this.handleThemeSwitch(THEMES.DARK, this.darkBtn, this.lightBtn),
-    );
+    this.handleThemeSwitch(current);
+    this.lightBtn.on("click", () => this.handleThemeSwitch(THEMES.LIGHT));
+    this.darkBtn.on("click", () => this.handleThemeSwitch(THEMES.DARK));
   }
 
-  private handleThemeSwitch(
-    theme: Theme,
-    activeButton: Button,
-    inactiveButton: Button,
-  ): void {
+  private handleThemeSwitch(theme: Theme): void {
     this.applyTheme(theme);
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-    activeButton.toggleClass("theme-switcher__btn--active", true);
-    inactiveButton.toggleClass("theme-switcher__btn--active", false);
+    storageService.setStorage(STORAGE_KEYS.THEME, theme);
+    this.lightBtn.toggleClass(
+      "theme-switcher__btn--active",
+      theme === THEMES.LIGHT,
+    );
+    this.darkBtn.toggleClass(
+      "theme-switcher__btn--active",
+      theme === THEMES.DARK,
+    );
   }
 
   private applyTheme(theme: Theme): void {

@@ -16,6 +16,12 @@ class StorageService {
       );
     }
   }
+
+  public removeStorage(key: StorageKey): void {
+    if (localStorage.getItem(key)) {
+      localStorage.removeItem(key);
+    }
+  }
 }
 
 export const storageService = new StorageService();
