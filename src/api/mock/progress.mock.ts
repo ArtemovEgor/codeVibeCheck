@@ -170,6 +170,7 @@ class ProgressMock {
         totalXp: 0,
         completedTopics: 0,
         streak: 0,
+        lastActivityAt: undefined,
       },
     );
 
@@ -178,6 +179,9 @@ class ProgressMock {
     if (isCompleted) {
       stats.completedTopics = all.filter((p) => p.everCompleted).length;
     }
+
+    stats.streak = this.calculateStreak(stats);
+    stats.lastActivityAt = this.getTodayString();
 
     storageService.setStorage(STORAGE_KEYS.USER_STATS, stats);
   }
@@ -284,11 +288,52 @@ class ProgressMock {
         totalXp: 0,
         completedTopics: 0,
         streak: 0,
+        lastActivityAt: undefined,
       },
     );
 
     return { success: true, data: stats };
   }
+
+  /**
+   * Calculates the current activity streak in days.
+   * If no previous activity — returns 1 (first day).
+   * If last activity was today — streak unchanged (already counted).
+   * If last activity was yesterday — streak increases by 1.
+   * If last activity was earlier — streak resets to 1.
+   */
+  private calculateStreak(stats: IUserStats): number {
+    const today = this.getTodayString();
+    const last = stats.lastActivityAt;
+
+    if (!last) return 1;
+
+    if (last === today) return stats.streak;
+
+    const yesterday = this.getYesterdayString();
+    if (last === yesterday) return stats.streak + 1;
+
+    return 1;
+  }
+
+  /**
+   * Returns today's date as an ISO date string (e.g. "2024-01-15").
+   * Uses Swedish locale which formats dates as YYYY-MM-DD.
+   */
+  private getTodayString(): string {
+    return new Date().toLocaleDateString("sv"); // "2024-01-15"
+  }
+
+  /**
+   * Returns yesterday's date as an ISO date string (e.g. "2024-01-14").
+   * Used to determine if the streak should be incremented.
+   */
+  private getYesterdayString(): string {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    return date.toLocaleDateString("sv");
+  }
+
   /**
    * Creates and returns an IApiError object.
    * Default status is 404. Pass INTERNAL_SERVER_ERROR (500) for server-side failures.

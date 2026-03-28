@@ -53,19 +53,21 @@ export class PracticeStats extends BaseComponent {
     });
 
     new BaseComponent({
-      tag: "div",
       className: "practice-stats__total-xp",
       text: EN.widgets.stats.total_xp(stats.totalXp),
       parent: statsBlock,
     });
 
-    if (stats.streak > 0) {
-      new BaseComponent({
-        tag: "div",
-        className: "practice-stats__streak",
-        text: EN.widgets.stats.streak(stats.streak),
-        parent: statsBlock,
-      });
-    }
+    new BaseComponent({
+      className: "practice-stats__total-xp",
+      parent: statsBlock,
+      text: EN.widgets.stats.completed_topics(stats.completedTopics),
+    });
+
+    new BaseComponent({
+      className: "practice-stats__streak",
+      text: EN.widgets.stats.streak(stats.streak),
+      parent: statsBlock,
+    });
   }
 }

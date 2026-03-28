@@ -3,17 +3,60 @@
   padding-block: var(--space-8);
   @include fade-in;
 
-  &__header {
-    margin-bottom: var(--space-8);
+  &__search-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background: var(--bg-primary);
+    padding-block: var(--space-3) var(--space-5);
+    @include flex-center;
+  }
 
-    &-title {
-      @include heading(var(--text-3xl));
-      margin-bottom: var(--space-2);
+  &__search-input-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  &__search-input {
+    @include input-base;
+    max-width: 500px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    &::placeholder {
+      color: var(--text-secondary);
+      opacity: 1;
+    }
+  }
+
+  &__search-clear {
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    @include flex-center;
+    background: var(--bg-surface-hover);
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: var(--text-lg);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--transition-fast),
+      color var(--transition-fast);
+
+    &--visible {
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    &-subtitle {
-      @include label;
-      font-size: var(--text-base);
+    &:hover {
+      color: var(--text-primary);
     }
   }
 
@@ -37,17 +80,66 @@
     transform: translateY(15px);
     animation: cardAppear 0.4s ease-out forwards;
     animation-delay: calc(var(--stagger-index, 0) * 50ms);
+  }
 
-    &--locked {
-      --card-opacity: 0.6;
-      filter: grayscale(0.8);
+  &__card--hidden {
+    display: none !important;
+  }
+
+  &__scroll-top {
+    @include flex-center;
+    position: fixed;
+    bottom: var(--space-8);
+    right: var(--space-8);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    color: var(--text-inverse);
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    font-size: var(--text-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--transition-base),
+      transform var(--transition-base);
+
+    &--visible {
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    @keyframes cardAppear {
-      to {
-        opacity: var(--card-opacity);
-        transform: translateY(0);
-      }
+    &:hover {
+      transform: translateY(-2px);
     }
+  }
+
+  &__empty {
+    @include flex-column;
+    display: none;
+    text-align: center;
+    padding-block: var(--space-16);
+    align-items: center;
+    gap: var(--space-2);
+
+    &-icon {
+      font-size: var(--text-3xl);
+    }
+
+    @include label;
+    font-size: var(--text-base);
+
+    &--visible {
+      display: flex;
+    }
+  }
+}
+
+@keyframes cardAppear {
+  to {
+    opacity: var(--card-opacity);
+    transform: translateY(0);
   }
 }

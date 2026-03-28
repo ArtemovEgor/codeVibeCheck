@@ -80,4 +80,5 @@ export interface IUserStats {
   totalXp: number;
   completedTopics: number;
   streak: number;
+  lastActivityAt: string | undefined; // ISO date string
 }
