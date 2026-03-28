@@ -13,6 +13,8 @@ import type { IApiError } from "@/types/shared";
 import { EN } from "@/locale/en";
 import { Button } from "@/components/button/button";
 
+const SCROLL_THRESHOLD = 300;
+
 export class Library extends BaseComponent implements Page {
   private topics: ITopic[] = [];
   private progress: IUserTopicProgress[] = [];
@@ -67,10 +69,10 @@ export class Library extends BaseComponent implements Page {
       this.topics.map(async (topic) => {
         try {
           const { data } = await widgetsApi.getWidgetsByTopicId(topic.id);
-          const implemented = data.filter(
-            (w) => widgetEngine.getStrategy(w.type) !== undefined,
+          const implementedCount = data.filter(
+            (widget) => widgetEngine.getStrategy(widget.type) !== undefined,
           ).length;
-          this.widgetCounts.set(topic.id, implemented);
+          this.widgetCounts.set(topic.id, implementedCount);
         } catch {
           this.widgetCounts.set(topic.id, topic.widgetIds.length);
         }
@@ -81,7 +83,11 @@ export class Library extends BaseComponent implements Page {
   private renderTopics(): void {
     this.getNode().replaceChildren();
     this.renderSearch();
+    this.renderGrid();
+    this.renderEmptySearchResult();
+  }
 
+  private renderGrid(): void {
     const grid = new BaseComponent({
       className: "library__grid",
       parent: this,
@@ -89,7 +95,9 @@ export class Library extends BaseComponent implements Page {
 
     this.cardElements = [];
     const allProgress = this.getAllTopicProgress();
-    const titlesMap = new Map(this.topics.map((t) => [t.id, t.title.en]));
+    const titlesMap = new Map(
+      this.topics.map((topic) => [topic.id, topic.title.en]),
+    );
 
     let index = 0;
     for (const { topic, progress } of allProgress) {
@@ -107,7 +115,9 @@ export class Library extends BaseComponent implements Page {
       grid.addChildren([card]);
       index++;
     }
+  }
 
+  private renderEmptySearchResult(): void {
     this.emptyState = new BaseComponent({
       className: "library__empty",
       parent: this,
@@ -129,17 +139,21 @@ export class Library extends BaseComponent implements Page {
 
   private getAllTopicProgress() {
     const completedTopicIds = new Set(
-      this.progress.filter((p) => p.everCompleted).map((p) => p.topicId),
+      this.progress
+        .filter((progress) => progress.everCompleted)
+        .map((progress) => progress.topicId),
     );
 
     return this.topics.map((topic) => {
-      let p = this.progress.find((p) => p.topicId === topic.id);
-      if (!p) {
+      let progress = this.progress.find(
+        (progress) => progress.topicId === topic.id,
+      );
+      if (!progress) {
         const isUnlocked = topic.requiredTopicIds.every((requestId) =>
           completedTopicIds.has(requestId),
         );
 
-        p = {
+        progress = {
           topicId: topic.id,
           completedWidgetIds: [],
           everCompleted: false,
@@ -149,7 +163,7 @@ export class Library extends BaseComponent implements Page {
         };
       }
 
-      return { topic, progress: p };
+      return { topic, progress };
     });
   }
 
@@ -169,21 +183,17 @@ export class Library extends BaseComponent implements Page {
       className: "library__search-input",
       parent: inputWrapper,
       attributes: { placeholder: EN.search.placeholder },
+    }).on("input", () => {
+      const value = searchInput.getNode().value.toLowerCase().trim();
+      this.filterCards(value);
+      this.toggleClearButton(clearButton, value);
     });
 
     const clearButton = new BaseComponent({
       className: "library__search-clear",
       text: EN.search.clear,
       parent: inputWrapper,
-    });
-
-    searchInput.on("input", () => {
-      const value = searchInput.getNode().value.toLowerCase().trim();
-      this.filterCards(value);
-      this.toggleClearButton(clearButton, value);
-    });
-
-    clearButton.on("click", () => {
+    }).on("click", () => {
       searchInput.getNode().value = "";
       this.filterCards("");
       this.toggleClearButton(clearButton, "");
@@ -226,7 +236,7 @@ export class Library extends BaseComponent implements Page {
         .getNode()
         .classList.toggle(
           "library__scroll-top--visible",
-          scrollContainer.scrollTop > 300,
+          scrollContainer.scrollTop > SCROLL_THRESHOLD,
         );
     };
 
