@@ -121,8 +121,7 @@
   }
 
   &--locked {
-    filter: grayscale(0.8) brightness(0.9);
-    opacity: var(--active-opacity);
+    filter: grayscale(0.6);
     pointer-events: none;
     cursor: not-allowed;
     transform: none;
