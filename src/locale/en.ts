@@ -221,4 +221,4 @@ while (page.status === 404) {
     clear: "×",
   },
   arrow_up: "↑",
-} as const;
+};

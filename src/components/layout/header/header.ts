@@ -5,6 +5,7 @@ import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 import { SCROLL_THRESHOLD } from "./header.constants";
 import "./header.scss";
 import { ROUTES } from "@/constants/routes";
+import { LangSwitcher } from "../language-switcher/language-switcher";
 
 export class Header extends BaseComponent {
   constructor() {
@@ -44,8 +45,13 @@ export class Header extends BaseComponent {
       parent: container,
     });
 
+    this.createLangSwitcher(right);
     this.createThemeSwitcher(right);
     this.createActions(right);
+  }
+
+  private createLangSwitcher(parent: BaseComponent): void {
+    parent.addChildren([new LangSwitcher()]);
   }
 
   private createThemeSwitcher(parent: BaseComponent): void {

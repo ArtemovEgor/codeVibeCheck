@@ -8,6 +8,7 @@ import { SIDEBAR_ICONS } from "@/assets/icons";
 import { authApi } from "@/api/auth.api";
 import { router } from "@/router/router";
 import type { IUser } from "@/types/shared";
+import { LangSwitcher } from "../language-switcher/language-switcher";
 
 const NAV_ITEMS = [
   {
@@ -139,6 +140,7 @@ export class Sidebar extends BaseComponent {
       parent: this.userWrap,
     });
 
+    sidebarFooterWrap.addChildren([new LangSwitcher()]);
     sidebarFooterWrap.addChildren([new ThemeSwitcher()]);
 
     const logoutButton = new BaseComponent({

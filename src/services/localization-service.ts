@@ -12,6 +12,7 @@ class LocalizationService {
   public setLang(lang: Language): void {
     storageService.setStorage(STORAGE_KEYS.LANG, lang);
     this.currentLang = lang;
+    location.reload();
   }
 
   public getLang(): Language {
