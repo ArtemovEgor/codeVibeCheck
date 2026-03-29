@@ -10,8 +10,8 @@ import widgetEngine from "@/services/widget-engine";
 import Notification from "@/components/notification/notification";
 import { NotificationType } from "@/constants/notification";
 import type { IApiError } from "@/types/shared";
-import { EN } from "@/locale/en";
 import { Button } from "@/components/button/button";
+import { i18n } from "@/services/localization-service.ts";
 
 const SCROLL_THRESHOLD = 300;
 
@@ -96,7 +96,10 @@ export class Library extends BaseComponent implements Page {
     this.cardElements = [];
     const allProgress = this.getAllTopicProgress();
     const titlesMap = new Map(
-      this.topics.map((topic) => [topic.id, topic.title.en]),
+      this.topics.map((topic) => [
+        topic.id,
+        i18n.getLocalizedField(topic.title),
+      ]),
     );
 
     let index = 0;
@@ -109,7 +112,7 @@ export class Library extends BaseComponent implements Page {
       this.cardElements.push({
         topicId: topic.id,
         element: card.getNode(),
-        title: topic.title.en,
+        title: i18n.getLocalizedField(topic.title),
       });
 
       grid.addChildren([card]);
@@ -125,14 +128,14 @@ export class Library extends BaseComponent implements Page {
 
     new BaseComponent({
       tag: "p",
-      text: EN.search.icon,
+      text: i18n.t().search.icon,
       className: "library__empty-icon",
       parent: this.emptyState,
     });
 
     new BaseComponent({
       tag: "p",
-      text: EN.search.empty,
+      text: i18n.t().search.empty,
       parent: this.emptyState,
     });
   }
@@ -182,7 +185,7 @@ export class Library extends BaseComponent implements Page {
       tag: "input",
       className: "library__search-input",
       parent: inputWrapper,
-      attributes: { placeholder: EN.search.placeholder },
+      attributes: { placeholder: i18n.t().search.placeholder },
     }).on("input", () => {
       const value = searchInput.getNode().value.toLowerCase().trim();
       this.filterCards(value);
@@ -191,7 +194,7 @@ export class Library extends BaseComponent implements Page {
 
     const clearButton = new BaseComponent({
       className: "library__search-clear",
-      text: EN.search.clear,
+      text: i18n.t().search.clear,
       parent: inputWrapper,
     }).on("click", () => {
       searchInput.getNode().value = "";
@@ -224,7 +227,7 @@ export class Library extends BaseComponent implements Page {
   private renderScrollToTop(): void {
     const button = new Button({
       className: "library__scroll-top",
-      text: EN.arrow_up,
+      text: i18n.t().arrow_up,
       parent: this,
     });
 

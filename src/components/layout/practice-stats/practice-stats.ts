@@ -1,7 +1,7 @@
 import BaseComponent from "@/components/base/base-component";
 import type { IUserStats, IUserTopicProgress } from "@/types/shared/user.types";
 import "./practice-stats.scss";
-import { EN } from "@/locale/en";
+import { i18n } from "@/services/localization-service.ts";
 
 export class PracticeStats extends BaseComponent {
   constructor(
@@ -32,14 +32,16 @@ export class PracticeStats extends BaseComponent {
     new BaseComponent({
       tag: "span",
       className: "practice-stats__label",
-      text: EN.widgets.stats.xp_earned,
+      text: i18n.t().widgets.stats.xp_earned,
       parent: xpBlock,
     });
 
     new BaseComponent({
       tag: "span",
       className: "practice-stats__value",
-      text: EN.widgets.stats.xp_icon + EN.widgets.stats.xp_value(xpEarned),
+      text:
+        i18n.t().widgets.stats.xp_icon +
+        i18n.t().widgets.stats.xp_value(xpEarned),
       parent: xpBlock,
     });
 
@@ -54,19 +56,19 @@ export class PracticeStats extends BaseComponent {
 
     new BaseComponent({
       className: "practice-stats__total-xp",
-      text: EN.widgets.stats.total_xp(stats.totalXp),
+      text: i18n.t().widgets.stats.total_xp(stats.totalXp),
       parent: statsBlock,
     });
 
     new BaseComponent({
       className: "practice-stats__total-xp",
       parent: statsBlock,
-      text: EN.widgets.stats.completed_topics(stats.completedTopics),
+      text: i18n.t().widgets.stats.completed_topics(stats.completedTopics),
     });
 
     new BaseComponent({
       className: "practice-stats__streak",
-      text: EN.widgets.stats.streak(stats.streak),
+      text: i18n.t().widgets.stats.streak(stats.streak),
       parent: statsBlock,
     });
   }

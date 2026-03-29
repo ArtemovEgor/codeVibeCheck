@@ -1,7 +1,6 @@
 import BaseComponent from "@/components/base/base-component";
 import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
-import { EN } from "@/locale/en";
 import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 import "./sidebar.scss";
 import { SIDEBAR_ICONS } from "@/assets/icons";
@@ -9,25 +8,26 @@ import { authApi } from "@/api/auth.api";
 import { router } from "@/router/router";
 import type { IUser } from "@/types/shared";
 import { LangSwitcher } from "../language-switcher/language-switcher";
+import { i18n } from "@/services/localization-service.ts";
 
 const NAV_ITEMS = [
   {
-    text: EN.sidebar.nav.dashboard,
+    text: i18n.t().sidebar.nav.dashboard,
     href: ROUTES.DASHBOARD,
     className: "nav__icon--dashboard",
   },
   {
-    text: EN.sidebar.nav.library,
+    text: i18n.t().sidebar.nav.library,
     href: ROUTES.LIBRARY,
     className: "nav__icon--library",
   },
   {
-    text: EN.sidebar.nav.aiChat,
+    text: i18n.t().sidebar.nav.aiChat,
     href: ROUTES.AI_CHAT,
     className: "nav__icon--ai",
   },
   {
-    text: EN.sidebar.nav.profile,
+    text: i18n.t().sidebar.nav.profile,
     href: ROUTES.PROFILE,
     className: "nav__icon--profile",
   },
@@ -66,14 +66,14 @@ export class Sidebar extends BaseComponent {
     new BaseComponent({
       tag: "span",
       className: "logo__icon",
-      text: EN.common.app.logo,
+      text: i18n.t().common.app.logo,
       parent: logo,
     });
 
     new BaseComponent({
       tag: "span",
       className: "logo__text",
-      text: EN.common.app.name,
+      text: i18n.t().common.app.name,
       parent: logo,
     });
   }
@@ -146,7 +146,7 @@ export class Sidebar extends BaseComponent {
     const logoutButton = new BaseComponent({
       tag: "button",
       className: "btn sidebar__logout",
-      text: EN.sidebar.nav.logout,
+      text: i18n.t().sidebar.nav.logout,
       parent: sidebarFooterWrap,
     });
 

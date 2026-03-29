@@ -1,4 +1,3 @@
-import { EN } from "@/locale/en";
 import BaseComponent from "../../base/base-component";
 import Link from "../../link/link";
 import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
@@ -6,6 +5,7 @@ import { SCROLL_THRESHOLD } from "./header.constants";
 import "./header.scss";
 import { ROUTES } from "@/constants/routes";
 import { LangSwitcher } from "../language-switcher/language-switcher";
+import { i18n } from "@/services/localization-service.ts";
 
 export class Header extends BaseComponent {
   constructor() {
@@ -29,14 +29,14 @@ export class Header extends BaseComponent {
     new BaseComponent({
       tag: "span",
       className: "logo__icon",
-      text: EN.common.app.logo,
+      text: i18n.t().common.app.logo,
       parent: logoLink,
     });
 
     new BaseComponent({
       tag: "span",
       className: "logo__text",
-      text: EN.common.app.name,
+      text: i18n.t().common.app.name,
       parent: logoLink,
     });
 
@@ -65,13 +65,13 @@ export class Header extends BaseComponent {
     });
 
     new Link({
-      text: EN.common.auth.login,
+      text: i18n.t().common.auth.login,
       href: `#${ROUTES.LOGIN}`,
       variant: "ghost",
       parent: actions,
     });
     new Link({
-      text: EN.common.auth.signup,
+      text: i18n.t().common.auth.signup,
       href: `#${ROUTES.REGISTER}`,
       variant: "primary",
       parent: actions,

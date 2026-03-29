@@ -1,8 +1,8 @@
 import { MAX_RETRIES } from "@/constants/api";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
-import { EN } from "@/locale/en";
 import { storageService } from "@/services/storage-service";
 import type { IApiError } from "@/types/shared";
+import { i18n } from "@/services/localization-service.ts";
 
 class ApiService {
   private apiMode = import.meta.env.VITE_API_MODE || "mock";
@@ -49,7 +49,7 @@ class ApiService {
       throw {
         success: false,
         status: data.status ?? result.status,
-        message: data.message ?? EN.common.error.unknown_api_error,
+        message: data.message ?? i18n.t().common.error.unknown_api_error,
       } satisfies IApiError;
     }
     return data;
@@ -74,7 +74,7 @@ class ApiService {
       throw {
         success: false,
         status: 0,
-        message: EN.common.error.network_error,
+        message: i18n.t().common.error.network_error,
       } as IApiError;
     }
   }
@@ -144,7 +144,7 @@ class ApiService {
     throw {
       success: false,
       status: 0,
-      message: EN.common.error.network_error,
+      message: i18n.t().common.error.network_error,
     } as IApiError;
   }
 

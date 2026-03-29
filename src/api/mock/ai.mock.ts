@@ -2,7 +2,6 @@ import type { IChatMessage, ISendMessagePayload } from "@/types/shared";
 import { delay } from "./delay";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { storageService } from "../../services/storage-service";
-import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
 import {
   MOCK_REPORT_DELAY,
@@ -11,6 +10,7 @@ import {
 } from "@/constants/mock";
 import { tokenizeString } from "@/utils/tokenize-string";
 import type { StreamEvent } from "../stream-parser";
+import { i18n } from "@/services/localization-service.ts";
 
 class AIMock {
   private currentMessageIndex = 0;
@@ -36,10 +36,10 @@ class AIMock {
 
     await delay();
 
-    const text = EN.mock.ai_response[this.currentMessageIndex];
+    const text = i18n.t().mock.ai_response[this.currentMessageIndex];
     const isFinalTurn =
-      this.currentMessageIndex === EN.mock.ai_response.length - 1;
-    if (this.currentMessageIndex < EN.mock.ai_response.length - 1) {
+      this.currentMessageIndex === i18n.t().mock.ai_response.length - 1;
+    if (this.currentMessageIndex < i18n.t().mock.ai_response.length - 1) {
       this.currentMessageIndex += 1;
     } else {
       this.currentMessageIndex = 0;
@@ -51,7 +51,7 @@ class AIMock {
       await delay(MOCK_REPORT_DELAY);
       yield {
         type: "final_report",
-        content: EN.mock.ai_verdict,
+        content: i18n.t().mock.ai_verdict,
       };
     }
   }

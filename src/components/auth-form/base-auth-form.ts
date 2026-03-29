@@ -1,6 +1,5 @@
 import { renderAuthField } from "@/components/auth-form/create-auth-field";
 import BaseComponent from "../base/base-component";
-import { EN } from "@/locale/en";
 import { Button } from "../button/button";
 import { ROUTES } from "@/constants/routes";
 import { router } from "@/router/router";
@@ -9,6 +8,7 @@ import Notification from "../notification/notification";
 import "./auth-form.scss";
 import type { IFieldConfig } from "@/types/types";
 import type { IApiError } from "../../types/shared/api.types";
+import { i18n } from "@/services/localization-service.ts";
 
 export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
   private fields = new Map<
@@ -127,7 +127,7 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
     const regex = new RegExp(pattern, "u");
     if (!regex.test(input.value)) {
       const message =
-        input.dataset.errorText || EN.common.validation.default_error;
+        input.dataset.errorText || i18n.t().common.validation.default_error;
       this.showError(input, errorElement, message);
       return false;
     }
@@ -139,22 +139,24 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
   private getErrorMessage(input: HTMLInputElement): string {
     const { validity } = input;
 
-    if (validity.valueMissing) return EN.common.validation.empty;
+    if (validity.valueMissing) return i18n.t().common.validation.empty;
 
     if (input.type === "email" && input.dataset.errorText) {
       return input.dataset.errorText;
     }
 
     if (validity.tooShort) {
-      return `${EN.common.validation.too_short} ${input.minLength} ${EN.common.validation.characters}`;
+      return `${i18n.t().common.validation.too_short} ${input.minLength} ${i18n.t().common.validation.characters}`;
     }
 
     if (validity.tooLong) {
-      return `${EN.common.validation.too_long} ${input.maxLength} ${EN.common.validation.characters}`;
+      return `${i18n.t().common.validation.too_long} ${input.maxLength} ${i18n.t().common.validation.characters}`;
     }
 
     if (validity.typeMismatch || validity.patternMismatch) {
-      return input.dataset.errorText || EN.common.validation.default_error;
+      return (
+        input.dataset.errorText || i18n.t().common.validation.default_error
+      );
     }
 
     return input.validationMessage;

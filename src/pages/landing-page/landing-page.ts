@@ -1,10 +1,10 @@
 import BaseComponent from "@/components/base/base-component";
 import Link from "@/components/link/link";
 import "./landing-page.scss";
-import { EN } from "@/locale/en";
 import { ICONS } from "@/assets/icons";
 import type Page from "../page";
 import { ROUTES } from "@/constants/routes";
+import { i18n } from "@/services/localization-service.ts";
 
 export class LandingPage extends BaseComponent implements Page {
   constructor() {
@@ -38,13 +38,13 @@ export class LandingPage extends BaseComponent implements Page {
 
     new BaseComponent({
       className: "hero__code hero__code--left",
-      text: EN.landing.hero.examples.first,
+      text: i18n.t().landing.hero.examples.first,
       parent: parent,
     });
 
     new BaseComponent({
       className: "hero__code hero__code--right",
-      text: EN.landing.hero.examples.second,
+      text: i18n.t().landing.hero.examples.second,
       parent: parent,
     });
 
@@ -57,7 +57,10 @@ export class LandingPage extends BaseComponent implements Page {
       className: "hero__title",
       parent: container,
     }).addChildren([
-      new BaseComponent({ tag: "span", text: EN.landing.hero.title.start }),
+      new BaseComponent({
+        tag: "span",
+        text: i18n.t().landing.hero.title.start,
+      }),
       new BaseComponent({
         tag: "span",
         className: "hero__title--js",
@@ -69,13 +72,13 @@ export class LandingPage extends BaseComponent implements Page {
         className: "hero__title--ts",
         text: "TS",
       }),
-      new BaseComponent({ tag: "span", text: EN.landing.hero.title.end }),
+      new BaseComponent({ tag: "span", text: i18n.t().landing.hero.title.end }),
     ]);
 
     new BaseComponent({
       tag: "p",
       className: "hero__subtitle",
-      text: EN.landing.hero.subtitle,
+      text: i18n.t().landing.hero.subtitle,
       parent: container,
     });
 
@@ -104,7 +107,7 @@ export class LandingPage extends BaseComponent implements Page {
     new BaseComponent({
       tag: "h2",
       className: "features__title",
-      text: EN.landing.features.title,
+      text: i18n.t().landing.features.title,
       parent,
     });
   }
@@ -112,7 +115,7 @@ export class LandingPage extends BaseComponent implements Page {
   private renderFeaturesGrid(parent: BaseComponent): void {
     const grid = new BaseComponent({ className: "features__grid", parent });
 
-    for (const item of EN.landing.features.items) {
+    for (const item of i18n.t().landing.features.items) {
       this.createFeatureCard(grid, item);
     }
   }
@@ -170,21 +173,21 @@ export class LandingPage extends BaseComponent implements Page {
     new BaseComponent({
       tag: "h2",
       className: "cta__title",
-      text: EN.landing.cta.title,
+      text: i18n.t().landing.cta.title,
       parent,
     });
 
     new BaseComponent({
       tag: "p",
       className: "cta__subtitle",
-      text: EN.landing.cta.subtitle,
+      text: i18n.t().landing.cta.subtitle,
       parent,
     });
   }
 
   private renderCTAAction(parent: BaseComponent): void {
     new Link({
-      text: EN.landing.cta.button,
+      text: i18n.t().landing.cta.button,
       variant: "primary",
       className: "action__btn",
       href: `#${ROUTES.REGISTER}`,

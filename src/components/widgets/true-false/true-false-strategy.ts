@@ -1,6 +1,5 @@
 import BaseComponent from "@/components/base/base-component";
 import { Button } from "@/components/button/button";
-import { EN } from "@/locale/en";
 import { RU } from "@/locale/ru";
 import {
   WIDGET_TYPES,
@@ -13,15 +12,22 @@ import {
   type WidgetAnswerValue,
 } from "@/types/shared/widget.types";
 import "./true-false-strategy.scss";
+import { i18n } from "@/services/localization-service.ts";
 
 const OPTIONS = [
   {
     value: true,
-    label: { en: EN.widgets.true_false.true, ru: RU.widgets.true_false.true },
+    label: {
+      en: i18n.t().widgets.true_false.true,
+      ru: RU.widgets.true_false.true,
+    },
   },
   {
     value: false,
-    label: { en: EN.widgets.true_false.false, ru: RU.widgets.true_false.false },
+    label: {
+      en: i18n.t().widgets.true_false.false,
+      ru: RU.widgets.true_false.false,
+    },
   },
 ] as const;
 
@@ -52,7 +58,7 @@ export class TrueFalseStrategy implements IWidgetStrategy {
     new BaseComponent({
       tag: "h2",
       className: "widget__question",
-      text: widget.payload.statement.en,
+      text: i18n.getLocalizedField(widget.payload.statement),
       parent: container,
     });
 
@@ -80,7 +86,7 @@ export class TrueFalseStrategy implements IWidgetStrategy {
   ): Button {
     const button = new Button({
       className: "widget__option",
-      text: option.en,
+      text: i18n.getLocalizedField(option),
       parent: parent,
     });
 
@@ -102,7 +108,7 @@ export class TrueFalseStrategy implements IWidgetStrategy {
   ): Button {
     const submitButton = new Button({
       className: "widget__submit",
-      text: EN.widgets.submit,
+      text: i18n.t().widgets.submit,
       parent: parent,
     });
 
