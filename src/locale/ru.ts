@@ -1,7 +1,7 @@
 export const RU = {
   common: {
     auth: {
-      login: "Войти",
+      login: "Вход",
       login_header: "Вход в аккаунт",
       register_header: "Создать аккаунт",
       email: "Email",
@@ -9,7 +9,7 @@ export const RU = {
       password: "Пароль",
       password_placeholder: "Введите пароль",
       login_button: "Войти",
-      signup: "Зарегистрироваться",
+      signup: "Регистрация",
       register_button: "Зарегистрироваться",
       name: "Имя",
       name_placeholder: "Введите имя",
