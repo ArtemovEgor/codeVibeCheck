@@ -123,7 +123,10 @@ export class PracticePage extends BaseComponent implements Page {
 
     new BaseComponent({
       tag: "span",
-      text: i18n.getLocalizedField(this.topic.title) ?? this.topicId,
+      text:
+        this.topic && i18n.getLocalizedField(this.topic.title)
+          ? i18n.getLocalizedField(this.topic.title)
+          : this.topicId,
       parent: breadcrumb,
     });
 
