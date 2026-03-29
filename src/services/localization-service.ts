@@ -3,6 +3,7 @@ import { storageService } from "./storage-service";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { EN } from "@/locale/en";
 import { RU } from "@/locale/ru";
+import type { ILocalizedString } from "@/types/shared/widget.types";
 
 const DEFAULT_LANG: Language = "en";
 const DICTIONARIES: Record<Language, typeof EN> = { en: EN, ru: RU };
@@ -27,9 +28,7 @@ class LocalizationService {
     return DICTIONARIES[this.getLang()];
   }
 
-  public getLocalizedField<T extends Record<Language, string>>(
-    field: T,
-  ): string {
+  public getLocalizedField(field: ILocalizedString): string {
     return field[this.getLang()];
   }
 }
