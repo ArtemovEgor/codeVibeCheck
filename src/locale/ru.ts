@@ -152,6 +152,9 @@ function curry(func) {
       true: "Верно",
       false: "Неверно",
     },
+    code_completion: {
+      header: "Заполни пропуски",
+    },
     stats: {
       xp_earned: "Заработано XP",
       xp_icon: "🔸",

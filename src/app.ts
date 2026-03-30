@@ -17,6 +17,7 @@ import widgetEngine from "./services/widget-engine";
 import { storageService } from "./services/storage-service";
 import { STORAGE_KEYS } from "./constants/storage-keys";
 import { i18n } from "./services/localization-service";
+import { CodeCompletionStrategy } from "./components/widgets/code-completion/code-completion-strategy";
 
 export default class App {
   private readonly parentNode: HTMLElement;
@@ -87,5 +88,6 @@ export default class App {
   private registerWidgets(): void {
     widgetEngine.register(new QuizStrategy());
     widgetEngine.register(new TrueFalseStrategy());
+    widgetEngine.register(new CodeCompletionStrategy());
   }
 }

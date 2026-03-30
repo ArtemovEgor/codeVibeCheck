@@ -131,6 +131,7 @@ export type WidgetAnswerValue =
   | number
   | number[]
   | string
+  | string[]
   | boolean
   | undefined;
 
