@@ -47,7 +47,7 @@ dataBase.exec(`
   )
 `);
 
-// Widgets
+// Topics
 dataBase.exec(`
   CREATE TABLE IF NOT EXISTS topics (
     id TEXT PRIMARY KEY,
@@ -70,6 +70,24 @@ dataBase.exec(`
   )
 `);
 
+// Widgets
+dataBase.exec(`
+  CREATE TABLE IF NOT EXISTS widgets (
+    id TEXT PRIMARY KEY,
+    topicId TEXT NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('quiz', 'true-false', 'code-completion', 'code-ordering')),
+    payload TEXT NOT NULL,
+    answerData TEXT NOT NULL,
+    difficulty INTEGER DEFAULT 1 CHECK(difficulty BETWEEN 1 AND 3),
+    version INTEGER DEFAULT 1,
+    tags TEXT,
+    sortOrder INTEGER DEFAULT 0,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (topicId) REFERENCES topics(id) ON DELETE CASCADE
+  )
+`);
+
 // Indexes
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_user_stats_userId ON user_stats(userId)
@@ -85,6 +103,10 @@ dataBase.exec(`
 
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_topic_requirements_required ON topic_requirements(requiredTopicId)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_widgets_difficulty ON widgets(difficulty)
 `);
 
 export default dataBase;
