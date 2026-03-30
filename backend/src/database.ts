@@ -60,6 +60,16 @@ dataBase.exec(`
   )
 `);
 
+dataBase.exec(`
+  CREATE TABLE IF NOT EXISTS topic_requirements (
+    topicId TEXT NOT NULL,
+    requiredTopicId TEXT NOT NULL,
+    PRIMARY KEY (topicId, requiredTopicId),
+    FOREIGN KEY (topicId) REFERENCES topics(id),
+    FOREIGN KEY (requiredTopicId) REFERENCES topics(id)
+  )
+`);
+
 // Indexes
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_user_stats_userId ON user_stats(userId)
@@ -71,6 +81,10 @@ dataBase.exec(`
 
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_topics_difficulty ON topics(difficulty)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_topic_requirements_required ON topic_requirements(requiredTopicId)
 `);
 
 export default dataBase;
