@@ -70,6 +70,23 @@ dataBase.exec(`
   )
 `);
 
+dataBase.exec(`
+  CREATE TABLE IF NOT EXISTS user_topic_progress (
+    userId TEXT NOT NULL,
+    topicId TEXT NOT NULL,
+    completedWidgetIds TEXT DEFAULT '[]',
+    xpEarned INTEGER DEFAULT 0,
+    everCompleted BOOLEAN DEFAULT FALSE,
+    isCompleted BOOLEAN DEFAULT FALSE,
+    isUnlocked BOOLEAN DEFAULT FALSE,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (userId, topicId),
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (topicId) REFERENCES topics(id) ON DELETE CASCADE
+  )
+`);
+
 // Widgets
 dataBase.exec(`
   CREATE TABLE IF NOT EXISTS widgets (
@@ -107,6 +124,18 @@ dataBase.exec(`
 
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_widgets_difficulty ON widgets(difficulty)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_user_topic_progress_userId ON user_topic_progress(userId)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_user_topic_progress_incomplete ON user_topic_progress(userId, isCompleted)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_user_topic_progress_unlocked ON user_topic_progress(userId, isUnlocked)
 `);
 
 export default dataBase;
