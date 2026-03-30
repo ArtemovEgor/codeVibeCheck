@@ -36,17 +36,6 @@ dataBase.exec(`
   )
 `);
 
-dataBase.exec(`
-  CREATE TABLE IF NOT EXISTS user_stats (
-    userId TEXT PRIMARY KEY,
-    totalXp INTEGER DEFAULT 0,
-    chatSessionsCompleted INTEGER DEFAULT 0,
-    lastChatXpEarned INTEGER DEFAULT 0,
-    lastSessionResult TEXT,
-    FOREIGN KEY (userId) REFERENCES users(id)
-  )
-`);
-
 // Topics
 dataBase.exec(`
   CREATE TABLE IF NOT EXISTS topics (
@@ -105,6 +94,33 @@ dataBase.exec(`
   )
 `);
 
+// User stats
+// -- For chat --
+dataBase.exec(`
+  CREATE TABLE IF NOT EXISTS user_stats (
+    userId TEXT PRIMARY KEY,
+    totalXp INTEGER DEFAULT 0,
+    chatSessionsCompleted INTEGER DEFAULT 0,
+    lastChatXpEarned INTEGER DEFAULT 0,
+    lastSessionResult TEXT,
+    FOREIGN KEY (userId) REFERENCES users(id)
+  )
+`);
+
+// -- For topics --
+dataBase.exec(`
+  CREATE TABLE IF NOT EXISTS user_learning_stats (
+    userId TEXT PRIMARY KEY,
+    totalXp INTEGER DEFAULT 0,
+    completedTopicsCount INTEGER DEFAULT 0,
+    streak INTEGER DEFAULT 0,
+    lastActivityAt DATETIME,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
 // Indexes
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_user_stats_userId ON user_stats(userId)
@@ -136,6 +152,10 @@ dataBase.exec(`
 
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_user_topic_progress_unlocked ON user_topic_progress(userId, isUnlocked)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_user_learning_stats_userId ON user_learning_stats(userId)
 `);
 
 export default dataBase;
