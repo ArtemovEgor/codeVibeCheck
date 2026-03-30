@@ -12,6 +12,7 @@ const dataBase = new Database(databasePath);
 
 dataBase.pragma("foreign_keys = ON");
 
+// Users
 dataBase.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -23,6 +24,7 @@ dataBase.exec(`
   )
 `);
 
+// AI Chat
 dataBase.exec(`
   CREATE TABLE IF NOT EXISTS messages (
     id TEXT PRIMARY KEY,
@@ -45,8 +47,30 @@ dataBase.exec(`
   )
 `);
 
+// Widgets
+dataBase.exec(`
+  CREATE TABLE IF NOT EXISTS topics (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    difficulty INTEGER DEFAULT 1 CHECK(difficulty BETWEEN 1 AND 3),
+    sortOrder INTEGER DEFAULT 0,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// Indexes
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_user_stats_userId ON user_stats(userId)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_topics_sortOrder ON topics(sortOrder)
+`);
+
+dataBase.exec(`
+  CREATE INDEX IF NOT EXISTS idx_topics_difficulty ON topics(difficulty)
 `);
 
 export default dataBase;
