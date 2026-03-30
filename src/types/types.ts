@@ -32,3 +32,5 @@ export interface IFieldConfig {
   minLength: number;
   maxLength: number;
 }
+
+export type Language = "en" | "ru";

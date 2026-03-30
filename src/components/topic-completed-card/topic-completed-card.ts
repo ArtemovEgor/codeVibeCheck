@@ -2,7 +2,7 @@ import type { IUserTopicProgress } from "@/types/shared/user.types";
 import BaseComponent from "../base/base-component";
 import { Button } from "../button/button";
 import "./topic-completed-card.scss";
-import { EN } from "@/locale/en";
+import { i18n } from "@/services/localization-service.ts";
 
 export class TopicCompletedCard extends BaseComponent {
   constructor(
@@ -15,14 +15,14 @@ export class TopicCompletedCard extends BaseComponent {
     new BaseComponent({
       tag: "h2",
       className: "topic-completed__title",
-      text: EN.widgets.completed.title,
+      text: i18n.t().widgets.completed.title,
       parent: this,
     });
 
     new BaseComponent({
       tag: "p",
       className: "topic-completed__xp",
-      text: EN.widgets.completed.xp(progress.xpEarned),
+      text: i18n.t().widgets.completed.xp(progress.xpEarned),
       parent: this,
     });
 
@@ -33,13 +33,13 @@ export class TopicCompletedCard extends BaseComponent {
 
     new Button({
       className: "btn--secondary",
-      text: EN.widgets.completed.back,
+      text: i18n.t().widgets.completed.back,
       parent: actions,
     }).on("click", () => onBack());
 
     new Button({
       className: "btn--primary",
-      text: EN.widgets.completed.retry,
+      text: i18n.t().widgets.completed.retry,
       parent: actions,
     }).on("click", () => onRetry());
   }

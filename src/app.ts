@@ -8,7 +8,6 @@ import { TrueFalseStrategy } from "./components/widgets/true-false/true-false-st
 import { DEFAULT_THEME } from "./constants/app";
 import { NotificationType } from "./constants/notification";
 import { ROUTES } from "./constants/routes";
-import { EN } from "./locale/en";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
 import { LandingPage } from "./pages/landing-page/landing-page";
 import { Library } from "./pages/library/library";
@@ -17,6 +16,7 @@ import { router } from "./router/router";
 import widgetEngine from "./services/widget-engine";
 import { storageService } from "./services/storage-service";
 import { STORAGE_KEYS } from "./constants/storage-keys";
+import { i18n } from "./services/localization-service";
 
 export default class App {
   private readonly parentNode: HTMLElement;
@@ -35,7 +35,7 @@ export default class App {
         "hashchange",
         () => {
           Notification.show(
-            EN.common.error.session_expired,
+            i18n.t().common.error.session_expired,
             NotificationType.ERROR,
           );
         },

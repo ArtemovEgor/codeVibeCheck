@@ -2,8 +2,8 @@ import BaseComponent from "@/components/base/base-component";
 import { Button } from "@/components/button/button";
 import type { IVerdict } from "@/types/shared/widget.types";
 import "./verdict-card.scss";
-import { EN } from "@/locale/en";
 import { ICONS } from "@/assets/icons";
+import { i18n } from "@/services/localization-service.ts";
 
 export class VerdictCard extends BaseComponent {
   constructor(verdict: IVerdict, onNext: () => void) {
@@ -26,14 +26,14 @@ export class VerdictCard extends BaseComponent {
       new BaseComponent({
         tag: "p",
         className: "verdict-card__explanation",
-        text: verdict.explanation.en,
+        text: i18n.getLocalizedField(verdict.explanation),
         parent: this,
       });
     }
 
     new Button({
       className: "verdict-card__next btn--primary",
-      text: EN.widgets.next,
+      text: i18n.t().widgets.next,
       parent: this,
     }).on("click", () => onNext());
   }
@@ -63,8 +63,8 @@ export class VerdictCard extends BaseComponent {
     new BaseComponent({
       tag: "span",
       text: verdict.isCorrect
-        ? EN.widgets.answer.correct
-        : EN.widgets.answer.wrong,
+        ? i18n.t().widgets.answer.correct
+        : i18n.t().widgets.answer.wrong,
       parent: statusElement,
     });
 

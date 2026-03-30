@@ -4,9 +4,9 @@ import type { ITopic } from "@/types/shared/widget.types";
 import type { IUserTopicProgress } from "@/types/shared/user.types";
 import { router } from "@/router/router";
 import { ROUTES } from "@/constants/routes";
-import { EN } from "@/locale/en";
 import "./topic-card.scss";
 import { progressApi } from "@/api/progress.api";
+import { i18n } from "@/services/localization-service.ts";
 
 const MAX_DIFFICULTY = 3;
 const COLORS = [
@@ -79,7 +79,7 @@ export class TopicCard extends BaseComponent {
 
     new BaseComponent({
       className: "topic-card__icon",
-      text: isLocked ? EN.widgets.stats.locked : this.getIconText(topic),
+      text: isLocked ? i18n.t().widgets.stats.locked : this.getIconText(topic),
       parent: iconContainer,
     });
 
@@ -108,14 +108,14 @@ export class TopicCard extends BaseComponent {
     new BaseComponent({
       tag: "h3",
       className: "topic-card__title",
-      text: topic.title.en,
+      text: i18n.getLocalizedField(topic.title),
       parent: this,
     });
 
     new BaseComponent({
       tag: "p",
       className: "topic-card__desc",
-      text: topic.description.en,
+      text: i18n.getLocalizedField(topic.description),
       parent: this,
     });
 
@@ -127,7 +127,7 @@ export class TopicCard extends BaseComponent {
       new BaseComponent({
         className: "topic-card__requires",
         tag: "span",
-        text: `${EN.topic.require}: ${names}`,
+        text: `${i18n.t().topic.require}: ${names}`,
         parent: this,
       });
     }
@@ -147,7 +147,7 @@ export class TopicCard extends BaseComponent {
     new BaseComponent({
       tag: "span",
       className: "topic-card__xp",
-      text: EN.widgets.stats.xp_value(xp),
+      text: i18n.t().widgets.stats.xp_value(xp),
       parent: stats,
     });
 
@@ -185,10 +185,10 @@ export class TopicCard extends BaseComponent {
     });
 
     const buttonText = progress.isCompleted
-      ? EN.topic.retry
+      ? i18n.t().topic.retry
       : progress.completedWidgetIds.length > 0
-        ? EN.topic.continue
-        : EN.topic.start;
+        ? i18n.t().topic.continue
+        : i18n.t().topic.start;
 
     const button = new Button({
       className: "topic-card__button",
@@ -223,7 +223,10 @@ export class TopicCard extends BaseComponent {
   }
 
   private getIconText(topic: ITopic): string {
-    return TOPIC_ICONS[topic.id] ?? topic.title.en.slice(0, 2).toUpperCase();
+    return (
+      TOPIC_ICONS[topic.id] ??
+      i18n.getLocalizedField(topic.title).slice(0, 2).toUpperCase()
+    );
   }
 
   private getAccentColor(id: string): string {

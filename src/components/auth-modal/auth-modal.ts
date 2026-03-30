@@ -1,4 +1,3 @@
-import { EN } from "@/locale/en";
 import BaseComponent from "../base/base-component";
 import Modal from "../modal/modal";
 import LoginForm from "../auth-form/login-form";
@@ -7,6 +6,7 @@ import "./auth-modal.scss";
 import type { BaseAuthForm } from "../auth-form/base-auth-form";
 import { ROUTES } from "@/constants/routes";
 import { router } from "@/router/router";
+import { i18n } from "@/services/localization-service.ts";
 
 type AuthTab = "login" | "register";
 
@@ -38,14 +38,14 @@ export default class AuthModal extends Modal {
 
     this.loginTabButton = new BaseComponent<HTMLButtonElement>({
       tag: "button",
-      text: EN.common.auth.login,
+      text: i18n.t().common.auth.login,
       className: "auth-switch__tab",
     });
     this.loginTabButton.on("click", () => this.showTab("login"));
 
     this.registerTabButton = new BaseComponent<HTMLButtonElement>({
       tag: "button",
-      text: EN.common.auth.signup,
+      text: i18n.t().common.auth.signup,
       className: "auth-switch__tab",
     });
     this.registerTabButton.on("click", () => this.showTab("register"));

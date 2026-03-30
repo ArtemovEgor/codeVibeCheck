@@ -4,7 +4,6 @@ import { widgetsApi } from "@/api/widgets.api";
 import type { ITopic, Widget, WidgetAnswer } from "@/types/shared/widget.types";
 import widgetEngine from "@/services/widget-engine";
 import "./practice-page.scss";
-import { EN } from "@/locale/en";
 import { VerdictCard } from "@/components/widgets/verdict-card/verdict-card";
 import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
@@ -16,6 +15,7 @@ import { TopicCompletedCard } from "@/components/topic-completed-card/topic-comp
 import Notification from "@/components/notification/notification";
 import { NotificationType } from "@/constants/notification";
 import type { IApiError } from "@/types/shared";
+import { i18n } from "@/services/localization-service.ts";
 
 export class PracticePage extends BaseComponent implements Page {
   private readonly topicId: string;
@@ -61,7 +61,7 @@ export class PracticePage extends BaseComponent implements Page {
     }
 
     if (this.progress && !this.progress.isUnlocked) {
-      Notification.show(EN.widgets.locked, NotificationType.ERROR);
+      Notification.show(i18n.t().widgets.locked, NotificationType.ERROR);
       router.navigate(ROUTES.LIBRARY);
       return;
     }
@@ -109,7 +109,7 @@ export class PracticePage extends BaseComponent implements Page {
     });
 
     new Link({
-      text: EN.sidebar.nav.library,
+      text: i18n.t().sidebar.nav.library,
       className: "practice-page__breadcrumb-link",
       href: `#${ROUTES.LIBRARY}`,
       parent: breadcrumb,
@@ -117,13 +117,16 @@ export class PracticePage extends BaseComponent implements Page {
 
     new BaseComponent({
       tag: "span",
-      text: EN.breadcrumbs.separator,
+      text: i18n.t().breadcrumbs.separator,
       parent: breadcrumb,
     });
 
     new BaseComponent({
       tag: "span",
-      text: this.topic?.title.en ?? this.topicId,
+      text:
+        this.topic && i18n.getLocalizedField(this.topic.title)
+          ? i18n.getLocalizedField(this.topic.title)
+          : this.topicId,
       parent: breadcrumb,
     });
 

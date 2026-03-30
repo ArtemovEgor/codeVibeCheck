@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   USER_STATS: "user-stats",
   THEME: "app-theme",
   TOKEN: "jwt",
+  LANG: "app-lang",
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

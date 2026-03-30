@@ -10,13 +10,13 @@ import type {
 } from "@/types/shared";
 import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
-import { EN } from "@/locale/en";
 import { ChatRoles } from "@/constants/api-chat";
 import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
 import { TypingIndicator } from "../typing-indicator/typing-indicator";
+import { i18n } from "@/services/localization-service.ts";
 
 export default class AIChat extends BaseComponent implements Page {
   private messageHistory?: BaseComponent;
@@ -74,7 +74,7 @@ export default class AIChat extends BaseComponent implements Page {
       tag: "span",
       className: "chat-xp__label",
       parent: xp,
-      text: EN.ai_chat.xp,
+      text: i18n.t().ai_chat.xp,
     });
 
     this.xpValueElement = new BaseComponent({
@@ -94,7 +94,7 @@ export default class AIChat extends BaseComponent implements Page {
       parent,
       className: "ai-chat__restart-button",
       attributes: {
-        "data-text": EN.ai_chat.restart_text,
+        "data-text": i18n.t().ai_chat.restart_text,
       },
       onClick: async () => {
         const isHoverSupported =
@@ -121,7 +121,7 @@ export default class AIChat extends BaseComponent implements Page {
     });
     const restartNode = restartButton.getNode();
     restartNode.innerHTML = ICONS.restart;
-    restartNode.title = EN.ai_chat.restart_text;
+    restartNode.title = i18n.t().ai_chat.restart_text;
   }
 
   private async restartChat(): Promise<void> {
@@ -183,7 +183,7 @@ export default class AIChat extends BaseComponent implements Page {
       .getNode()
       .querySelector(".chat-message__content");
 
-    if (content) content.innerHTML = renderMarkdown(EN.ai_chat.welcome);
+    if (content) content.innerHTML = renderMarkdown(i18n.t().ai_chat.welcome);
   }
 
   private handleChatHistory(chatHistory: IChatMessage[]): void {
@@ -315,7 +315,7 @@ export default class AIChat extends BaseComponent implements Page {
 
     const inputNode = this.messageField?.getNode();
     if (inputNode) {
-      inputNode.placeholder = EN.ai_chat.input_placeholder;
+      inputNode.placeholder = i18n.t().ai_chat.input_placeholder;
       inputNode.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
           event.preventDefault();
@@ -487,21 +487,21 @@ export default class AIChat extends BaseComponent implements Page {
       className: "button--try-again",
       parent: ctaContainer,
       onClick: () => this.restartChat(),
-      text: EN.ai_chat.try_again_button,
+      text: i18n.t().ai_chat.try_again_button,
     });
 
     new Button({
       className: "button--share",
       parent: ctaContainer,
       onClick: () => this.handleShareResult(reportMarkdown),
-      text: EN.ai_chat.share_button,
+      text: i18n.t().ai_chat.share_button,
     });
   }
 
   private async handleShareResult(reportMarkdown: string): Promise<void> {
     const cleanText = reportMarkdown.replaceAll(/[*#]/g, "").trim();
-    const shareTitle = EN.ai_chat.share_text_1;
-    const shareText = `${EN.ai_chat.share_text_2}\n\n${cleanText}`;
+    const shareTitle = i18n.t().ai_chat.share_text_1;
+    const shareText = `${i18n.t().ai_chat.share_text_2}\n\n${cleanText}`;
     const shareUrl = "https://codevibecheck.com";
 
     if (navigator.share) {
@@ -522,10 +522,16 @@ export default class AIChat extends BaseComponent implements Page {
     try {
       const clipboardText = `${shareTitle}\n\n${shareText}\n\n${shareUrl}`;
       await navigator.clipboard.writeText(clipboardText);
-      Notification.show(EN.ai_chat.share_copied, NotificationType.SUCCESS);
+      Notification.show(
+        i18n.t().ai_chat.share_copied,
+        NotificationType.SUCCESS,
+      );
     } catch (clipboardError) {
       console.error("Clipboard failed:", clipboardError);
-      Notification.show(EN.ai_chat.share_not_copied, NotificationType.ERROR);
+      Notification.show(
+        i18n.t().ai_chat.share_not_copied,
+        NotificationType.ERROR,
+      );
     }
   }
 
@@ -541,7 +547,7 @@ export default class AIChat extends BaseComponent implements Page {
     const notice = new BaseComponent({
       tag: "p",
       className: "chat-message__stop-notice",
-      text: EN.ai_chat.stop_generation,
+      text: i18n.t().ai_chat.stop_generation,
     });
 
     container?.append(notice.getNode());

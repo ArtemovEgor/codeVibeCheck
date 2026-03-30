@@ -1,11 +1,11 @@
 import type Page from "@/pages/page";
 import BaseComponent from "../base/base-component";
 import { NOT_FOUND } from "@/assets/icons";
-import { EN } from "@/locale/en";
 import "./not-found-content.scss";
 import hljs from "highlight.js";
 import Link from "../link/link";
 import { ROUTES } from "@/constants/routes";
+import { i18n } from "@/services/localization-service.ts";
 
 export class NotFoundContent extends BaseComponent implements Page {
   constructor() {
@@ -30,7 +30,7 @@ export class NotFoundContent extends BaseComponent implements Page {
       },
     });
 
-    for (const [side, code] of Object.entries(EN.not_found.code_blocks)) {
+    for (const [side, code] of Object.entries(i18n.t().not_found.code_blocks)) {
       const codeBlock = new BaseComponent({
         tag: "pre",
         className: `not-found__code-block not-found__code-block--${side} hljs language-javascript`,
@@ -77,14 +77,14 @@ export class NotFoundContent extends BaseComponent implements Page {
     new BaseComponent({
       tag: "h2",
       className: "not-found__title",
-      text: EN.not_found.header,
+      text: i18n.t().not_found.header,
       parent: textBlock,
     });
 
     new BaseComponent({
       tag: "p",
       className: "not-found__description",
-      text: EN.not_found.text,
+      text: i18n.t().not_found.text,
       parent: textBlock,
     });
 
@@ -93,7 +93,7 @@ export class NotFoundContent extends BaseComponent implements Page {
 
   private createButton(): Link {
     return new Link({
-      text: EN.not_found.button_text,
+      text: i18n.t().not_found.button_text,
       href: `#${ROUTES.DASHBOARD}`,
       variant: "primary",
     });
