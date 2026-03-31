@@ -1,7 +1,12 @@
 import { progressApi } from "@/api/progress.api";
 import { widgetsApi } from "@/api/widgets.api";
 import { XP_BY_DIFFICULTY } from "@/constants/game";
-import type { ISkillData } from "@/types/shared/progress.types";
+import {
+  SKILL_TYPES,
+  type IProgressStatistic,
+  type ISkillData,
+  type SkillType,
+} from "@/types/shared/progress.types";
 import type { IUserTopicProgress } from "@/types/shared/user.types";
 import type { ITopic, Widget } from "@/types/shared/widget.types";
 
@@ -9,13 +14,15 @@ export class ProgressService {
   private topics: ITopic[] = [];
   private progress: IUserTopicProgress[] = [];
 
-  public async getDashboardData() {
+  public async getProgressDashboardData(): Promise<IProgressStatistic> {
     [this.topics, this.progress] = await Promise.all([
       widgetsApi.getTopics(),
       progressApi.getAll(),
     ]);
 
-    this.calculateSkillProgress(this.progress);
+    const skillsData = await this.calculateSkillProgress(this.progress);
+
+    return { skillsMastery: skillsData };
   }
 
   private async calculateSkillProgress(
@@ -23,9 +30,33 @@ export class ProgressService {
   ): Promise<ISkillData[]> {
     const statistic: ISkillData[] = [];
     const skillsXP = await this.countSkillsXP(progress);
-    console.log(statistic, skillsXP);
+    const totalXP = await this.countTotalXPBySkill();
+    statistic.push(
+      this.createStatisticEl(skillsXP, totalXP, SKILL_TYPES.THEORY),
+      this.createStatisticEl(skillsXP, totalXP, SKILL_TYPES.CODING),
+      this.createStatisticEl(skillsXP, totalXP, SKILL_TYPES.LOGIC),
+    );
 
-    return [];
+    return statistic;
+  }
+
+  private async countTotalXPBySkill() {
+    const totalXP = {
+      theory: 0,
+      coding: 0,
+      logic: 0,
+    };
+    if (this.topics.length > 0) {
+      for (const topic of this.topics) {
+        const widgets = await widgetsApi.getWidgetsByTopicId(topic.id);
+        if (widgets.length > 0) {
+          for (const widget of widgets) {
+            this.countXP(totalXP, widget);
+          }
+        }
+      }
+    }
+    return totalXP;
   }
 
   private async countSkillsXP(progress: IUserTopicProgress[]) {
@@ -37,27 +68,44 @@ export class ProgressService {
 
     for (const p of progress) {
       const completedWidgetIds = p.completedWidgetIds;
-      if (completedWidgetIds) {
+      if (completedWidgetIds.length > 0) {
         for (const widgetId of completedWidgetIds) {
           const widget: Widget = await widgetsApi.getWidgetById(widgetId);
-          switch (widget.type) {
-            case "quiz": {
-              skillsXP.theory += XP_BY_DIFFICULTY[widget.difficulty];
-              break;
-            }
-            case "true-false": {
-              skillsXP.logic += XP_BY_DIFFICULTY[widget.difficulty];
-              break;
-            }
-            default: {
-              skillsXP.coding += XP_BY_DIFFICULTY[widget.difficulty];
-            }
-          }
+          this.countXP(skillsXP, widget);
         }
       }
     }
 
     return skillsXP;
+  }
+
+  private createStatisticEl(
+    skillsXP: Record<SkillType, number>,
+    totalXP: Record<SkillType, number>,
+    key: SkillType = SKILL_TYPES.LOGIC,
+  ) {
+    return {
+      type: key,
+      currentXP: skillsXP[key],
+      totalXP: totalXP[key],
+      percentage: Math.round((skillsXP[key] / totalXP[key]) * 100) || 0,
+    };
+  }
+
+  private countXP(xp: Record<SkillType, number>, widget: Widget): void {
+    switch (widget.type) {
+      case "quiz": {
+        xp.theory += XP_BY_DIFFICULTY[widget.difficulty];
+        break;
+      }
+      case "true-false": {
+        xp.logic += XP_BY_DIFFICULTY[widget.difficulty];
+        break;
+      }
+      default: {
+        xp.coding += XP_BY_DIFFICULTY[widget.difficulty];
+      }
+    }
   }
 }
 

@@ -2,6 +2,8 @@ import BaseComponent from "@/components/base/base-component";
 import type Page from "../page";
 import "./dashboard-page.scss";
 import SkillMastery from "@/components/skill-mastery/skill-mastery";
+import { progressService } from "@/services/progress-service";
+import type { IProgressStatistic } from "@/types/shared/progress.types";
 
 export class DashboardPage extends BaseComponent implements Page {
   private interactSector: BaseComponent | undefined = undefined;
@@ -13,11 +15,12 @@ export class DashboardPage extends BaseComponent implements Page {
     this.init();
   }
 
-  public init(): void {
+  public async init(): Promise<void> {
+    const progressData = await progressService.getProgressDashboardData();
     this.getNode().replaceChildren();
     this.renderMainLayout();
     this.renderHeader();
-    this.renderLearningSector();
+    this.renderLearningSector(progressData);
     this.renderInteractSector();
   }
 
@@ -52,10 +55,10 @@ export class DashboardPage extends BaseComponent implements Page {
     this.header.addChildren([]);
   }
 
-  private renderLearningSector(): void {
+  private renderLearningSector(progressData: IProgressStatistic): void {
     if (!this.learningSector) return;
 
-    this.learningSector.addChildren([new SkillMastery().getNode()]);
+    this.learningSector.addChildren([new SkillMastery(progressData).getNode()]);
   }
 
   private renderInteractSector(): void {
