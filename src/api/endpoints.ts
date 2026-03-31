@@ -19,6 +19,7 @@ export const ENDPOINTS = {
     GET_WIDGETS: (id: string) => `/api/topics/${id}/widgets`, // GET -> Widget[]
   },
   WIDGETS: {
+    GET_ALL: "/api/widgets", // GET -> Widget[]
     GET_BY_ID: (id: string) => `/api/widgets/${id}`, // GET -> Widget
     SUBMIT_ANSWER: (id: string) => `/api/widgets/${id}/submit`, // POST - WidgetAnswer -> IVerdict
   },

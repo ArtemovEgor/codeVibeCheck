@@ -12,11 +12,13 @@ import type { ITopic, Widget } from "@/types/shared/widget.types";
 
 export class ProgressService {
   private topics: ITopic[] = [];
+  private widgets: Widget[] = [];
   private progress: IUserTopicProgress[] = [];
 
   public async getProgressDashboardData(): Promise<IProgressStatistic> {
-    [this.topics, this.progress] = await Promise.all([
+    [this.topics, this.widgets, this.progress] = await Promise.all([
       widgetsApi.getTopics(),
+      widgetsApi.getWidgets(),
       progressApi.getAll(),
     ]);
 
@@ -46,14 +48,9 @@ export class ProgressService {
       coding: 0,
       logic: 0,
     };
-    if (this.topics.length > 0) {
-      for (const topic of this.topics) {
-        const widgets = await widgetsApi.getWidgetsByTopicId(topic.id);
-        if (widgets.length > 0) {
-          for (const widget of widgets) {
-            this.countXP(totalXP, widget);
-          }
-        }
+    if (this.topics.length > 0 && this.widgets.length > 0) {
+      for (const widget of this.widgets) {
+        this.countXP(totalXP, widget);
       }
     }
     return totalXP;
@@ -70,8 +67,8 @@ export class ProgressService {
       const completedWidgetIds = p.completedWidgetIds;
       if (completedWidgetIds.length > 0) {
         for (const widgetId of completedWidgetIds) {
-          const widget: Widget = await widgetsApi.getWidgetById(widgetId);
-          this.countXP(skillsXP, widget);
+          const widget = this.widgets.find((item) => item.id === widgetId);
+          if (widget) this.countXP(skillsXP, widget);
         }
       }
     }

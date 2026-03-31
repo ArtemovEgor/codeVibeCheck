@@ -20,7 +20,6 @@ export default class SkillMastery extends BaseComponent {
       text: i18n.t().dashboard.components.skills.title,
       parent: this,
     });
-    console.log(progressData);
     if (progressData.skillsMastery.length > 0) {
       for (const skillData of progressData.skillsMastery) {
         const item = this.renderItem(skillData);

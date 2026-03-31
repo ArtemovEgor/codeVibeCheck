@@ -54,6 +54,18 @@ class WidgetsApi {
     return result.data;
   }
 
+  public async getWidgets(): Promise<Widget[]> {
+    const result = apiService.isMockMode
+      ? await widgetsMock.getWidgets()
+      : await apiService.send<IApiResponse<Widget[]>>(
+          ENDPOINTS.WIDGETS.GET_ALL,
+          {
+            method: "GET",
+          },
+        );
+    return result.data;
+  }
+
   public async getTopicById(id: string): Promise<ITopic> {
     const result = apiService.isMockMode
       ? await widgetsMock.getTopicById(id)
