@@ -89,7 +89,8 @@ export class ProgressService {
       type: key,
       currentXP: skillsXP[key],
       totalXP: totalXP[key],
-      percentage: Math.round((skillsXP[key] / totalXP[key]) * 100) || 0,
+      percentage:
+        totalXP[key] > 0 ? Math.round((skillsXP[key] / totalXP[key]) * 100) : 0,
     };
   }
 

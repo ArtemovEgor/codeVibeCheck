@@ -102,9 +102,8 @@
 
   &__bar {
     @include progress-track;
-    height: 6px;
     background-color: var(--bg-surface-hover);
-    overflow: visible;
+    overflow: hidden;
 
     .topic-card__fill {
       @include progress-fill;

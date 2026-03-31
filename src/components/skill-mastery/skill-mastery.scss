@@ -35,7 +35,6 @@
 
   &__progress-wrapper {
     @include progress-track;
-    height: 8px;
     background-color: var(--bg-surface-hover);
     border-radius: var(--radius-full);
     overflow: hidden;
@@ -46,8 +45,7 @@
     height: 100%;
     border-radius: var(--radius-full);
     background: var(--gradient-primary);
-    box-shadow: 0 0 10px
-      color-mix(in srgb, var(--accent-primary) 30%, transparent);
+    box-shadow: 0 0 12px var(--accent-primary);
     transition: width var(--transition-slow) ease-out;
   }
 
