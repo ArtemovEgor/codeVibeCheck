@@ -227,7 +227,7 @@ while (page.status === 404) {
   dashboard: {
     components: {
       skills: {
-        title: "Skill mastery",
+        title: "Мастерство навыков",
       },
     },
   },

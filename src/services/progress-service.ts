@@ -8,7 +8,11 @@ import {
   type SkillType,
 } from "@/types/shared/progress.types";
 import type { IUserTopicProgress } from "@/types/shared/user.types";
-import type { ITopic, Widget } from "@/types/shared/widget.types";
+import {
+  WIDGET_TYPES,
+  type ITopic,
+  type Widget,
+} from "@/types/shared/widget.types";
 
 export class ProgressService {
   private topics: ITopic[] = [];
@@ -91,11 +95,11 @@ export class ProgressService {
 
   private countXP(xp: Record<SkillType, number>, widget: Widget): void {
     switch (widget.type) {
-      case "quiz": {
+      case WIDGET_TYPES.QUIZ: {
         xp.theory += XP_BY_DIFFICULTY[widget.difficulty];
         break;
       }
-      case "true-false": {
+      case WIDGET_TYPES.TRUE_FALSE: {
         xp.logic += XP_BY_DIFFICULTY[widget.difficulty];
         break;
       }
