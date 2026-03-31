@@ -205,8 +205,7 @@ export class PracticePage extends BaseComponent implements Page {
 
   private async loadTopic(): Promise<ITopic | undefined> {
     try {
-      const { data } = await widgetsApi.getTopicById(this.topicId);
-      return data;
+      return await widgetsApi.getTopicById(this.topicId);
     } catch (error) {
       console.error(error);
       return undefined;
@@ -215,7 +214,7 @@ export class PracticePage extends BaseComponent implements Page {
 
   private async loadWidgets(): Promise<Widget[]> {
     try {
-      const { data } = await widgetsApi.getWidgetsByTopicId(this.topicId);
+      const data = await widgetsApi.getWidgetsByTopicId(this.topicId);
       return data.filter((w) => widgetEngine.getStrategy(w.type) !== undefined);
     } catch (error) {
       console.error(error);
@@ -258,10 +257,7 @@ export class PracticePage extends BaseComponent implements Page {
     if (!widget) return;
 
     try {
-      const { data: verdict } = await widgetsApi.submitAnswer(
-        widget.id,
-        answer,
-      );
+      const verdict = await widgetsApi.submitAnswer(widget.id, answer);
 
       await progressApi.update({
         topicId: this.topicId,

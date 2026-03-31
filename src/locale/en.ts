@@ -224,4 +224,11 @@ while (page.status === 404) {
     clear: "×",
   },
   arrow_up: "↑",
+  dashboard: {
+    components: {
+      skills: {
+        title: "Skill mastery",
+      },
+    },
+  },
 };
