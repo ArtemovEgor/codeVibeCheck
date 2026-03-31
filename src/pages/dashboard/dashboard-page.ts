@@ -16,12 +16,16 @@ export class DashboardPage extends BaseComponent implements Page {
   }
 
   public async init(): Promise<void> {
-    const progressData = await progressService.getProgressDashboardData();
     this.getNode().replaceChildren();
     this.renderMainLayout();
     this.renderHeader();
-    this.renderLearningSector(progressData);
     this.renderInteractSector();
+    try {
+      const progressData = await progressService.getProgressDashboardData();
+      this.renderLearningSector(progressData);
+    } catch (error) {
+      console.warn(error);
+    }
   }
 
   private renderMainLayout() {
