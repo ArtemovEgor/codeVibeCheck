@@ -8,7 +8,8 @@ import { profileApi } from "@/api/profile.api";
 import type { IProgressStatistic } from "@/types/shared/progress.types";
 import type { IUserChatStats } from "@/types/shared";
 import { i18n } from "@/services/localization-service";
-import type { IUserStats } from "@/types/shared/user.types";
+import type { IUser, IUserStats } from "@/types/shared/user.types";
+import { authApi } from "@/api/auth.api";
 
 export class DashboardPage extends BaseComponent implements Page {
   private interactSector: BaseComponent | undefined = undefined;
@@ -16,23 +17,24 @@ export class DashboardPage extends BaseComponent implements Page {
   private header: BaseComponent | undefined = undefined;
 
   constructor() {
-    super({ tag: "div", className: "dashboard" });
+    super({ className: "dashboard" });
     void this.init();
   }
 
   public async init(): Promise<void> {
     this.getNode().replaceChildren();
     this.renderMainLayout();
-    const [stats, progressResult, chatStatsResult] = await Promise.allSettled([
+    const [stats, progressResult, chatStatsResult, currentUser] = await Promise.allSettled([
       progressService.loadGlobalStats(),
       progressService.getProgressDashboardData(),
       profileApi.getChatStats(),
+      authApi.getCurrentUser(),
     ]);
 
-    if (stats.status === "fulfilled") {
-       this.renderHeader(stats.value);
+    if (stats.status === "fulfilled" && currentUser.status === "fulfilled") {
+       this.renderHeader(stats.value, currentUser.value);
     } else {
-      console.warn(stats.reason);
+      console.warn(stats.status);
     }
 
     if (progressResult.status === "fulfilled") {
@@ -73,12 +75,34 @@ export class DashboardPage extends BaseComponent implements Page {
     });
   }
 
-  private renderHeader(stats: IUserStats | undefined): void {
+  private renderHeader(stats: IUserStats | undefined, user: IUser): void {
     if (!this.header) return;
+
+    this.header.addChildren([this.createHeaderTitle(stats, user)]);
+  }
+
+    private renderLearningSector(
+    progressData: IProgressStatistic | undefined,
+  ): void {
+    if (!this.learningSector || !progressData) return;
+
+    this.learningSector.addChildren([new SkillMastery(progressData).getNode()]);
+  }
+
+  private renderInteractSector(chatStats: IUserChatStats): void {
+    if (!this.interactSector) return;
+
+    this.interactSector.addChildren([
+      new AIInterviewPerformance(chatStats).getNode(),
+    ]);
+  }
+
+  private createHeaderTitle(stats: IUserStats | undefined, user: IUser): BaseComponent {
+    const userName = user?.name ?? "User";
+    const streak = stats ? stats.streak : 0;
 
     const titleWrap = new BaseComponent({
       className: "dashboard__header-titles",
-      parent: this.header,
     });
 
     new BaseComponent({
@@ -96,33 +120,17 @@ export class DashboardPage extends BaseComponent implements Page {
     new BaseComponent({
       tag: "p",
       className: "dashboard__subtitle",
-      text: `${i18n.t().dashboard.welcome}, Alex!`,
+      text: `${i18n.t().dashboard.welcome}, ${userName}!`,
       parent: subtitleContainer,
     });
 
     new BaseComponent({
       tag: "span",
       className: "dashboard__streak-badge",
-      text: stats
-        ? i18n.t().widgets.stats.streak(stats.streak)
-        : i18n.t().widgets.stats.streak(0),
+      text: i18n.t().widgets.stats.streak(streak),
       parent: subtitleContainer,
     });
-  }
 
-  private renderLearningSector(
-    progressData: IProgressStatistic | undefined,
-  ): void {
-    if (!this.learningSector || !progressData) return;
-
-    this.learningSector.addChildren([new SkillMastery(progressData).getNode()]);
-  }
-
-  private renderInteractSector(chatStats: IUserChatStats): void {
-    if (!this.interactSector) return;
-
-    this.interactSector.addChildren([
-      new AIInterviewPerformance(chatStats).getNode(),
-    ]);
+    return titleWrap;
   }
 }

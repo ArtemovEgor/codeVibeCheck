@@ -22,32 +22,29 @@ export default class SkillMastery extends BaseComponent {
     });
     if (progressData.skillsMastery.length > 0) {
       for (const skillData of progressData.skillsMastery) {
-        const item = this.renderItem(skillData);
+        const item = this.createItem(skillData);
         this.addChildren([item]);
       }
     }
   }
 
-  private renderItem(data: ISkillData): BaseComponent {
+  private createItem(data: ISkillData): BaseComponent {
     const item = new BaseComponent({
       className: "skill-mastery__item",
-      parent: this,
     });
 
-    this.renderItemInfo(data, item);
-    this.renderItemProgressBar(data, item);
-    this.renderSubInfo(data, item);
+    item.addChildren([
+      this.createItemInfo(data),
+      this.createItemProgressBar(data),
+      this.createSubInfo(data),
+    ]);
 
     return item;
   }
 
-  private renderItemInfo(
-    data: ISkillData,
-    parent: BaseComponent,
-  ): BaseComponent {
+  private createItemInfo(data: ISkillData): BaseComponent {
     const itemInfo = new BaseComponent({
       className: "skill-mastery__info",
-      parent: parent,
     });
     new BaseComponent({
       tag: "span",
@@ -66,13 +63,9 @@ export default class SkillMastery extends BaseComponent {
     return itemInfo;
   }
 
-  private renderItemProgressBar(
-    data: ISkillData,
-    parent: BaseComponent,
-  ): BaseComponent {
+  private createItemProgressBar(data: ISkillData): BaseComponent {
     const bar = new BaseComponent({
       className: "skill-mastery__progress-wrapper",
-      parent: parent,
     });
 
     const fill = new BaseComponent({
@@ -85,14 +78,10 @@ export default class SkillMastery extends BaseComponent {
     return bar;
   }
 
-  private renderSubInfo(
-    data: ISkillData,
-    parent: BaseComponent,
-  ): BaseComponent {
+  private createSubInfo(data: ISkillData): BaseComponent {
     return new BaseComponent({
       className: "skill-mastery__sub-info",
       text: `${data.currentXP} / ${data.totalXP}`,
-      parent: parent,
     });
   }
 }
