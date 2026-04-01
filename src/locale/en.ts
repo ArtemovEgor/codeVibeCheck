@@ -230,5 +230,10 @@ while (page.status === 404) {
         title: "Skill mastery",
       },
     },
+    skills_names: {
+      theory: "Theory",
+      coding: "Coding",
+      logic: "Logic",
+    },
   },
 };

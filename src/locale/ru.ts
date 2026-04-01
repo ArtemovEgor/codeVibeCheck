@@ -230,5 +230,10 @@ while (page.status === 404) {
         title: "Мастерство навыков",
       },
     },
+    skills_names: {
+      theory: "Теория",
+      coding: "Практика кода",
+      logic: "Логика",
+    },
   },
 };

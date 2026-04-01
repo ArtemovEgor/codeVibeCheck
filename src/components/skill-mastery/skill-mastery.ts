@@ -52,7 +52,7 @@ export default class SkillMastery extends BaseComponent {
     new BaseComponent({
       tag: "span",
       className: "skill-mastery__label",
-      text: data.type,
+      text: i18n.t().dashboard.skills_names[data.type],
       parent: itemInfo,
     });
 

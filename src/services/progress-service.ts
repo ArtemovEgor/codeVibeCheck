@@ -35,8 +35,8 @@ export class ProgressService {
     progress: IUserTopicProgress[],
   ): Promise<ISkillData[]> {
     const statistic: ISkillData[] = [];
-    const skillsXP = await this.countSkillsXP(progress);
-    const totalXP = await this.countTotalXPBySkill();
+    const skillsXP = this.countSkillsXP(progress);
+    const totalXP = this.countTotalXPBySkill();
     statistic.push(
       this.createStatisticEl(skillsXP, totalXP, SKILL_TYPES.THEORY),
       this.createStatisticEl(skillsXP, totalXP, SKILL_TYPES.CODING),
@@ -46,7 +46,7 @@ export class ProgressService {
     return statistic;
   }
 
-  private async countTotalXPBySkill() {
+  private countTotalXPBySkill() {
     const totalXP = {
       theory: 0,
       coding: 0,
@@ -60,7 +60,7 @@ export class ProgressService {
     return totalXP;
   }
 
-  private async countSkillsXP(progress: IUserTopicProgress[]) {
+  private countSkillsXP(progress: IUserTopicProgress[]) {
     const skillsXP = {
       theory: 0,
       coding: 0,

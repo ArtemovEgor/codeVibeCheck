@@ -12,7 +12,7 @@ export class DashboardPage extends BaseComponent implements Page {
 
   constructor() {
     super({ tag: "div", className: "dashboard" });
-    this.init();
+    void this.init();
   }
 
   public async init(): Promise<void> {

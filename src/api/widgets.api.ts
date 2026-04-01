@@ -9,20 +9,20 @@
  *
  * @example
  * Load all topics (e.g. Library Page)
- * const { data: topics } = await widgetsApi.getTopics();
+ * const topics = await widgetsApi.getTopics();
  *
  * @example
  * Load widgets for a topic and render them (e.g. Practice Page)
- * const { data: widgets } = await widgetsApi.getWidgetsByTopicId("core-js");
+ * const widgets = await widgetsApi.getWidgetsByTopicId("core-js");
  * const el = widgetEngine.renderWidget(widgets[0], async (answer) => {
- *   const { data: verdict } = await widgetsApi.submitAnswer(widgets[0].id, answer);
+ *   const verdict = await widgetsApi.submitAnswer(widgets[0].id, answer);
  *   console.log(verdict.isCorrect, verdict.xpEarned);
  * });
  *
  * @example
  * Error handling
  * try {
- *   const { data: topic } = await widgetsApi.getTopicById("unknown-id");
+ *   const topic = await widgetsApi.getTopicById("unknown-id");
  * } catch (error) {
  *   const apiError = error as IApiError;
  *   console.error(apiError.message); // "Topic not found: unknown-id"
