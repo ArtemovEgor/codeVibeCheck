@@ -7,6 +7,8 @@ import { progressService } from "@/services/progress-service";
 import { profileApi } from "@/api/profile.api";
 import type { IProgressStatistic } from "@/types/shared/progress.types";
 import type { IUserChatStats } from "@/types/shared";
+import { i18n } from "@/services/localization-service";
+import type { IUserStats } from "@/types/shared/user.types";
 
 export class DashboardPage extends BaseComponent implements Page {
   private interactSector: BaseComponent | undefined = undefined;
@@ -21,12 +23,17 @@ export class DashboardPage extends BaseComponent implements Page {
   public async init(): Promise<void> {
     this.getNode().replaceChildren();
     this.renderMainLayout();
-    this.renderHeader();
-
-    const [progressResult, chatStatsResult] = await Promise.allSettled([
+    const [stats, progressResult, chatStatsResult] = await Promise.allSettled([
+      progressService.loadGlobalStats(),
       progressService.getProgressDashboardData(),
       profileApi.getChatStats(),
     ]);
+
+    if (stats.status === "fulfilled") {
+       this.renderHeader(stats.value);
+    } else {
+      console.warn(stats.reason);
+    }
 
     if (progressResult.status === "fulfilled") {
       this.renderLearningSector(progressResult.value);
@@ -66,14 +73,47 @@ export class DashboardPage extends BaseComponent implements Page {
     });
   }
 
-  private renderHeader(): void {
+  private renderHeader(stats: IUserStats | undefined): void {
     if (!this.header) return;
 
-    this.header.addChildren([]);
+    const titleWrap = new BaseComponent({
+      className: "dashboard__header-titles",
+      parent: this.header,
+    });
+
+    new BaseComponent({
+      tag: "h1",
+      className: "dashboard__title",
+      text: i18n.t().dashboard.title,
+      parent: titleWrap,
+    });
+
+    const subtitleContainer = new BaseComponent({
+      className: "dashboard__subtitle-container",
+      parent: titleWrap,
+    });
+
+    new BaseComponent({
+      tag: "p",
+      className: "dashboard__subtitle",
+      text: `${i18n.t().dashboard.welcome}, Alex!`,
+      parent: subtitleContainer,
+    });
+
+    new BaseComponent({
+      tag: "span",
+      className: "dashboard__streak-badge",
+      text: stats
+        ? i18n.t().widgets.stats.streak(stats.streak)
+        : i18n.t().widgets.stats.streak(0),
+      parent: subtitleContainer,
+    });
   }
 
-  private renderLearningSector(progressData: IProgressStatistic): void {
-    if (!this.learningSector) return;
+  private renderLearningSector(
+    progressData: IProgressStatistic | undefined,
+  ): void {
+    if (!this.learningSector || !progressData) return;
 
     this.learningSector.addChildren([new SkillMastery(progressData).getNode()]);
   }

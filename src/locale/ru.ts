@@ -225,7 +225,7 @@ while (page.status === 404) {
   },
   arrow_up: "↑",
   dashboard: {
-    title: "Статистика",
+    title: "Dashboard",
     welcome: "С возвращением",
     components: {
       skills: {
