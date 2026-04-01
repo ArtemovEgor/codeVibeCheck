@@ -46,8 +46,7 @@ export class Library extends BaseComponent implements Page {
 
   private async loadTopics(): Promise<ITopic[]> {
     try {
-      const { data } = await widgetsApi.getTopics();
-      return data;
+      return await widgetsApi.getTopics();
     } catch (error) {
       const apiError = error as IApiError;
       Notification.show(apiError.message, NotificationType.ERROR);
@@ -68,7 +67,7 @@ export class Library extends BaseComponent implements Page {
     await Promise.all(
       this.topics.map(async (topic) => {
         try {
-          const { data } = await widgetsApi.getWidgetsByTopicId(topic.id);
+          const data = await widgetsApi.getWidgetsByTopicId(topic.id);
           const implementedCount = data.filter(
             (widget) => widgetEngine.getStrategy(widget.type) !== undefined,
           ).length;

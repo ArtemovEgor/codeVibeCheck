@@ -224,4 +224,16 @@ while (page.status === 404) {
     clear: "×",
   },
   arrow_up: "↑",
+  dashboard: {
+    components: {
+      skills: {
+        title: "Мастерство навыков",
+      },
+    },
+    skills_names: {
+      theory: "Теория",
+      coding: "Практика кода",
+      logic: "Логика",
+    },
+  },
 };

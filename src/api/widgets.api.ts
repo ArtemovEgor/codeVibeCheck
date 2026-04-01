@@ -9,20 +9,20 @@
  *
  * @example
  * Load all topics (e.g. Library Page)
- * const { data: topics } = await widgetsApi.getTopics();
+ * const topics = await widgetsApi.getTopics();
  *
  * @example
  * Load widgets for a topic and render them (e.g. Practice Page)
- * const { data: widgets } = await widgetsApi.getWidgetsByTopicId("core-js");
+ * const widgets = await widgetsApi.getWidgetsByTopicId("core-js");
  * const el = widgetEngine.renderWidget(widgets[0], async (answer) => {
- *   const { data: verdict } = await widgetsApi.submitAnswer(widgets[0].id, answer);
+ *   const verdict = await widgetsApi.submitAnswer(widgets[0].id, answer);
  *   console.log(verdict.isCorrect, verdict.xpEarned);
  * });
  *
  * @example
  * Error handling
  * try {
- *   const { data: topic } = await widgetsApi.getTopicById("unknown-id");
+ *   const topic = await widgetsApi.getTopicById("unknown-id");
  * } catch (error) {
  *   const apiError = error as IApiError;
  *   console.error(apiError.message); // "Topic not found: unknown-id"
@@ -42,53 +42,74 @@ import { ENDPOINTS } from "./endpoints";
 import { widgetsMock } from "./mock/widgets.mock";
 
 class WidgetsApi {
-  public async getTopics(): Promise<IApiResponse<ITopic[]>> {
-    if (apiService.isMockMode) return widgetsMock.getTopics();
-    return apiService.send<IApiResponse<ITopic[]>>(ENDPOINTS.TOPICS.GET_ALL, {
-      method: "GET",
-    });
+  public async getTopics(): Promise<ITopic[]> {
+    const result = apiService.isMockMode
+      ? await widgetsMock.getTopics()
+      : await apiService.send<IApiResponse<ITopic[]>>(
+          ENDPOINTS.TOPICS.GET_ALL,
+          {
+            method: "GET",
+          },
+        );
+    return result.data;
   }
 
-  public async getTopicById(id: string): Promise<IApiResponse<ITopic>> {
-    if (apiService.isMockMode) return widgetsMock.getTopicById(id);
-    return apiService.send<IApiResponse<ITopic>>(
-      ENDPOINTS.TOPICS.GET_BY_ID(id),
-      { method: "GET" },
-    );
+  public async getWidgets(): Promise<Widget[]> {
+    const result = apiService.isMockMode
+      ? await widgetsMock.getWidgets()
+      : await apiService.send<IApiResponse<Widget[]>>(
+          ENDPOINTS.WIDGETS.GET_ALL,
+          {
+            method: "GET",
+          },
+        );
+    return result.data;
   }
 
-  public async getWidgetsByTopicId(
-    topicId: string,
-  ): Promise<IApiResponse<Widget[]>> {
-    if (apiService.isMockMode) return widgetsMock.getWidgetsByTopicId(topicId);
-    return apiService.send<IApiResponse<Widget[]>>(
-      ENDPOINTS.TOPICS.GET_WIDGETS(topicId),
-      { method: "GET" },
-    );
+  public async getTopicById(id: string): Promise<ITopic> {
+    const result = apiService.isMockMode
+      ? await widgetsMock.getTopicById(id)
+      : await apiService.send<IApiResponse<ITopic>>(
+          ENDPOINTS.TOPICS.GET_BY_ID(id),
+          { method: "GET" },
+        );
+    return result.data;
   }
 
-  public async getWidgetById(id: string): Promise<IApiResponse<Widget>> {
-    if (apiService.isMockMode) return widgetsMock.getWidgetById(id);
-    return apiService.send<IApiResponse<Widget>>(
-      ENDPOINTS.WIDGETS.GET_BY_ID(id),
-      { method: "GET" },
-    );
+  public async getWidgetsByTopicId(topicId: string): Promise<Widget[]> {
+    const result = apiService.isMockMode
+      ? await widgetsMock.getWidgetsByTopicId(topicId)
+      : await apiService.send<IApiResponse<Widget[]>>(
+          ENDPOINTS.TOPICS.GET_WIDGETS(topicId),
+          { method: "GET" },
+        );
+    return result.data;
+  }
+
+  public async getWidgetById(id: string): Promise<Widget> {
+    const result = apiService.isMockMode
+      ? await widgetsMock.getWidgetById(id)
+      : await apiService.send<IApiResponse<Widget>>(
+          ENDPOINTS.WIDGETS.GET_BY_ID(id),
+          { method: "GET" },
+        );
+    return result.data;
   }
 
   public async submitAnswer(
     widgetId: string,
     answer: WidgetAnswer,
-  ): Promise<IApiResponse<IVerdict>> {
-    if (apiService.isMockMode)
-      return widgetsMock.submitAnswer(widgetId, answer);
-
-    return apiService.send<IApiResponse<IVerdict>>(
-      ENDPOINTS.WIDGETS.SUBMIT_ANSWER(widgetId),
-      {
-        method: "POST",
-        body: JSON.stringify({ answer }),
-      },
-    );
+  ): Promise<IVerdict> {
+    const result = apiService.isMockMode
+      ? await widgetsMock.submitAnswer(widgetId, answer)
+      : await apiService.send<IApiResponse<IVerdict>>(
+          ENDPOINTS.WIDGETS.SUBMIT_ANSWER(widgetId),
+          {
+            method: "POST",
+            body: JSON.stringify({ answer }),
+          },
+        );
+    return result.data;
   }
 }
 

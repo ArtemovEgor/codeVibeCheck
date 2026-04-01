@@ -24,6 +24,15 @@ class WidgetMock {
     };
   }
 
+  public async getWidgets(): Promise<IApiResponse<Widget[]>> {
+    await delay();
+
+    return {
+      success: true,
+      data: MOCK_WIDGETS,
+    };
+  }
+
   public async getTopicById(id: string): Promise<IApiResponse<ITopic>> {
     await delay();
 
