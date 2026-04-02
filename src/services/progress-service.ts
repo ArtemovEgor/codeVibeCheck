@@ -22,18 +22,13 @@ export class ProgressService {
   public async getProgressDashboardData(): Promise<
     IProgressStatistic | undefined
   > {
-    try {
-      [this.topics, this.widgets, this.progress] = await Promise.all([
-        widgetsApi.getTopics(),
-        widgetsApi.getWidgets(),
-        progressApi.getAll(),
-      ]);
-    } catch (error) {
-      console.error("Stats loading failed", error);
-      return undefined;
-    }
+    [this.topics, this.widgets, this.progress] = await Promise.all([
+      widgetsApi.getTopics().catch(() => []),
+      widgetsApi.getWidgets().catch(() => []),
+      progressApi.getAll().catch(() => []),
+    ]);
 
-    const skillsData = await this.calculateSkillProgress(this.progress);
+    const skillsData = this.calculateSkillProgress(this.progress);
 
     return { skillsMastery: skillsData };
   }
@@ -47,9 +42,7 @@ export class ProgressService {
     }
   }
 
-  private async calculateSkillProgress(
-    progress: IUserTopicProgress[],
-  ): Promise<ISkillData[]> {
+  private calculateSkillProgress(progress: IUserTopicProgress[]): ISkillData[] {
     const statistic: ISkillData[] = [];
     const skillsXP = this.countSkillsXP(progress);
     const totalXP = this.countTotalXPBySkill();

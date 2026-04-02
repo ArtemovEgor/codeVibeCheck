@@ -24,15 +24,16 @@ export class DashboardPage extends BaseComponent implements Page {
   public async init(): Promise<void> {
     this.getNode().replaceChildren();
     this.renderMainLayout();
-    const [stats, progressResult, chatStatsResult, currentUser] = await Promise.allSettled([
-      progressService.loadGlobalStats(),
-      progressService.getProgressDashboardData(),
-      profileApi.getChatStats(),
-      authApi.getCurrentUser(),
-    ]);
+    const [stats, progressResult, chatStatsResult, currentUser] =
+      await Promise.allSettled([
+        progressService.loadGlobalStats(),
+        progressService.getProgressDashboardData(),
+        profileApi.getChatStats(),
+        this.loadUser(),
+      ]);
 
     if (stats.status === "fulfilled" && currentUser.status === "fulfilled") {
-       this.renderHeader(stats.value, currentUser.value);
+      this.renderHeader(stats.value, currentUser.value);
     } else {
       console.warn(stats.status);
     }
@@ -75,13 +76,16 @@ export class DashboardPage extends BaseComponent implements Page {
     });
   }
 
-  private renderHeader(stats: IUserStats | undefined, user: IUser): void {
+  private renderHeader(
+    stats: IUserStats | undefined,
+    user: IUser | undefined,
+  ): void {
     if (!this.header) return;
 
     this.header.addChildren([this.createHeaderTitle(stats, user)]);
   }
 
-    private renderLearningSector(
+  private renderLearningSector(
     progressData: IProgressStatistic | undefined,
   ): void {
     if (!this.learningSector || !progressData) return;
@@ -97,7 +101,10 @@ export class DashboardPage extends BaseComponent implements Page {
     ]);
   }
 
-  private createHeaderTitle(stats: IUserStats | undefined, user: IUser): BaseComponent {
+  private createHeaderTitle(
+    stats: IUserStats | undefined,
+    user: IUser | undefined,
+  ): BaseComponent {
     const userName = user?.name ?? "User";
     const streak = stats ? stats.streak : 0;
 
@@ -132,5 +139,13 @@ export class DashboardPage extends BaseComponent implements Page {
     });
 
     return titleWrap;
+  }
+
+  private async loadUser(): Promise<IUser | undefined> {
+    try {
+      return await authApi.getCurrentUser();
+    } catch {
+      return undefined;
+    }
   }
 }
