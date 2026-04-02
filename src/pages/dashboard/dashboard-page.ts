@@ -2,8 +2,11 @@ import BaseComponent from "@/components/base/base-component";
 import type Page from "../page";
 import "./dashboard-page.scss";
 import SkillMastery from "@/components/skill-mastery/skill-mastery";
+import AIInterviewPerformance from "@/components/ai-interview-performance/ai-interview-performance";
 import { progressService } from "@/services/progress-service";
+import { profileApi } from "@/api/profile.api";
 import type { IProgressStatistic } from "@/types/shared/progress.types";
+import type { IUserChatStats } from "@/types/shared";
 
 export class DashboardPage extends BaseComponent implements Page {
   private interactSector: BaseComponent | undefined = undefined;
@@ -19,12 +22,22 @@ export class DashboardPage extends BaseComponent implements Page {
     this.getNode().replaceChildren();
     this.renderMainLayout();
     this.renderHeader();
-    this.renderInteractSector();
-    try {
-      const progressData = await progressService.getProgressDashboardData();
-      this.renderLearningSector(progressData);
-    } catch (error) {
-      console.warn(error);
+
+    const [progressResult, chatStatsResult] = await Promise.allSettled([
+      progressService.getProgressDashboardData(),
+      profileApi.getChatStats(),
+    ]);
+
+    if (progressResult.status === "fulfilled") {
+      this.renderLearningSector(progressResult.value);
+    } else {
+      console.warn(progressResult.reason);
+    }
+
+    if (chatStatsResult.status === "fulfilled") {
+      this.renderInteractSector(chatStatsResult.value);
+    } else {
+      console.warn(chatStatsResult.reason);
     }
   }
 
@@ -65,9 +78,11 @@ export class DashboardPage extends BaseComponent implements Page {
     this.learningSector.addChildren([new SkillMastery(progressData).getNode()]);
   }
 
-  private renderInteractSector(): void {
+  private renderInteractSector(chatStats: IUserChatStats): void {
     if (!this.interactSector) return;
 
-    this.interactSector.addChildren([]);
+    this.interactSector.addChildren([
+      new AIInterviewPerformance(chatStats).getNode(),
+    ]);
   }
 }

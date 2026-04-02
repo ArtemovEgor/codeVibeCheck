@@ -225,9 +225,18 @@ while (page.status === 404) {
   },
   arrow_up: "↑",
   dashboard: {
+    title: "Статистика",
+    welcome: "С возвращением",
     components: {
       skills: {
         title: "Мастерство навыков",
+      },
+      ai_performance: {
+        title: "Результат AI Интервью",
+        review_session: "Посмотреть сессию",
+        empty_title: "Интервью ещё не пройдено",
+        empty_cta: "Начать AI Интервью",
+        xp_breakdown: "Разбор баллов",
       },
     },
     skills_names: {

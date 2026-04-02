@@ -225,9 +225,18 @@ while (page.status === 404) {
   },
   arrow_up: "↑",
   dashboard: {
+    title: "Dashboard",
+    welcome: "Welcome back",
     components: {
       skills: {
         title: "Skill mastery",
+      },
+      ai_performance: {
+        title: "AI Interview Performance",
+        review_session: "Review Session",
+        empty_title: "No interview sessions yet",
+        empty_cta: "Start AI Interview",
+        xp_breakdown: "XP Breakdown",
       },
     },
     skills_names: {
