@@ -1,0 +1,95 @@
+.radar-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-4) 0;
+
+  &__svg {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    overflow: visible;
+  }
+
+  &__grid {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+  }
+
+  &__axis {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+
+  &__label {
+    fill: var(--text-secondary);
+    font-size: 10px;
+    font-weight: var(--weight-medium);
+    dominant-baseline: middle;
+  }
+
+  &__data {
+    fill: var(--accent-primary);
+    fill-opacity: 0.2;
+    stroke: var(--accent-primary);
+    stroke-width: 2;
+    transition: fill-opacity 0.3s ease;
+
+    &:hover {
+      fill-opacity: 0.4;
+    }
+  }
+
+  &__point {
+    fill: var(--accent-primary);
+    stroke: var(--bg-surface);
+    stroke-width: 1;
+    transition:
+      r 0.2s ease,
+      fill 0.2s ease;
+  }
+
+  &__hover-area {
+    fill: transparent;
+    cursor: pointer;
+  }
+
+  &__item {
+    cursor: pointer;
+
+    .radar-chart__axis,
+    .radar-chart__point,
+    .radar-chart__percent {
+      transition: all 0.2s ease;
+    }
+
+    .radar-chart__percent {
+      opacity: 0;
+      fill: var(--accent-primary);
+      font-size: 11px;
+      font-weight: var(--weight-bold);
+      dominant-baseline: middle;
+      paint-order: stroke fill;
+      stroke: var(--bg-surface);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+      transform: translateY(-5px);
+    }
+
+    &:hover {
+      .radar-chart__axis {
+        stroke: var(--accent-primary);
+        stroke-width: 2;
+      }
+      .radar-chart__point {
+        r: 4.5px;
+      }
+      .radar-chart__percent {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+}

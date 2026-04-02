@@ -63,6 +63,7 @@ GENERATE:
 * **Logic & Problem-Solving:** [0-100%]
 * **Syntax & Implementation:** [0-100%]
 * **Architecture & Design:** [0-100%]
+* **Best Practices & Code Quality:** [0-100%]
 * **Communication:** [0-100%]
 `.trim(),
 } as const;
