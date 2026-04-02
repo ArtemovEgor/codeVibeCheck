@@ -236,7 +236,7 @@ while (page.status === 404) {
         review_session: "Review Session",
         empty_title: "No interview sessions yet",
         empty_cta: "Start AI Interview",
-        xp_breakdown: "XP Breakdown",
+        xp_breakdown: "Skills Breakdown",
       },
     },
     skills_names: {

@@ -110,6 +110,51 @@
     fill: var(--accent-primary);
     stroke: var(--bg-surface);
     stroke-width: 1;
+    transition:
+      r 0.2s ease,
+      fill 0.2s ease;
+  }
+
+  &__radar-hover-area {
+    fill: transparent;
+    cursor: pointer;
+  }
+
+  &__radar-item {
+    cursor: pointer;
+
+    .ai-performance__radar-axis,
+    .ai-performance__radar-point,
+    .ai-performance__radar-percent {
+      transition: all 0.2s ease;
+    }
+
+    .ai-performance__radar-percent {
+      opacity: 0;
+      fill: var(--accent-primary);
+      font-size: 11px;
+      font-weight: var(--weight-bold);
+      dominant-baseline: middle;
+      paint-order: stroke fill;
+      stroke: var(--bg-surface);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+      transform: translateY(-5px);
+    }
+
+    &:hover {
+      .ai-performance__radar-axis {
+        stroke: var(--accent-primary);
+        stroke-width: 2;
+      }
+      .ai-performance__radar-point {
+        r: 4.5px;
+      }
+      .ai-performance__radar-percent {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   }
 
   &__cta {

@@ -236,7 +236,7 @@ while (page.status === 404) {
         review_session: "Посмотреть сессию",
         empty_title: "Интервью ещё не пройдено",
         empty_cta: "Начать AI Интервью",
-        xp_breakdown: "Разбор баллов",
+        xp_breakdown: "Разбор скиллов",
       },
     },
     skills_names: {
