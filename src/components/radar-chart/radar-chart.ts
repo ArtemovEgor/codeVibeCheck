@@ -16,8 +16,11 @@ const CHART_CONFIG = {
 };
 
 export default class RadarChart extends BaseComponent {
-  constructor(private data: IRadarChartData[]) {
+  private data: IRadarChartData[];
+
+  constructor(data: IRadarChartData[]) {
     super({ className: "radar-chart" });
+    this.data = data;
     this.render();
   }
 
