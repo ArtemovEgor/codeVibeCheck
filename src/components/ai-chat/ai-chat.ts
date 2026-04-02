@@ -388,7 +388,7 @@ export default class AIChat extends BaseComponent implements Page {
     try {
       await this.renderMessageText(
         responseContainer,
-        { content },
+        { content, language: i18n.getLang() },
         abortSignal,
         indicator,
       );
@@ -472,7 +472,7 @@ export default class AIChat extends BaseComponent implements Page {
 
   private async renderMessageText(
     responseContainer: HTMLElement | undefined,
-    { content }: ISendMessagePayload,
+    payload: ISendMessagePayload,
     abortSignal: AbortSignal,
     indicator: TypingIndicator,
   ): Promise<void> {
@@ -488,10 +488,7 @@ export default class AIChat extends BaseComponent implements Page {
     }, FIRST_CHUNK_TIMEOUT_MS);
 
     try {
-      for await (const event of aiApi.sendChatMessage(
-        { content },
-        abortSignal,
-      )) {
+      for await (const event of aiApi.sendChatMessage(payload, abortSignal)) {
         if (isFirstChunk) {
           clearTimeout(timeoutId);
           indicator.destroy();
