@@ -14,6 +14,15 @@ interface IParsedReport {
   competencies: { label: string; value: string }[];
 }
 
+const CHART_CONFIG = {
+  VIEWBOX_WIDTH: 350,
+  VIEWBOX_HEIGHT: 200,
+  MAX_RADIUS: 70,
+  LEVELS: 5,
+  LABEL_MARGIN: 15,
+  POINT_RADIUS: 3,
+};
+
 export default class AIInterviewPerformance extends BaseComponent {
   constructor(stats: IUserChatStats) {
     super({ className: "ai-performance" });
@@ -180,17 +189,16 @@ export default class AIInterviewPerformance extends BaseComponent {
     const svgNamespace = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNamespace, "svg");
 
-    const size = 200;
-    const center = size / 2;
-    const maxRadius = 70;
-
-    svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+    svg.setAttribute(
+      "viewBox",
+      `0 0 ${CHART_CONFIG.VIEWBOX_WIDTH} ${CHART_CONFIG.VIEWBOX_HEIGHT}`,
+    );
     svg.classList.add("ai-performance__radar-svg");
 
-    this.drawRadarGrid(svg, svgNamespace, center, maxRadius, data.length);
-    this.drawRadarAxes(svg, svgNamespace, center, maxRadius, data);
-    this.drawRadarLabels(svg, svgNamespace, center, maxRadius, data);
-    this.drawRadarData(svg, svgNamespace, center, maxRadius, data);
+    this.drawRadarGrid(svg, svgNamespace, data.length);
+    this.drawRadarAxes(svg, svgNamespace, data);
+    this.drawRadarLabels(svg, svgNamespace, data);
+    this.drawRadarData(svg, svgNamespace, data);
 
     return svg;
   }
@@ -198,18 +206,18 @@ export default class AIInterviewPerformance extends BaseComponent {
   private drawRadarGrid(
     svg: SVGSVGElement,
     namespace: string,
-    center: number,
-    maxRadius: number,
     numberPoints: number,
   ): void {
-    const levels = 5;
-    for (let level = 1; level <= levels; level++) {
-      const radius = (maxRadius / levels) * level;
+    const centerX = CHART_CONFIG.VIEWBOX_WIDTH / 2;
+    const centerY = CHART_CONFIG.VIEWBOX_HEIGHT / 2;
+
+    for (let level = 1; level <= CHART_CONFIG.LEVELS; level++) {
+      const radius = (CHART_CONFIG.MAX_RADIUS / CHART_CONFIG.LEVELS) * level;
       const points = [];
       for (let index = 0; index < numberPoints; index++) {
         const angle = (Math.PI * 2 * index) / numberPoints - Math.PI / 2;
         points.push(
-          `${center + radius * Math.cos(angle)},${center + radius * Math.sin(angle)}`,
+          `${centerX + radius * Math.cos(angle)},${centerY + radius * Math.sin(angle)}`,
         );
       }
       const polygon = document.createElementNS(namespace, "polygon");
@@ -222,19 +230,20 @@ export default class AIInterviewPerformance extends BaseComponent {
   private drawRadarAxes(
     svg: SVGSVGElement,
     namespace: string,
-    center: number,
-    maxRadius: number,
     data: { label: string; value: string }[],
   ): void {
+    const centerX = CHART_CONFIG.VIEWBOX_WIDTH / 2;
+    const centerY = CHART_CONFIG.VIEWBOX_HEIGHT / 2;
+
     const numberPoints = data.length;
     for (let index = 0; index < numberPoints; index++) {
       const angle = (Math.PI * 2 * index) / numberPoints - Math.PI / 2;
-      const xEnd = center + maxRadius * Math.cos(angle);
-      const yEnd = center + maxRadius * Math.sin(angle);
+      const xEnd = centerX + CHART_CONFIG.MAX_RADIUS * Math.cos(angle);
+      const yEnd = centerY + CHART_CONFIG.MAX_RADIUS * Math.sin(angle);
 
       const line = document.createElementNS(namespace, "line");
-      line.setAttribute("x1", center.toString());
-      line.setAttribute("y1", center.toString());
+      line.setAttribute("x1", centerX.toString());
+      line.setAttribute("y1", centerY.toString());
       line.setAttribute("x2", xEnd.toString());
       line.setAttribute("y2", yEnd.toString());
       line.classList.add("ai-performance__radar-axis");
@@ -245,22 +254,23 @@ export default class AIInterviewPerformance extends BaseComponent {
   private drawRadarLabels(
     svg: SVGSVGElement,
     namespace: string,
-    center: number,
-    maxRadius: number,
     data: { label: string; value: string }[],
   ): void {
+    const centerX = CHART_CONFIG.VIEWBOX_WIDTH / 2;
+    const centerY = CHART_CONFIG.VIEWBOX_HEIGHT / 2;
+
     const numberPoints = data.length;
     for (let index = 0; index < numberPoints; index++) {
       const angle = (Math.PI * 2 * index) / numberPoints - Math.PI / 2;
-      const labelRadius = maxRadius + 15;
+      const labelRadius = CHART_CONFIG.MAX_RADIUS + CHART_CONFIG.LABEL_MARGIN;
       const text = document.createElementNS(namespace, "text");
       text.setAttribute(
         "x",
-        (center + labelRadius * Math.cos(angle)).toString(),
+        (centerX + labelRadius * Math.cos(angle)).toString(),
       );
       text.setAttribute(
         "y",
-        (center + labelRadius * Math.sin(angle)).toString(),
+        (centerY + labelRadius * Math.sin(angle)).toString(),
       );
       text.textContent = data[index].label;
       text.classList.add("ai-performance__radar-label");
@@ -279,10 +289,11 @@ export default class AIInterviewPerformance extends BaseComponent {
   private drawRadarData(
     svg: SVGSVGElement,
     namespace: string,
-    center: number,
-    maxRadius: number,
     data: { label: string; value: string }[],
   ): void {
+    const centerX = CHART_CONFIG.VIEWBOX_WIDTH / 2;
+    const centerY = CHART_CONFIG.VIEWBOX_HEIGHT / 2;
+
     const dataPoints = [];
     const numberPoints = data.length;
 
@@ -294,16 +305,16 @@ export default class AIInterviewPerformance extends BaseComponent {
       const percentage = Number.isNaN(numericValue)
         ? 0
         : Math.min(Math.max(numericValue, 0), 100);
-      const radius = (maxRadius * percentage) / 100;
+      const radius = (CHART_CONFIG.MAX_RADIUS * percentage) / 100;
       const angle = (Math.PI * 2 * index) / numberPoints - Math.PI / 2;
-      const x = center + radius * Math.cos(angle);
-      const y = center + radius * Math.sin(angle);
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
       dataPoints.push(`${x},${y}`);
 
       const circle = document.createElementNS(namespace, "circle");
       circle.setAttribute("cx", x.toString());
       circle.setAttribute("cy", y.toString());
-      circle.setAttribute("r", "3");
+      circle.setAttribute("r", CHART_CONFIG.POINT_RADIUS.toString());
       circle.classList.add("ai-performance__radar-point");
       svg.append(circle);
     }
