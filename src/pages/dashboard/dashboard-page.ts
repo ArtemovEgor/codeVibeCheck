@@ -35,7 +35,10 @@ export class DashboardPage extends BaseComponent implements Page {
     if (stats.status === "fulfilled" && currentUser.status === "fulfilled") {
       this.renderHeader(stats.value, currentUser.value);
     } else {
-      console.warn(stats.status);
+      if (stats.status === "rejected")
+        console.warn("Stats error:", stats.reason);
+      if (currentUser.status === "rejected")
+        console.warn("User error:", currentUser.reason);
     }
 
     if (progressResult.status === "fulfilled") {
