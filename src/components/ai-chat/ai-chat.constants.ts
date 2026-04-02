@@ -1,4 +1,5 @@
 export const RESTART_TIMEOUT_MS = 3000;
+export const FIRST_CHUNK_TIMEOUT_MS = 15_000;
 
 /**
  * XP thresholds for UI feedback

@@ -92,6 +92,8 @@ export const RU = {
     restart_text: "Заново",
     stop_generation: "Вы остановили генерацию",
     input_placeholder: "Сообщение AI...",
+    timeout_error:
+      "Превышено время ожидания первого ответа от сервера. Попробуйте снова.",
     try_again_button: "Попробовать снова 🔄",
     share_button: "Поделиться результатом 🚀",
     share_text_1: "Фронтенд интервью с AI.",

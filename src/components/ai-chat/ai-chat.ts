@@ -11,7 +11,12 @@ import type {
 import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
 import { ChatRoles } from "@/constants/api-chat";
-import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
+import {
+  CHAT_DRAFT_KEY,
+  FIRST_CHUNK_TIMEOUT_MS,
+  RESTART_TIMEOUT_MS,
+  XP_THRESHOLDS,
+} from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
@@ -28,6 +33,7 @@ export default class AIChat extends BaseComponent implements Page {
   private stopButton?: Button;
   private abortController?: AbortController;
   private isInterviewOver = false;
+  private firstChunkTimeout = false;
 
   constructor() {
     super({
@@ -379,6 +385,7 @@ export default class AIChat extends BaseComponent implements Page {
 
     this.scrollToBottom();
     this.blockInput(true);
+    this.firstChunkTimeout = false;
     const abortSignal = this.createNewAbortSignal();
 
     try {
@@ -437,19 +444,34 @@ export default class AIChat extends BaseComponent implements Page {
     let accumulated = "";
     let isFirstChunk = true;
 
-    for await (const event of aiApi.sendChatMessage({ content }, abortSignal)) {
+    const timeoutId = setTimeout(() => {
       if (isFirstChunk) {
-        indicator.destroy();
-        isFirstChunk = false;
+        this.firstChunkTimeout = true;
+        this.abortController?.abort(new Error("FIRST_CHUNK_TIMEOUT"));
       }
+    }, FIRST_CHUNK_TIMEOUT_MS);
 
-      if (event.type === "text_chunk") {
-        accumulated += event.content;
-        const html = renderMarkdown(accumulated);
-        if (responseContainer) responseContainer.innerHTML = html;
-      } else if (event.type === "final_report") {
-        this.renderFinalReport(event.content);
+    try {
+      for await (const event of aiApi.sendChatMessage(
+        { content },
+        abortSignal,
+      )) {
+        if (isFirstChunk) {
+          clearTimeout(timeoutId);
+          indicator.destroy();
+          isFirstChunk = false;
+        }
+
+        if (event.type === "text_chunk") {
+          accumulated += event.content;
+          const html = renderMarkdown(accumulated);
+          if (responseContainer) responseContainer.innerHTML = html;
+        } else if (event.type === "final_report") {
+          this.renderFinalReport(event.content);
+        }
       }
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -551,6 +573,45 @@ export default class AIChat extends BaseComponent implements Page {
     });
 
     container?.append(notice.getNode());
+  }
+
+  private addTimeoutNotice(container: HTMLElement | undefined) {
+    const notice = new BaseComponent({
+      tag: "p",
+      className: "chat-message__stop-notice chat-message__stop-notice--error",
+      text: i18n.t().ai_chat.timeout_error,
+    });
+
+    container?.append(notice.getNode());
+  }
+
+  private handleInput(): void {
+    const input = this.messageField?.getNode();
+    if (!input) return;
+
+    input.style.height = "auto";
+    input.style.height = `${input.scrollHeight}px`;
+    input.style.overflowY = input.scrollHeight > 200 ? "auto" : "hidden";
+
+    this.saveDraft(input.value);
+  }
+
+  private saveDraft(content: string): void {
+    if (content) {
+      localStorage.setItem(CHAT_DRAFT_KEY, content);
+    } else {
+      localStorage.removeItem(CHAT_DRAFT_KEY);
+    }
+  }
+
+  private loadDraft(): void {
+    const draft = localStorage.getItem(CHAT_DRAFT_KEY);
+    const inputNode = this.messageField?.getNode();
+
+    if (draft && inputNode) {
+      inputNode.value = draft;
+      this.handleInput();
+    }
   }
 
   public destroy(): void {

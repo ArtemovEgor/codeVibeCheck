@@ -92,6 +92,7 @@ export const EN = {
     restart_text: "Restart",
     stop_generation: "You stopped generation",
     input_placeholder: "Message AI...",
+    timeout_error: "The server took too long to respond. Try again.",
     try_again_button: "Try Again 🔄",
     share_button: "Share Result 🚀",
     share_text_1: "Frontend interview with AI.",
