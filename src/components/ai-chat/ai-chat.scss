@@ -404,7 +404,9 @@
     color: var(--text-primary);
     outline: none;
     padding: var(--space-1) var(--space-2);
-    min-height: 64px;
+    min-height: 24px;
+    max-height: 200px;
+    overflow-y: hidden;
     resize: none;
 
     &::placeholder {
