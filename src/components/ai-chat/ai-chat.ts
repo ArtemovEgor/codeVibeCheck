@@ -51,6 +51,7 @@ export default class AIChat extends BaseComponent implements Page {
     this.blockInput(false);
     this.renderWelcome();
     await this.loadChatHistory();
+    this.loadDraft();
   }
 
   private renderHeader(): void {
@@ -328,6 +329,7 @@ export default class AIChat extends BaseComponent implements Page {
           this.handleSend();
         }
       });
+      inputNode.addEventListener("input", () => this.handleInput());
     }
 
     wrapper.addChildren([this.createInputControls()]);
@@ -417,15 +419,30 @@ export default class AIChat extends BaseComponent implements Page {
     error: unknown,
     responseContainer: HTMLElement | undefined,
     content: string,
+    userMessage?: BaseComponent,
+    assistantMessage?: BaseComponent,
   ): void {
-    if (error instanceof Error && error.name === "AbortError") {
+    const isTimeout =
+      this.firstChunkTimeout ||
+      (error instanceof Error && error.message === "FIRST_CHUNK_TIMEOUT");
+    const isAbort = error instanceof Error && error.name === "AbortError";
+
+    if (isTimeout) {
+      this.firstChunkTimeout = false;
+      this.addTimeoutNotice(responseContainer);
+    } else if (isAbort) {
       this.addStopNotice(responseContainer);
-      if (this.messageField) this.messageField.getNode().value = content;
-      return;
+    } else {
+      userMessage?.destroy();
+      assistantMessage?.destroy();
+      const apiError = error as IApiError;
+      Notification.show(apiError.message, NotificationType.ERROR);
     }
 
-    const apiError = error as IApiError;
-    Notification.show(apiError.message, NotificationType.ERROR);
+    if (this.messageField) {
+      this.messageField.getNode().value = content;
+      this.handleInput();
+    }
   }
 
   private createNewAbortSignal() {
