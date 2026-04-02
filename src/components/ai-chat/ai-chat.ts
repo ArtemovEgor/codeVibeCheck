@@ -362,24 +362,19 @@ export default class AIChat extends BaseComponent implements Page {
   }
 
   private async handleSend(): Promise<void> {
-    const content = this.messageField?.getNode().value;
+    const inputNode = this.messageField?.getNode();
+    const content = inputNode?.value;
     if (!content) return;
 
-    if (this.messageField) this.messageField.getNode().value = "";
+    if (inputNode) {
+      inputNode.value = "";
+      this.handleInput();
+      this.saveDraft("");
+    }
 
-    this.renderMessage({
-      id: "",
-      role: ChatRoles.user,
-      content,
-      createdAt: new Date().toISOString(),
-    });
-
-    const responseContainer = this.renderMessage({
-      id: "",
-      role: ChatRoles.assistant,
-      content: "",
-      createdAt: new Date().toISOString(),
-    })
+    const userMessage = this.renderOutgoingMessage(content);
+    const assistantMessage = this.renderAssistantWrapper();
+    const responseContainer = assistantMessage
       .getNode()
       .querySelector(".chat-message__content") as HTMLElement | undefined;
 
@@ -400,10 +395,34 @@ export default class AIChat extends BaseComponent implements Page {
       await this.syncXP();
     } catch (error) {
       indicator.destroy();
-      this.handleStreamError(error, responseContainer, content);
+      this.handleStreamError(
+        error,
+        responseContainer,
+        content,
+        userMessage,
+        assistantMessage,
+      );
     } finally {
       this.finalizeSend();
     }
+  }
+
+  private renderOutgoingMessage(content: string): BaseComponent {
+    return this.renderMessage({
+      id: "",
+      role: ChatRoles.user,
+      content,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  private renderAssistantWrapper(): BaseComponent {
+    return this.renderMessage({
+      id: "",
+      role: ChatRoles.assistant,
+      content: "",
+      createdAt: new Date().toISOString(),
+    });
   }
 
   private finalizeSend(): void {
