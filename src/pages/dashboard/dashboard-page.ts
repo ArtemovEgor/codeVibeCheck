@@ -10,6 +10,10 @@ import type { IUserChatStats } from "@/types/shared";
 import { i18n } from "@/services/localization-service";
 import type { IUser, IUserStats } from "@/types/shared/user.types";
 import { authApi } from "@/api/auth.api";
+import { TopicCard } from "@/components/topic-card/topic-card";
+import { Button } from "@/components/button/button";
+import { ROUTES } from "@/constants/routes";
+import { router } from "@/router/router";
 
 export class DashboardPage extends BaseComponent implements Page {
   private interactSector: BaseComponent | undefined = undefined;
@@ -93,7 +97,10 @@ export class DashboardPage extends BaseComponent implements Page {
   ): void {
     if (!this.learningSector || !progressData) return;
 
-    this.learningSector.addChildren([new SkillMastery(progressData).getNode()]);
+    this.learningSector.addChildren([
+      this.createResumeSector(progressData),
+      new SkillMastery(progressData).getNode(),
+    ]);
   }
 
   private renderInteractSector(chatStats: IUserChatStats): void {
@@ -102,6 +109,51 @@ export class DashboardPage extends BaseComponent implements Page {
     this.interactSector.addChildren([
       new AIInterviewPerformance(chatStats).getNode(),
     ]);
+  }
+
+  private createResumeSector(
+    progressData: IProgressStatistic | undefined,
+  ): BaseComponent {
+    const resumeComponent = new BaseComponent({
+      className: "dashboard__resume",
+    });
+
+    new BaseComponent({
+      tag: "h2",
+      className: "dashboard__sector-title",
+      text: i18n.t().dashboard.components.resume.title,
+      parent: resumeComponent,
+    });
+
+    if (progressData && progressData.lastActiveTopic) {
+      const card = new TopicCard(
+        progressData.lastActiveTopic.topic,
+        progressData.lastActiveTopic.progress,
+        progressData.lastActiveTopic.totalWidgets,
+      );
+      resumeComponent.addChildren([card]);
+    } else {
+      const emptyContent = new BaseComponent({
+        className: "dashboard__resume-empty",
+        parent: resumeComponent,
+      });
+
+      new BaseComponent({
+        tag: "p",
+        className: "dashboard__resume-text",
+        text: i18n.t().dashboard.components.resume.empty_text,
+        parent: emptyContent,
+      });
+
+      new Button({
+        text: i18n.t().dashboard.components.resume.button,
+        className: "btn--primary",
+        parent: emptyContent,
+        onClick: () => router.navigate(ROUTES.LIBRARY),
+      });
+    }
+
+    return resumeComponent;
   }
 
   private createHeaderTitle(
