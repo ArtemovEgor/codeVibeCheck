@@ -155,6 +155,10 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
     code_completion: {
       header: "Fill in the blanks",
     },
+    codeOrdering: {
+      moveUp: "↑",
+      moveDown: "↓",
+    },
     stats: {
       xp_earned: "XP Earned",
       xp_icon: "🔸",

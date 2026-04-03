@@ -82,7 +82,7 @@ export class CodeOrderingStrategy implements IWidgetStrategy {
 
       const upButton = new Button({
         className: "widget__line-btn",
-        text: "↑",
+        text: i18n.t().widgets.codeOrdering.moveUp,
         parent: lineWrapper,
       });
       upButton.setDisabled(position === 0);
@@ -99,7 +99,7 @@ export class CodeOrderingStrategy implements IWidgetStrategy {
 
       const downButton = new Button({
         className: "widget__line-btn",
-        text: "↓",
+        text: i18n.t().widgets.codeOrdering.moveDown,
         parent: lineWrapper,
       });
       downButton.setDisabled(position === this.currentOrder.length - 1);
