@@ -18,6 +18,7 @@ import { storageService } from "./services/storage-service";
 import { STORAGE_KEYS } from "./constants/storage-keys";
 import { i18n } from "./services/localization-service";
 import { CodeCompletionStrategy } from "./components/widgets/code-completion/code-completion-strategy";
+import { CodeOrderingStrategy } from "./components/widgets/code-ordering/code-ordering-strategy";
 
 export default class App {
   private readonly parentNode: HTMLElement;
@@ -89,5 +90,6 @@ export default class App {
     widgetEngine.register(new QuizStrategy());
     widgetEngine.register(new TrueFalseStrategy());
     widgetEngine.register(new CodeCompletionStrategy());
+    widgetEngine.register(new CodeOrderingStrategy());
   }
 }
