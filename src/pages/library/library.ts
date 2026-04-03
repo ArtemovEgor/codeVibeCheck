@@ -6,7 +6,6 @@ import { widgetsApi } from "@/api/widgets.api";
 import { progressApi } from "@/api/progress.api";
 import { TopicCard } from "@/components/topic-card/topic-card";
 import "./library.scss";
-import widgetEngine from "@/services/widget-engine";
 import Notification from "@/components/notification/notification";
 import { NotificationType } from "@/constants/notification";
 import type { IApiError } from "@/types/shared";
@@ -18,7 +17,6 @@ const SCROLL_THRESHOLD = 300;
 export class Library extends BaseComponent implements Page {
   private topics: ITopic[] = [];
   private progress: IUserTopicProgress[] = [];
-  private widgetCounts = new Map<string, number>();
   private scrollHandler: (() => void) | undefined = undefined;
   private emptyState: BaseComponent | undefined = undefined;
   private cardElements: {
@@ -38,8 +36,6 @@ export class Library extends BaseComponent implements Page {
       this.loadProgress(),
     ]);
 
-    // TODO: remove loadWidgetCounts() when all widget strategy types are implemented and pass topic.widgetIds.length directly to TopicCard
-    await this.loadWidgetCounts();
     this.renderTopics();
     this.renderScrollToTop();
   }
@@ -61,22 +57,6 @@ export class Library extends BaseComponent implements Page {
       console.warn(error);
       return [];
     }
-  }
-
-  private async loadWidgetCounts(): Promise<void> {
-    await Promise.all(
-      this.topics.map(async (topic) => {
-        try {
-          const data = await widgetsApi.getWidgetsByTopicId(topic.id);
-          const implementedCount = data.filter(
-            (widget) => widgetEngine.getStrategy(widget.type) !== undefined,
-          ).length;
-          this.widgetCounts.set(topic.id, implementedCount);
-        } catch {
-          this.widgetCounts.set(topic.id, topic.widgetIds.length);
-        }
-      }),
-    );
   }
 
   private renderTopics(): void {
@@ -103,8 +83,12 @@ export class Library extends BaseComponent implements Page {
 
     let index = 0;
     for (const { topic, progress } of allProgress) {
-      const total = this.widgetCounts.get(topic.id) ?? topic.widgetIds.length;
-      const card = new TopicCard(topic, progress, total, titlesMap);
+      const card = new TopicCard(
+        topic,
+        progress,
+        topic.widgetIds.length,
+        titlesMap,
+      );
 
       card.getNode().style.setProperty("--stagger-index", index.toString());
 
