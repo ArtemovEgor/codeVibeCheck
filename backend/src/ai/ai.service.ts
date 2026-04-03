@@ -31,9 +31,6 @@ export async function* sendChatMessage(
   signal?: AbortSignal,
 ): AsyncGenerator<AppStreamChunk> {
   const { language } = message;
-  console.log(
-    `[AI SERVICE] Received message. Content: "${message.content.slice(0, 20)}...", Language: "${language}"`,
-  );
 
   const countQuery = dataBase.prepare(
     "SELECT COUNT(*) as count FROM messages WHERE userId = ? AND role = 'user'",
