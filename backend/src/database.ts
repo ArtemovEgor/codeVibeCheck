@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 import fs from "node:fs";
+import { fillDatabase } from "./add-data";
 
 const databasePath = path.resolve(__dirname, "../data/database.sqlite");
 
@@ -157,5 +158,7 @@ dataBase.exec(`
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_user_learning_stats_userId ON user_learning_stats(userId)
 `);
+
+fillDatabase(dataBase);
 
 export default dataBase;
