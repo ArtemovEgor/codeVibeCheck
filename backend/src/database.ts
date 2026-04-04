@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 import fs from "node:fs";
-import { fillDatabase } from "./add.data";
+import { fillDatabase } from "./add.widgets.data";
 
 const databasePath = path.resolve(__dirname, "../data/database.sqlite");
 
