@@ -11,22 +11,22 @@ interface ITopic {
   id: string;
   title: { ru: string; en: string };
   description?: { ru: string; en: string };
-  difficulty: number;
-  order: number;
-  requiredTopicIds: string[];
+  difficulty?: number;
+  order?: number;
+  requiredTopicIds?: string[];
   widgetIds?: string[];
 }
 
 interface IWidget {
   id: string;
   topicId?: string;
-  sortOrder: number;
+  sortOrder?: number;
   type: string;
-  version: number;
-  difficulty: number;
+  version?: number;
+  difficulty?: number;
   tags?: string[];
-  payload: Record<string, unknown>;
-  answerData: Record<string, unknown>;
+  payload?: Record<string, unknown>;
+  answerData?: Record<string, unknown>;
 }
 
 interface IWidgetWithTopic extends IWidget {
@@ -34,6 +34,29 @@ interface IWidgetWithTopic extends IWidget {
 }
 
 // Helpers
+function validatePrerequisites(database: DB): void {
+  const tablesToCheck = ["topics", "topic_requirements", "widgets"];
+  for (const tableName of tablesToCheck) {
+    if (!isTableEmpty(database, tableName)) {
+      throw new Error(
+        `Table "${tableName}" already contains data. Seed aborted to avoid data corruption.`,
+      );
+    }
+  }
+
+  if (!fs.existsSync(DATA_DIR)) {
+    throw new Error(`Data directory not found: ${DATA_DIR}`);
+  }
+
+  const requiredFiles = ["topics.json", "widgets.json"];
+  for (const file of requiredFiles) {
+    const filePath = path.join(DATA_DIR, file);
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Required file not found: ${filePath}`);
+    }
+  }
+}
+
 function buildAnswerData(widget: IWidget): Record<string, unknown> {
   const { type, payload } = widget;
   if (!payload) return { correctAnswer: null };
@@ -91,7 +114,7 @@ function cleanPayload(widget: IWidget): Record<string, unknown> {
   if (!widget.payload) return {};
 
   const { type, payload } = widget;
-  const fieldsToRemove: string[] = [];
+  const fieldsToRemove = ["explanation"];
 
   switch (type) {
     case "quiz": {
@@ -99,7 +122,7 @@ function cleanPayload(widget: IWidget): Record<string, unknown> {
       break;
     }
     case "true-false": {
-      fieldsToRemove.push("correctValue", "explanation");
+      fieldsToRemove.push("correctValue");
       break;
     }
     case "code-completion": {
@@ -121,7 +144,7 @@ function tableExists(database: DB, tableName: string): boolean {
   const row = database
     .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`)
     .get(tableName);
-  return !!row;
+  return Boolean(row);
 }
 
 function isTableEmpty(database: DB, tableName: string): boolean {
@@ -131,42 +154,24 @@ function isTableEmpty(database: DB, tableName: string): boolean {
   if (!tableExists(database, tableName)) {
     return true;
   }
-  const result = database
-    .prepare(`SELECT EXISTS (SELECT 1 FROM "${tableName}" LIMIT 1) as hasRows`)
-    .get() as { hasRows: number };
-  return result.hasRows === 0;
+  const hasRows = database
+    .prepare(`SELECT EXISTS (SELECT 1 FROM "${tableName}" LIMIT 1)`)
+    .pluck()
+    .get() as number;
+  return hasRows === 0;
 }
 
 function loadJSON<T>(filename: string): T[] {
   const filePath = path.join(DATA_DIR, filename);
-  try {
-    const content = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(content) as T[];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return [];
-    }
-    console.error(`Failed to parse ${filename}:`, error);
-    throw new Error(`Invalid JSON in ${filename}`, { cause: error });
-  }
+  const content = fs.readFileSync(filePath, "utf8");
+  return JSON.parse(content) as T[];
 }
 
 function enableForeignKeys(database: DB): void {
   database.pragma("foreign_keys = ON");
 }
 
-// Fill data
 function seedTopics(database: DB, topics: ITopic[]): void {
-  if (!isTableEmpty(database, "topics")) {
-    console.log("Skipping: topics table already contains data");
-    return;
-  }
-
-  if (topics.length === 0) {
-    console.log("No topics to seed");
-    return;
-  }
-
   console.log("Seeding topics table...");
 
   const stmt = database.prepare(`
@@ -194,12 +199,30 @@ function seedTopics(database: DB, topics: ITopic[]): void {
 }
 
 function seedTopicRequirements(database: DB, topics: ITopic[]): void {
-  if (!isTableEmpty(database, "topic_requirements")) {
-    console.log("Skipping: topic_requirements table already contains data");
-    return;
+  const existingIds = new Set(topics.map((t) => t.id));
+  const missingReferences: { topicId: string; requiredId: string }[] = [];
+
+  for (const topic of topics) {
+    if (topic.requiredTopicIds?.length) {
+      for (const requiredId of topic.requiredTopicIds) {
+        if (!existingIds.has(requiredId)) {
+          missingReferences.push({ topicId: topic.id, requiredId });
+        }
+      }
+    }
   }
 
-  if (topics.length === 0) return;
+  if (missingReferences.length > 0) {
+    console.error("Missing required topic references:");
+    for (const { topicId, requiredId } of missingReferences) {
+      console.error(
+        `  Topic "${topicId}" requires "${requiredId}" which does not exist`,
+      );
+    }
+    throw new Error(
+      "Invalid topic requirements: non-existent requiredTopicId(s)",
+    );
+  }
 
   console.log("Seeding topic_requirements table...");
 
@@ -230,7 +253,7 @@ function enrichWidgetsWithTopicId(
 ): IWidgetWithTopic[] {
   const widgetToTopic = new Map<string, string>();
   for (const topic of topics) {
-    if (topic.widgetIds && Array.isArray(topic.widgetIds)) {
+    if (Array.isArray(topic.widgetIds)) {
       for (const widgetId of topic.widgetIds) {
         if (widgetToTopic.has(widgetId)) {
           console.warn(
@@ -258,14 +281,11 @@ function enrichWidgetsWithTopicId(
   return enriched;
 }
 
-function seedWidgets(database: DB, topics: ITopic[]): void {
-  if (!isTableEmpty(database, "widgets")) {
-    console.log("Skipping: widgets table already contains data");
+function seedWidgets(database: DB, topics: ITopic[], widgets: IWidget[]): void {
+  if (widgets.length === 0) {
+    console.log("No widgets to seed");
     return;
   }
-
-  const widgets = loadJSON<IWidget>("widgets.json");
-  if (widgets.length === 0) return;
 
   const enrichedWidgets = enrichWidgetsWithTopicId(widgets, topics);
   if (enrichedWidgets.length === 0) {
@@ -273,6 +293,20 @@ function seedWidgets(database: DB, topics: ITopic[]): void {
       "No valid widgets to seed (all skipped due to missing topicId)",
     );
     return;
+  }
+
+  const existingTopicIds = new Set(topics.map((t) => t.id));
+  const missingTopics = enrichedWidgets.filter(
+    (w) => !existingTopicIds.has(w.topicId),
+  );
+  if (missingTopics.length > 0) {
+    console.error("Widgets reference non-existent topics:");
+    for (const w of missingTopics) {
+      console.error(
+        `  Widget ${w.id} references topic ${w.topicId} which does not exist`,
+      );
+    }
+    throw new Error("Invalid widget references: topicId not found");
   }
 
   console.log("Seeding widgets table...");
@@ -309,13 +343,21 @@ function seedWidgets(database: DB, topics: ITopic[]): void {
 
 export function fillDatabase(database: DB): void {
   console.log("Initializing data...");
-  enableForeignKeys(database);
+
+  validatePrerequisites(database);
 
   const topics = loadJSON<ITopic>("topics.json");
+  if (topics.length === 0) {
+    throw new Error("topics.json is empty, cannot proceed");
+  }
+
+  const widgets = loadJSON<IWidget>("widgets.json");
+
+  enableForeignKeys(database);
 
   seedTopics(database, topics);
   seedTopicRequirements(database, topics);
-  seedWidgets(database, topics);
+  seedWidgets(database, topics, widgets);
 
   console.log("Data initialization complete!");
 }
