@@ -33,6 +33,7 @@ interface IWidgetWithTopic extends IWidget {
   topicId: string;
 }
 
+// Helpers
 function buildAnswerData(widget: IWidget): Record<string, unknown> {
   const { type, payload } = widget;
   if (!payload) return { correctAnswer: null };
@@ -86,6 +87,36 @@ function buildAnswerData(widget: IWidget): Record<string, unknown> {
   return answerData;
 }
 
+function cleanPayload(widget: IWidget): Record<string, unknown> {
+  if (!widget.payload) return {};
+
+  const { type, payload } = widget;
+  const fieldsToRemove: string[] = [];
+
+  switch (type) {
+    case "quiz": {
+      fieldsToRemove.push("correctIndex");
+      break;
+    }
+    case "true-false": {
+      fieldsToRemove.push("correctValue", "explanation");
+      break;
+    }
+    case "code-completion": {
+      fieldsToRemove.push("correctValues");
+      break;
+    }
+    case "code-ordering": {
+      fieldsToRemove.push("correctOrder");
+      break;
+    }
+  }
+
+  return Object.fromEntries(
+    Object.entries(payload).filter(([key]) => !fieldsToRemove.includes(key)),
+  );
+}
+
 function tableExists(database: DB, tableName: string): boolean {
   const row = database
     .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`)
@@ -124,6 +155,7 @@ function enableForeignKeys(database: DB): void {
   database.pragma("foreign_keys = ON");
 }
 
+// Fill data
 function seedTopics(database: DB, topics: ITopic[]): void {
   if (!isTableEmpty(database, "topics")) {
     console.log("Skipping: topics table already contains data");
@@ -253,12 +285,13 @@ function seedWidgets(database: DB, topics: ITopic[]): void {
   const insertMany = database.transaction((items: IWidgetWithTopic[]) => {
     const now = new Date().toISOString();
     for (const widget of items) {
+      const cleanPayloadData = cleanPayload(widget);
       const answerData = buildAnswerData(widget);
       stmt.run(
         widget.id,
         widget.topicId,
         widget.type,
-        JSON.stringify(widget.payload ?? {}),
+        JSON.stringify(cleanPayloadData),
         JSON.stringify(answerData),
         widget.difficulty ?? 1,
         widget.version ?? 1,
