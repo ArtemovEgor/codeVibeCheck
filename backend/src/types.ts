@@ -39,6 +39,29 @@ export interface IDatabaseUser {
   createdAt: string;
 }
 
+/** Widgets */
+export interface ITopic {
+  id: string;
+  title: { ru: string; en: string };
+  description?: { ru: string; en: string };
+  difficulty?: number;
+  order?: number;
+  requiredTopicIds?: string[];
+  widgetIds?: string[];
+}
+
+export interface IWidget {
+  id: string;
+  topicId?: string;
+  sortOrder?: number;
+  type: string;
+  version?: number;
+  difficulty?: number;
+  tags?: string[];
+  payload?: Record<string, unknown>;
+  answerData?: Record<string, unknown>;
+}
+
 /** User statistics from AI chat sessions */
 export interface IUserChatStats {
   readonly userId: string;

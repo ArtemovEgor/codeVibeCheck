@@ -1,37 +1,16 @@
+import { ITopic, IWidget } from "./types";
 import Database from "better-sqlite3";
 import path from "node:path";
 import fs from "node:fs";
+
+interface IWidgetWithTopic extends IWidget {
+  topicId: string;
+}
 
 const DATA_DIR = path.resolve(__dirname, "../data");
 const ALLOWED_TABLES = new Set(["topics", "topic_requirements", "widgets"]);
 
 type DB = Database.Database;
-
-interface ITopic {
-  id: string;
-  title: { ru: string; en: string };
-  description?: { ru: string; en: string };
-  difficulty?: number;
-  order?: number;
-  requiredTopicIds?: string[];
-  widgetIds?: string[];
-}
-
-interface IWidget {
-  id: string;
-  topicId?: string;
-  sortOrder?: number;
-  type: string;
-  version?: number;
-  difficulty?: number;
-  tags?: string[];
-  payload?: Record<string, unknown>;
-  answerData?: Record<string, unknown>;
-}
-
-interface IWidgetWithTopic extends IWidget {
-  topicId: string;
-}
 
 // Helpers
 function validatePrerequisites(database: DB): void {
