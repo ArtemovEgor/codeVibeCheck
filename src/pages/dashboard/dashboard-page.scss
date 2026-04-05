@@ -101,6 +101,12 @@
     letter-spacing: -0.02em;
   }
 
+  &__resume {
+    .topic-card:hover:not(.topic-card--locked) {
+      transform: none;
+    }
+  }
+
   &__resume-empty {
     @include flex-column;
     align-items: center;
