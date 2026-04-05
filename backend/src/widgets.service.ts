@@ -288,3 +288,39 @@ export function getUserLearningStats(userId: string): IUserStats {
     lastActivityAt: row.lastActivityAt ?? undefined,
   };
 }
+
+export function getUserProgressByTopicId(
+  userId: string,
+  topicId: string,
+): IUserTopicProgress | null {
+  const row = database
+    .prepare<
+      [string, string],
+      {
+        topicId: string;
+        completedWidgetIds: string;
+        xpEarned: number;
+        isCompleted: boolean;
+        isUnlocked: boolean;
+      }
+    >(
+      `
+      SELECT topicId, completedWidgetIds, xpEarned, isCompleted, isUnlocked
+      FROM user_topic_progress
+      WHERE userId = ? AND topicId = ?
+    `,
+    )
+    .get(userId, topicId);
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    topicId: row.topicId,
+    completedWidgetIds: JSON.parse(row.completedWidgetIds),
+    xpEarned: row.xpEarned,
+    isCompleted: Boolean(row.isCompleted),
+    isUnlocked: Boolean(row.isUnlocked),
+  };
+}

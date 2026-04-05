@@ -26,5 +26,6 @@ export const EN = {
     topic_not_found: "Topic not found",
     missing_widget_id: "Missing widget id",
     widget_not_found: "Widget not found",
+    progress_not_found: "Progress not found",
   },
 };
