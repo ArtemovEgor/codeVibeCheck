@@ -121,6 +121,7 @@ app.post("/api/auth/login", (request, response) => {
   }
 });
 
+// AI EndPoints
 app.post("/api/ai/chat", async (request, response) => {
   const controller = new AbortController();
 
