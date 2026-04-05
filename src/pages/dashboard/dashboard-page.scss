@@ -93,4 +93,42 @@
       top: var(--space-4);
     }
   }
+
+  &__sector-title {
+    @include heading(var(--text-xl));
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    letter-spacing: -0.02em;
+  }
+
+  &__resume {
+    .topic-card:hover:not(.topic-card--locked) {
+      transform: none;
+    }
+  }
+
+  &__resume-empty {
+    @include flex-column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-10) var(--space-6);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    gap: var(--space-5);
+  }
+
+  &__resume-text {
+    @include label;
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    max-width: 280px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  &__resume-btn {
+    min-width: 160px;
+  }
 }

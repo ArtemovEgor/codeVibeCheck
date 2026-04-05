@@ -3,6 +3,7 @@ import { widgetsApi } from "@/api/widgets.api";
 import { XP_BY_DIFFICULTY } from "@/constants/game";
 import {
   SKILL_TYPES,
+  type ILastActiveTopic,
   type IProgressStatistic,
   type ISkillData,
   type SkillType,
@@ -29,8 +30,9 @@ export class ProgressService {
     ]);
 
     const skillsData = this.calculateSkillProgress(this.progress);
+    const lastActiveTopic = this.findActiveTopic(this.progress);
 
-    return { skillsMastery: skillsData };
+    return { skillsMastery: skillsData, lastActiveTopic };
   }
 
   public async loadGlobalStats(): Promise<IUserStats | undefined> {
@@ -53,6 +55,27 @@ export class ProgressService {
     );
 
     return statistic;
+  }
+
+  private findActiveTopic(
+    progress: IUserTopicProgress[],
+  ): ILastActiveTopic | undefined {
+    let activeProgress = null;
+
+    for (let index = progress.length - 1; index >= 0; index--) {
+      if (!progress[index].isCompleted) {
+        activeProgress = progress[index];
+        break;
+      }
+    }
+    const topic = this.topics.find((t) => t.id === activeProgress?.topicId);
+    if (!topic) return undefined;
+
+    return {
+      topic: topic ?? ({} as ITopic),
+      progress: activeProgress || ({} as IUserTopicProgress),
+      totalWidgets: topic ? topic.widgetIds.length : 0,
+    };
   }
 
   private countTotalXPBySkill() {

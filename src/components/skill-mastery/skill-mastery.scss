@@ -47,6 +47,7 @@
     background: var(--gradient-primary);
     box-shadow: 0 0 12px var(--accent-primary);
     transition: width var(--transition-slow) ease-out;
+    animation: slideIn 1s ease-out forwards;
   }
 
   &__sub-info {
@@ -65,5 +66,11 @@
   }
   &__item--logic {
     --bar-color: var(--accent-success);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
   }
 }
