@@ -157,6 +157,10 @@ function curry(func) {
     code_completion: {
       header: "Заполни пропуски",
     },
+    codeOrdering: {
+      moveUp: "↑",
+      moveDown: "↓",
+    },
     stats: {
       xp_earned: "Заработано XP",
       xp_icon: "🔸",
