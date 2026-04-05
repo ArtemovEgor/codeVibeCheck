@@ -208,7 +208,6 @@ export function submitWidgetAnswer(
       .run(userId, newTotalXp, newStreak, now, now, now);
   }
 
-  // 6. Формируем ответ
   const result: ISubmissionResult = {
     isCorrect,
     xpEarned,
@@ -322,5 +321,93 @@ export function getUserProgressByTopicId(
     xpEarned: row.xpEarned,
     isCompleted: Boolean(row.isCompleted),
     isUnlocked: Boolean(row.isUnlocked),
+  };
+}
+
+export function initUserTopicProgress(
+  userId: string,
+  topicId: string,
+): IUserTopicProgress {
+  const existing = database
+    .prepare<
+      [string, string],
+      {
+        topicId: string;
+        completedWidgetIds: string;
+        xpEarned: number;
+        isCompleted: boolean;
+        isUnlocked: boolean;
+      }
+    >(
+      `
+      SELECT topicId, completedWidgetIds, xpEarned, isCompleted, isUnlocked
+      FROM user_topic_progress
+      WHERE userId = ? AND topicId = ?
+    `,
+    )
+    .get(userId, topicId);
+
+  if (existing) {
+    return {
+      topicId: existing.topicId,
+      completedWidgetIds: JSON.parse(existing.completedWidgetIds),
+      xpEarned: existing.xpEarned,
+      isCompleted: Boolean(existing.isCompleted),
+      isUnlocked: Boolean(existing.isUnlocked),
+    };
+  }
+
+  const requirements = database
+    .prepare<
+      [string],
+      { requiredTopicId: string }
+    >(`SELECT requiredTopicId FROM topic_requirements WHERE topicId = ?`)
+    .all(topicId);
+
+  let isUnlocked = true;
+  if (requirements.length > 0) {
+    const allCompleted = requirements.every((request) => {
+      const progress = database
+        .prepare<[string, string], { isCompleted: boolean }>(
+          `
+          SELECT isCompleted FROM user_topic_progress
+          WHERE userId = ? AND topicId = ?
+        `,
+        )
+        .get(userId, request.requiredTopicId);
+      return progress ? Boolean(progress.isCompleted) : false;
+    });
+    isUnlocked = allCompleted;
+  }
+
+  const now = new Date().toISOString();
+  const completedWidgetIdsJson = JSON.stringify([]);
+  database
+    .prepare(
+      `
+      INSERT INTO user_topic_progress (
+        userId, topicId, completedWidgetIds, xpEarned,
+        everCompleted, isCompleted, isUnlocked, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    )
+    .run(
+      userId,
+      topicId,
+      completedWidgetIdsJson,
+      0,
+      0, // everCompleted = false
+      0, // isCompleted = false
+      isUnlocked ? 1 : 0,
+      now,
+      now,
+    );
+
+  return {
+    topicId,
+    completedWidgetIds: [],
+    xpEarned: 0,
+    isCompleted: false,
+    isUnlocked,
   };
 }
