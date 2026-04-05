@@ -24,6 +24,7 @@ import {
   getUserProgressByTopicId,
   initUserTopicProgress,
   updateUserTopicProgress,
+  resetUserTopicProgress,
 } from "./widgets.service";
 
 const app = express();
@@ -533,6 +534,49 @@ app.post("/api/progress", (request, response) => {
       xpEarned,
       totalWidgets,
     });
+
+    response.json({
+      success: true,
+      data: updatedProgress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** PATCH /api/progress/:topicId/reset - Resetting progress by theme (clearing widgets and XP) */
+app.patch("/api/progress/:topicId/reset", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { topicId } = request.params;
+
+    if (!topicId) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.missing_topic_id,
+      });
+    }
+
+    const topic = getTopicById(topicId);
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const updatedProgress = resetUserTopicProgress(userId, topicId);
 
     response.json({
       success: true,

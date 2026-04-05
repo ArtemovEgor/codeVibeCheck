@@ -558,3 +558,30 @@ export function updateUserTopicProgress(
 
   return getUserProgressByTopicId(userId, topicId) as IUserTopicProgress;
 }
+
+export function resetUserTopicProgress(
+  userId: string,
+  topicId: string,
+): IUserTopicProgress | null {
+  const existing = getUserProgressByTopicId(userId, topicId);
+  if (!existing) {
+    return null;
+  }
+
+  const now = new Date().toISOString();
+  const emptyWidgetsJson = JSON.stringify([]);
+  database
+    .prepare(
+      `
+      UPDATE user_topic_progress
+      SET completedWidgetIds = ?,
+          xpEarned = ?,
+          isCompleted = ?,
+          updatedAt = ?
+      WHERE userId = ? AND topicId = ?
+    `,
+    )
+    .run(emptyWidgetsJson, 0, 0, now, userId, topicId);
+
+  return getUserProgressByTopicId(userId, topicId);
+}
