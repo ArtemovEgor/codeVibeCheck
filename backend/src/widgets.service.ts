@@ -1,7 +1,7 @@
 import database from "./database";
 import { ITopic } from "./types";
 
-interface TopicRow {
+interface ITopicRow {
   id: string;
   title: string;
   description: string | null;
@@ -9,9 +9,19 @@ interface TopicRow {
   sortOrder: number;
 }
 
+interface IWidgetRow {
+  id: string;
+  type: string;
+  difficulty: number;
+  version: number;
+  tags: string | null;
+  payload: string;
+  sortOrder: number;
+}
+
 export function getAllTopics(): ITopic[] {
   const topics = database
-    .prepare<[], TopicRow>(
+    .prepare<[], ITopicRow>(
       `
       SELECT id, title, description, difficulty, sortOrder
       FROM topics
@@ -44,7 +54,7 @@ export function getAllTopics(): ITopic[] {
 
 export function getTopicById(id: string): ITopic | null {
   const topic = database
-    .prepare<[string], TopicRow>(
+    .prepare<[string], ITopicRow>(
       `
       SELECT id, title, description, difficulty, sortOrder
       FROM topics
@@ -77,4 +87,33 @@ export function getTopicById(id: string): ITopic | null {
       .map((row) => row.requiredTopicId),
     widgetIds: getWidgetIds.all(id).map((row) => row.id),
   };
+}
+
+export function getWidgetsByTopicId(topicId: string): {
+  id: string;
+  type: string;
+  difficulty: number;
+  version: number;
+  tags: string[];
+  payload: Record<string, unknown>;
+}[] {
+  const widgets = database
+    .prepare<[string], IWidgetRow>(
+      `
+      SELECT id, type, difficulty, version, tags, payload
+      FROM widgets
+      WHERE topicId = ?
+      ORDER BY sortOrder ASC
+    `,
+    )
+    .all(topicId);
+
+  return widgets.map((widget) => ({
+    id: widget.id,
+    type: widget.type,
+    difficulty: widget.difficulty,
+    version: widget.version,
+    tags: widget.tags ? JSON.parse(widget.tags) : [],
+    payload: JSON.parse(widget.payload),
+  }));
 }

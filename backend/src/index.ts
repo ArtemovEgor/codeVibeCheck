@@ -13,7 +13,11 @@ import {
 } from "./ai/ai.service";
 import { ISendMessagePayload } from "./ai/ai.types";
 import { verifyToken } from "./utils/verify-token";
-import { getAllTopics, getTopicById } from "./widgets.service";
+import {
+  getAllTopics,
+  getTopicById,
+  getWidgetsByTopicId,
+} from "./widgets.service";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -172,7 +176,6 @@ app.get("/api/topics", (_request, response) => {
       data: topics,
     });
   } catch (error) {
-    console.error("Ошибка при получении тем:", error);
     response.status(500).json({
       success: false,
       status: 500,
@@ -187,7 +190,7 @@ app.get("/api/topics/:id", (request, response) => {
   try {
     const { id } = request.params;
 
-    if (!id) {
+    if (!id || id === "") {
       return response.status(400).json({
         success: false,
         status: 400,
@@ -210,7 +213,43 @@ app.get("/api/topics/:id", (request, response) => {
       data: topic,
     });
   } catch (error) {
-    console.error("Ошибка при получении темы по ID:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** GET /api/topics/:id/widgets - Get all widgets for topick by id */
+app.get("/api/topics/:id/widgets", (request, response) => {
+  try {
+    const { id } = request.params;
+
+    if (!id) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.missing_topic_id,
+      });
+    }
+
+    const topic = getTopicById(id);
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const widgets = getWidgetsByTopicId(id);
+    response.json({
+      success: true,
+      data: widgets,
+    });
+  } catch (error) {
     response.status(500).json({
       success: false,
       status: 500,
