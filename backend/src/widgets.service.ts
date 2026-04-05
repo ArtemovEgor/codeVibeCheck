@@ -1,23 +1,11 @@
 import database from "./database";
-import { ITopic } from "./types";
-
-interface ITopicRow {
-  id: string;
-  title: string;
-  description: string | null;
-  difficulty: number;
-  sortOrder: number;
-}
-
-interface IWidgetRow {
-  id: string;
-  type: string;
-  difficulty: number;
-  version: number;
-  tags: string | null;
-  payload: string;
-  sortOrder: number;
-}
+import {
+  ITopic,
+  ITopicRow,
+  IWidgetRow,
+  IWidgetAnswerData,
+  ISubmissionResult,
+} from "./types";
 
 export function getAllTopics(): ITopic[] {
   const topics = database
@@ -148,4 +136,87 @@ export function getWidgetById(widgetId: string): {
     tags: widget.tags ? JSON.parse(widget.tags) : [],
     payload: JSON.parse(widget.payload),
   };
+}
+
+export function submitWidgetAnswer(
+  widgetId: string,
+  userId: string,
+  userAnswer: number | boolean | string[] | number[],
+): ISubmissionResult {
+  const widget = database
+    .prepare<
+      [string],
+      { type: string; difficulty: number; answerData: string }
+    >(`SELECT type, difficulty, answerData FROM widgets WHERE id = ?`)
+    .get(widgetId);
+
+  if (!widget) {
+    throw new Error("WIDGET_NOT_FOUND");
+  }
+
+  let answerData: IWidgetAnswerData;
+  try {
+    answerData = JSON.parse(widget.answerData);
+  } catch {
+    throw new Error("INVALID_ANSWER_DATA");
+  }
+
+  const { correctAnswer, explanation } = answerData;
+  const { type, difficulty } = widget;
+
+  let isCorrect: boolean;
+  if (type === "quiz" || type === "true-false") {
+    isCorrect = userAnswer === correctAnswer;
+  } else if (type === "code-completion" || type === "code-ordering") {
+    isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correctAnswer);
+  } else {
+    throw new Error("UNKNOWN_WIDGET_TYPE");
+  }
+
+  const xpEarned = isCorrect ? difficulty * 10 : 0;
+
+  const now = new Date().toISOString();
+
+  const stats = database
+    .prepare<
+      [string],
+      { totalXp: number; streak: number }
+    >(`SELECT totalXp, streak FROM user_learning_stats WHERE userId = ?`)
+    .get(userId);
+
+  const oldStreak = stats?.streak ?? 0;
+  const newTotalXp = (stats?.totalXp ?? 0) + xpEarned;
+  const newStreak = isCorrect ? oldStreak + 1 : 0;
+  const streakUpdated = isCorrect;
+
+  if (stats) {
+    database
+      .prepare(
+        `UPDATE user_learning_stats
+        SET totalXp = ?, streak = ?, lastActivityAt = ?, updatedAt = ?
+        WHERE userId = ?`,
+      )
+      .run(newTotalXp, newStreak, now, now, userId);
+  } else {
+    database
+      .prepare(
+        `INSERT INTO user_learning_stats (userId, totalXp, streak, lastActivityAt, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+      )
+      .run(userId, newTotalXp, newStreak, now, now, now);
+  }
+
+  // 6. Формируем ответ
+  const result: ISubmissionResult = {
+    isCorrect,
+    xpEarned,
+    correctAnswer,
+    streakUpdated,
+  };
+
+  if (type === "true-false" && explanation) {
+    result.explanation = explanation;
+  }
+
+  return result;
 }

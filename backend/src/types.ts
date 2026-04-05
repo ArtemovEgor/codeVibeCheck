@@ -62,6 +62,37 @@ export interface IWidget {
   answerData?: Record<string, unknown>;
 }
 
+export interface ITopicRow {
+  id: string;
+  title: string;
+  description: string | null;
+  difficulty: number;
+  sortOrder: number;
+}
+
+export interface IWidgetRow {
+  id: string;
+  type: string;
+  difficulty: number;
+  version: number;
+  tags: string | null;
+  payload: string;
+  sortOrder: number;
+}
+
+export interface IWidgetAnswerData {
+  correctAnswer: number | boolean | string[] | number[];
+  explanation?: { ru: string; en: string };
+}
+
+export interface ISubmissionResult {
+  isCorrect: boolean;
+  xpEarned: number;
+  explanation?: { ru: string; en: string };
+  correctAnswer: number | boolean | string[] | number[];
+  streakUpdated: boolean;
+}
+
 /** User statistics from AI chat sessions */
 export interface IUserChatStats {
   readonly userId: string;

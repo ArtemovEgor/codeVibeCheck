@@ -18,6 +18,7 @@ import {
   getTopicById,
   getWidgetsByTopicId,
   getWidgetById,
+  submitWidgetAnswer,
 } from "./widgets.service";
 
 const app = express();
@@ -269,6 +270,73 @@ app.get("/api/widgets/:id", (request, response) => {
       message:
         error instanceof Error ? error.message : LANG.errors.server_error,
     });
+  }
+});
+
+/** POST /api/widgets/:id/submit - Answer check */
+app.post("/api/widgets/:id/submit", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { id: widgetId } = request.params;
+
+    if (!widgetId) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.missing_widget_id,
+      });
+    }
+
+    const { answer } = request.body;
+    if (answer === undefined) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: "Answer is required",
+      });
+    }
+
+    const verdict = submitWidgetAnswer(widgetId, userId, answer);
+
+    response.status(200).json({
+      success: true,
+      data: verdict,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "WIDGET_NOT_FOUND") {
+        return response.status(404).json({
+          success: false,
+          status: 404,
+          message: LANG.errors.widget_not_found,
+        });
+      }
+      if (error.message === "UNKNOWN_WIDGET_TYPE") {
+        return response.status(400).json({
+          success: false,
+          status: 400,
+          message: "Unsupported widget type",
+        });
+      }
+      if (error.message === "INVALID_ANSWER_DATA") {
+        return response.status(500).json({
+          success: false,
+          status: 500,
+          message: "Invalid answer data in database",
+        });
+      }
+    }
+
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
   }
 });
 
