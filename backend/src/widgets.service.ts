@@ -117,3 +117,35 @@ export function getWidgetsByTopicId(topicId: string): {
     payload: JSON.parse(widget.payload),
   }));
 }
+
+export function getWidgetById(widgetId: string): {
+  id: string;
+  type: string;
+  difficulty: number;
+  version: number;
+  tags: string[];
+  payload: Record<string, unknown>;
+} | null {
+  const widget = database
+    .prepare<[string], IWidgetRow>(
+      `
+      SELECT id, type, difficulty, version, tags, payload
+      FROM widgets
+      WHERE id = ?
+    `,
+    )
+    .get(widgetId);
+
+  if (!widget) {
+    return null;
+  }
+
+  return {
+    id: widget.id,
+    type: widget.type,
+    difficulty: widget.difficulty,
+    version: widget.version,
+    tags: widget.tags ? JSON.parse(widget.tags) : [],
+    payload: JSON.parse(widget.payload),
+  };
+}

@@ -24,5 +24,7 @@ export const EN = {
     user_not_found: "User not found",
     missing_topic_id: "Topic ID is required",
     topic_not_found: "Topic not found",
+    missing_widget_id: "Missing widget id",
+    widget_not_found: "Widget not found",
   },
 };

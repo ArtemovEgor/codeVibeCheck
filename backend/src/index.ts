@@ -17,6 +17,7 @@ import {
   getAllTopics,
   getTopicById,
   getWidgetsByTopicId,
+  getWidgetById,
 } from "./widgets.service";
 
 const app = express();
@@ -189,15 +190,6 @@ app.get("/api/topics", (_request, response) => {
 app.get("/api/topics/:id", (request, response) => {
   try {
     const { id } = request.params;
-
-    if (!id || id === "") {
-      return response.status(400).json({
-        success: false,
-        status: 400,
-        message: LANG.errors.missing_topic_id,
-      });
-    }
-
     const topic = getTopicById(id);
 
     if (!topic) {
@@ -226,16 +218,8 @@ app.get("/api/topics/:id", (request, response) => {
 app.get("/api/topics/:id/widgets", (request, response) => {
   try {
     const { id } = request.params;
-
-    if (!id) {
-      return response.status(400).json({
-        success: false,
-        status: 400,
-        message: LANG.errors.missing_topic_id,
-      });
-    }
-
     const topic = getTopicById(id);
+
     if (!topic) {
       return response.status(404).json({
         success: false,
@@ -250,6 +234,35 @@ app.get("/api/topics/:id/widgets", (request, response) => {
       data: widgets,
     });
   } catch (error) {
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** GET /api/widgets/:id - Get widget by id */
+app.get("/api/widgets/:id", (request, response) => {
+  try {
+    const { id } = request.params;
+    const widget = getWidgetById(id);
+
+    if (!widget) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.widget_not_found,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: widget,
+    });
+  } catch (error) {
+    console.error("Ошибка при получении виджета по ID:", error);
     response.status(500).json({
       success: false,
       status: 500,
