@@ -236,6 +236,12 @@ while (page.status === 404) {
       skills: {
         title: "Skill mastery",
       },
+      resume: {
+        title: "Resume Learning",
+        empty_text:
+          "You haven't started any topics yet. Choose a topic from the library!",
+        button: "Go to Library",
+      },
       ai_performance: {
         title: "AI Interview Performance",
         review_session: "Review Session",

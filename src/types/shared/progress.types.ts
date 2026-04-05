@@ -1,3 +1,6 @@
+import type { IUserTopicProgress } from "./user.types";
+import type { ITopic } from "./widget.types";
+
 export interface ISkillData {
   type: SkillType;
   currentXP: number;
@@ -13,6 +16,13 @@ export const SKILL_TYPES = {
 
 export type SkillType = (typeof SKILL_TYPES)[keyof typeof SKILL_TYPES];
 
+export interface ILastActiveTopic {
+  topic: ITopic;
+  progress: IUserTopicProgress;
+  totalWidgets: number;
+}
+
 export interface IProgressStatistic {
   skillsMastery: ISkillData[];
+  lastActiveTopic?: ILastActiveTopic;
 }
