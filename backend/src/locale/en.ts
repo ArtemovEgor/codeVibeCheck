@@ -19,5 +19,7 @@ export const EN = {
     stream_interrupted: "Stream interrupted",
     internal_error: "Internal Server Error",
     ai_score_error: "Failed to evaluate the answer",
+    server_error: "Internal server error",
+    topics_no_data: "Topics data not found",
   },
 };

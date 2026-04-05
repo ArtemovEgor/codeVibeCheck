@@ -13,27 +13,32 @@ const ALLOWED_TABLES = new Set(["topics", "topic_requirements", "widgets"]);
 type DB = Database.Database;
 
 // Helpers
-function validatePrerequisites(database: DB): void {
-  const tablesToCheck = ["topics", "topic_requirements", "widgets"];
-  for (const tableName of tablesToCheck) {
-    if (!isTableEmpty(database, tableName)) {
-      throw new Error(
-        `Table "${tableName}" already contains data. Seed aborted to avoid data corruption.`,
-      );
-    }
-  }
-
+function validatePrerequisites(database: DB): boolean {
   if (!fs.existsSync(DATA_DIR)) {
-    throw new Error(`Data directory not found: ${DATA_DIR}`);
+    console.warn(`Data directory not found: ${DATA_DIR}`);
+    return false;
   }
 
   const requiredFiles = ["topics.json", "widgets.json"];
   for (const file of requiredFiles) {
     const filePath = path.join(DATA_DIR, file);
     if (!fs.existsSync(filePath)) {
-      throw new Error(`Required file not found: ${filePath}`);
+      console.warn(`Required file not found: ${filePath}. Seed skipped.`);
+      return false;
     }
   }
+
+  const tablesToCheck = ["topics", "topic_requirements", "widgets"];
+  for (const tableName of tablesToCheck) {
+    if (!isTableEmpty(database, tableName)) {
+      console.log(
+        `Table "${tableName}" already contains data. Seed aborted to avoid data corruption.`,
+      );
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function buildAnswerData(widget: IWidget): Record<string, unknown> {
@@ -297,9 +302,13 @@ function seedWidgets(database: DB, topics: ITopic[], widgets: IWidget[]): void {
 
   const insertMany = database.transaction((items: IWidgetWithTopic[]) => {
     const now = new Date().toISOString();
+
+    let order = 0;
+
     for (const widget of items) {
       const cleanPayloadData = cleanPayload(widget);
       const answerData = buildAnswerData(widget);
+
       stmt.run(
         widget.id,
         widget.topicId,
@@ -309,7 +318,7 @@ function seedWidgets(database: DB, topics: ITopic[], widgets: IWidget[]): void {
         widget.difficulty ?? 1,
         widget.version ?? 1,
         widget.tags ? JSON.stringify(widget.tags) : null,
-        widget.sortOrder ?? 0,
+        ++order,
         now,
         now,
       );
@@ -323,7 +332,9 @@ function seedWidgets(database: DB, topics: ITopic[], widgets: IWidget[]): void {
 export function fillDatabase(database: DB): void {
   console.log("Initializing data...");
 
-  validatePrerequisites(database);
+  if (!validatePrerequisites(database)) {
+    return;
+  }
 
   const topics = loadJSON<ITopic>("topics.json");
   if (topics.length === 0) {
