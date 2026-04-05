@@ -37,7 +37,7 @@ export const RU = {
   },
   sidebar: {
     nav: {
-      dashboard: "Главная",
+      dashboard: "Дашбоард",
       library: "Библиотека",
       aiChat: "AI Чат",
       profile: "Профиль",
@@ -231,7 +231,7 @@ while (page.status === 404) {
   },
   arrow_up: "↑",
   dashboard: {
-    title: "Статистика",
+    title: "Дашбоард",
     welcome: "С возвращением",
     components: {
       skills: {
@@ -251,4 +251,5 @@ while (page.status === 404) {
       logic: "Логика",
     },
   },
+  default_user: "Пользователь",
 };

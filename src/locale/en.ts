@@ -250,4 +250,5 @@ while (page.status === 404) {
       logic: "Logic",
     },
   },
+  default_user: "User",
 };

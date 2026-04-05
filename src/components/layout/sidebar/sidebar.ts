@@ -136,7 +136,7 @@ export class Sidebar extends BaseComponent {
     this.usernameEl = new BaseComponent({
       tag: "span",
       className: "sidebar__username",
-      text: this.currentUser?.name ?? "User",
+      text: this.currentUser?.name ?? i18n.t().default_user,
       parent: this.userWrap,
     });
 

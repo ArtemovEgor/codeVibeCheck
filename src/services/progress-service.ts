@@ -7,7 +7,7 @@ import {
   type ISkillData,
   type SkillType,
 } from "@/types/shared/progress.types";
-import type { IUserTopicProgress } from "@/types/shared/user.types";
+import type { IUserStats, IUserTopicProgress } from "@/types/shared/user.types";
 import {
   WIDGET_TYPES,
   type ITopic,
@@ -19,21 +19,30 @@ export class ProgressService {
   private widgets: Widget[] = [];
   private progress: IUserTopicProgress[] = [];
 
-  public async getProgressDashboardData(): Promise<IProgressStatistic> {
+  public async getProgressDashboardData(): Promise<
+    IProgressStatistic | undefined
+  > {
     [this.topics, this.widgets, this.progress] = await Promise.all([
-      widgetsApi.getTopics(),
-      widgetsApi.getWidgets(),
-      progressApi.getAll(),
+      widgetsApi.getTopics().catch(() => []),
+      widgetsApi.getWidgets().catch(() => []),
+      progressApi.getAll().catch(() => []),
     ]);
 
-    const skillsData = await this.calculateSkillProgress(this.progress);
+    const skillsData = this.calculateSkillProgress(this.progress);
 
     return { skillsMastery: skillsData };
   }
 
-  private async calculateSkillProgress(
-    progress: IUserTopicProgress[],
-  ): Promise<ISkillData[]> {
+  public async loadGlobalStats(): Promise<IUserStats | undefined> {
+    try {
+      return await progressApi.getUserStats();
+    } catch (error) {
+      console.error("Stats loading failed", error);
+      return undefined;
+    }
+  }
+
+  private calculateSkillProgress(progress: IUserTopicProgress[]): ISkillData[] {
     const statistic: ISkillData[] = [];
     const skillsXP = this.countSkillsXP(progress);
     const totalXP = this.countTotalXPBySkill();

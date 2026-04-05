@@ -23,6 +23,30 @@
     }
   }
 
+  &__title {
+    @include heading(var(--text-2xl));
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  &__subtitle-container {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  &__subtitle {
+    @include label;
+    font-size: var(--text-2xl);
+    color: var(--text-secondary);
+    margin-top: var(--space-1);
+  }
+
+  &__streak-badge {
+    @include badge-warning;
+    font-size: var(--text-base);
+    padding: 6px 10px;
+  }
+
   &__columns {
     display: grid;
     gap: var(--space-8);
