@@ -13,6 +13,7 @@ import {
 } from "./ai/ai.service";
 import { ISendMessagePayload } from "./ai/ai.types";
 import { verifyToken } from "./utils/verify-token";
+import { getAllTopics } from "./widgets.service";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -149,6 +150,35 @@ app.get("/api/auth/me", (request, response) => {
     const message =
       error instanceof Error ? error.message : LANG.errors.internal_error;
     response.status(status).json({ success: false, status, message });
+  }
+});
+
+// Widget EndPoints
+/** GET /api/topics - Get all topics */
+app.get("/api/topics", (_request, response) => {
+  try {
+    const topics = getAllTopics();
+
+    if (topics.length === 0) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topics_no_data,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: topics,
+    });
+  } catch (error) {
+    console.error("Ошибка при получении тем:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
   }
 });
 
