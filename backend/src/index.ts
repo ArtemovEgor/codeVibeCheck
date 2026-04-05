@@ -20,6 +20,7 @@ import {
   getWidgetById,
   submitWidgetAnswer,
   getUserProgress,
+  getUserLearningStats,
 } from "./widgets.service";
 
 const app = express();
@@ -351,6 +352,30 @@ app.get("/api/progress", (request, response) => {
     response.json({
       success: true,
       data: progress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** GET /api/progress/stats - Get user stats */
+app.get("/api/progress/stats", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const stats = getUserLearningStats(userId);
+
+    response.json({
+      success: true,
+      data: stats,
     });
   } catch (error) {
     const isAuthError =

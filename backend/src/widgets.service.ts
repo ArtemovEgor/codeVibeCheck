@@ -6,6 +6,7 @@ import {
   IWidgetAnswerData,
   ISubmissionResult,
   IUserTopicProgress,
+  IUserStats,
 } from "./types";
 
 export function getAllTopics(): ITopic[] {
@@ -250,4 +251,40 @@ export function getUserProgress(userId: string): IUserTopicProgress[] {
     isCompleted: Boolean(row.isCompleted),
     isUnlocked: Boolean(row.isUnlocked),
   }));
+}
+
+export function getUserLearningStats(userId: string): IUserStats {
+  const row = database
+    .prepare<
+      [string],
+      {
+        totalXp: number;
+        completedTopicsCount: number;
+        streak: number;
+        lastActivityAt: string | null;
+      }
+    >(
+      `
+      SELECT totalXp, completedTopicsCount, streak, lastActivityAt
+      FROM user_learning_stats
+      WHERE userId = ?
+    `,
+    )
+    .get(userId);
+
+  if (!row) {
+    return {
+      totalXp: 0,
+      completedTopics: 0,
+      streak: 0,
+      lastActivityAt: undefined,
+    };
+  }
+
+  return {
+    totalXp: row.totalXp,
+    completedTopics: row.completedTopicsCount,
+    streak: row.streak,
+    lastActivityAt: row.lastActivityAt ?? undefined,
+  };
 }

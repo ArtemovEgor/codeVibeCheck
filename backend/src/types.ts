@@ -101,6 +101,13 @@ export interface IUserTopicProgress {
   isUnlocked: boolean;
 }
 
+export interface IUserStats {
+  totalXp: number;
+  completedTopics: number;
+  streak: number;
+  lastActivityAt: string | undefined;
+}
+
 /** User statistics from AI chat sessions */
 export interface IUserChatStats {
   readonly userId: string;
