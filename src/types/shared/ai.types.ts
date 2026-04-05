@@ -6,6 +6,7 @@
  */
 
 import type { ChatRole } from "@/constants/api-chat";
+import type { Language } from "@/types/types";
 
 // ── Chat ────────────────────────────────────────────────────────────────────
 
@@ -22,6 +23,7 @@ export interface IChatMessage {
 /**  A message sent from the frontend */
 export interface ISendMessagePayload {
   readonly content: string;
+  readonly language?: Language;
 }
 
 /** AI evaluation of the user's interview */

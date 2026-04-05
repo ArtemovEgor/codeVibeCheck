@@ -11,7 +11,12 @@ import type {
 import { Button } from "../button/button";
 import { ICONS } from "@/assets/icons";
 import { ChatRoles } from "@/constants/api-chat";
-import { RESTART_TIMEOUT_MS, XP_THRESHOLDS } from "./ai-chat.constants";
+import {
+  CHAT_DRAFT_KEY,
+  FIRST_CHUNK_TIMEOUT_MS,
+  RESTART_TIMEOUT_MS,
+  XP_THRESHOLDS,
+} from "./ai-chat.constants";
 import { renderMarkdown } from "@/utils/markdown";
 import "./ai-chat.scss";
 import "highlight.js/styles/tokyo-night-dark.css";
@@ -28,6 +33,7 @@ export default class AIChat extends BaseComponent implements Page {
   private stopButton?: Button;
   private abortController?: AbortController;
   private isInterviewOver = false;
+  private firstChunkTimeout = false;
 
   constructor() {
     super({
@@ -45,6 +51,7 @@ export default class AIChat extends BaseComponent implements Page {
     this.blockInput(false);
     this.renderWelcome();
     await this.loadChatHistory();
+    this.loadDraft();
   }
 
   private renderHeader(): void {
@@ -322,6 +329,7 @@ export default class AIChat extends BaseComponent implements Page {
           this.handleSend();
         }
       });
+      inputNode.addEventListener("input", () => this.handleInput());
     }
 
     wrapper.addChildren([this.createInputControls()]);
@@ -354,24 +362,19 @@ export default class AIChat extends BaseComponent implements Page {
   }
 
   private async handleSend(): Promise<void> {
-    const content = this.messageField?.getNode().value;
+    const inputNode = this.messageField?.getNode();
+    const content = inputNode?.value;
     if (!content) return;
 
-    if (this.messageField) this.messageField.getNode().value = "";
+    if (inputNode) {
+      inputNode.value = "";
+      this.handleInput();
+      this.saveDraft("");
+    }
 
-    this.renderMessage({
-      id: "",
-      role: ChatRoles.user,
-      content,
-      createdAt: new Date().toISOString(),
-    });
-
-    const responseContainer = this.renderMessage({
-      id: "",
-      role: ChatRoles.assistant,
-      content: "",
-      createdAt: new Date().toISOString(),
-    })
+    const userMessage = this.renderOutgoingMessage(content);
+    const assistantMessage = this.renderAssistantWrapper();
+    const responseContainer = assistantMessage
       .getNode()
       .querySelector(".chat-message__content") as HTMLElement | undefined;
 
@@ -379,22 +382,47 @@ export default class AIChat extends BaseComponent implements Page {
 
     this.scrollToBottom();
     this.blockInput(true);
+    this.firstChunkTimeout = false;
     const abortSignal = this.createNewAbortSignal();
 
     try {
       await this.renderMessageText(
         responseContainer,
-        { content },
+        { content, language: i18n.getLang() },
         abortSignal,
         indicator,
       );
       await this.syncXP();
     } catch (error) {
       indicator.destroy();
-      this.handleStreamError(error, responseContainer, content);
+      this.handleStreamError(
+        error,
+        responseContainer,
+        content,
+        userMessage,
+        assistantMessage,
+      );
     } finally {
       this.finalizeSend();
     }
+  }
+
+  private renderOutgoingMessage(content: string): BaseComponent {
+    return this.renderMessage({
+      id: "",
+      role: ChatRoles.user,
+      content,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  private renderAssistantWrapper(): BaseComponent {
+    return this.renderMessage({
+      id: "",
+      role: ChatRoles.assistant,
+      content: "",
+      createdAt: new Date().toISOString(),
+    });
   }
 
   private finalizeSend(): void {
@@ -410,15 +438,30 @@ export default class AIChat extends BaseComponent implements Page {
     error: unknown,
     responseContainer: HTMLElement | undefined,
     content: string,
+    userMessage?: BaseComponent,
+    assistantMessage?: BaseComponent,
   ): void {
-    if (error instanceof Error && error.name === "AbortError") {
+    const isTimeout =
+      this.firstChunkTimeout ||
+      (error instanceof Error && error.message === "FIRST_CHUNK_TIMEOUT");
+    const isAbort = error instanceof Error && error.name === "AbortError";
+
+    if (isTimeout) {
+      this.firstChunkTimeout = false;
+      this.addTimeoutNotice(responseContainer);
+    } else if (isAbort) {
       this.addStopNotice(responseContainer);
-      if (this.messageField) this.messageField.getNode().value = content;
-      return;
+    } else {
+      userMessage?.destroy();
+      assistantMessage?.destroy();
+      const apiError = error as IApiError;
+      Notification.show(apiError.message, NotificationType.ERROR);
     }
 
-    const apiError = error as IApiError;
-    Notification.show(apiError.message, NotificationType.ERROR);
+    if (this.messageField) {
+      this.messageField.getNode().value = content;
+      this.handleInput();
+    }
   }
 
   private createNewAbortSignal() {
@@ -429,7 +472,7 @@ export default class AIChat extends BaseComponent implements Page {
 
   private async renderMessageText(
     responseContainer: HTMLElement | undefined,
-    { content }: ISendMessagePayload,
+    payload: ISendMessagePayload,
     abortSignal: AbortSignal,
     indicator: TypingIndicator,
   ): Promise<void> {
@@ -437,19 +480,31 @@ export default class AIChat extends BaseComponent implements Page {
     let accumulated = "";
     let isFirstChunk = true;
 
-    for await (const event of aiApi.sendChatMessage({ content }, abortSignal)) {
+    const timeoutId = setTimeout(() => {
       if (isFirstChunk) {
-        indicator.destroy();
-        isFirstChunk = false;
+        this.firstChunkTimeout = true;
+        this.abortController?.abort(new Error("FIRST_CHUNK_TIMEOUT"));
       }
+    }, FIRST_CHUNK_TIMEOUT_MS);
 
-      if (event.type === "text_chunk") {
-        accumulated += event.content;
-        const html = renderMarkdown(accumulated);
-        if (responseContainer) responseContainer.innerHTML = html;
-      } else if (event.type === "final_report") {
-        this.renderFinalReport(event.content);
+    try {
+      for await (const event of aiApi.sendChatMessage(payload, abortSignal)) {
+        if (isFirstChunk) {
+          clearTimeout(timeoutId);
+          indicator.destroy();
+          isFirstChunk = false;
+        }
+
+        if (event.type === "text_chunk") {
+          accumulated += event.content;
+          const html = renderMarkdown(accumulated);
+          if (responseContainer) responseContainer.innerHTML = html;
+        } else if (event.type === "final_report") {
+          this.renderFinalReport(event.content);
+        }
       }
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -551,6 +606,45 @@ export default class AIChat extends BaseComponent implements Page {
     });
 
     container?.append(notice.getNode());
+  }
+
+  private addTimeoutNotice(container: HTMLElement | undefined) {
+    const notice = new BaseComponent({
+      tag: "p",
+      className: "chat-message__stop-notice chat-message__stop-notice--error",
+      text: i18n.t().ai_chat.timeout_error,
+    });
+
+    container?.append(notice.getNode());
+  }
+
+  private handleInput(): void {
+    const input = this.messageField?.getNode();
+    if (!input) return;
+
+    input.style.height = "auto";
+    input.style.height = `${input.scrollHeight}px`;
+    input.style.overflowY = input.scrollHeight > 200 ? "auto" : "hidden";
+
+    this.saveDraft(input.value);
+  }
+
+  private saveDraft(content: string): void {
+    if (content) {
+      localStorage.setItem(CHAT_DRAFT_KEY, content);
+    } else {
+      localStorage.removeItem(CHAT_DRAFT_KEY);
+    }
+  }
+
+  private loadDraft(): void {
+    const draft = localStorage.getItem(CHAT_DRAFT_KEY);
+    const inputNode = this.messageField?.getNode();
+
+    if (draft && inputNode) {
+      inputNode.value = draft;
+      this.handleInput();
+    }
   }
 
   public destroy(): void {

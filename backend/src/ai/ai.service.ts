@@ -30,6 +30,8 @@ export async function* sendChatMessage(
   message: ISendMessagePayload,
   signal?: AbortSignal,
 ): AsyncGenerator<AppStreamChunk> {
+  const { language } = message;
+
   const countQuery = dataBase.prepare(
     "SELECT COUNT(*) as count FROM messages WHERE userId = ? AND role = 'user'",
   );
@@ -75,13 +77,15 @@ export async function* sendChatMessage(
       };
     });
 
+  const langName = language?.toLowerCase() === "ru" ? "RUSSIAN" : "ENGLISH";
+  const systemPrompt = language
+    ? `${SYSTEM_PROMPTS.interviewer}\n\nSTRICT LANGUAGE RULE: Output all responses (messages, topics, comments) strictly in ${langName}. Do NOT use any other language.`
+    : SYSTEM_PROMPTS.interviewer;
+
   const stream = await client.chat.completions.create(
     {
       model: AI_MODELS.answering,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPTS.interviewer },
-        ...historyContext,
-      ],
+      messages: [{ role: "system", content: systemPrompt }, ...historyContext],
       stream: true,
     },
     { signal },
@@ -159,7 +163,7 @@ export async function* sendChatMessage(
   });
 
   if (isFinalTurn) {
-    const finalReport = await generateFinalReport(userId);
+    const finalReport = await generateFinalReport(userId, language);
 
     insertQuery.run({
       id: crypto.randomUUID(),
@@ -308,7 +312,10 @@ function saveSummary(summary: string, userId: string) {
   console.log(`[SUMMARY] Successfully updated profile for user ${userId}`);
 }
 
-async function generateFinalReport(userId: string): Promise<string> {
+async function generateFinalReport(
+  userId: string,
+  language?: string,
+): Promise<string> {
   const rawHistory = getChatHistory(userId);
   const lastSummaryIndex = findLastSummaryIndex(rawHistory);
 
@@ -327,11 +334,16 @@ async function generateFinalReport(userId: string): Promise<string> {
 
   const prompt = `=== CUMULATIVE SUMMARY ===\n${profileContext}\n\n=== RECENT TRANSCRIPT ===\n${transcript}`;
 
+  const langName = language?.toLowerCase() === "ru" ? "RUSSIAN" : "ENGLISH";
+  const systemPrompt = language
+    ? `${SYSTEM_PROMPTS.final_judge}\n\nSTRICT LANGUAGE RULE: Generate the entire report strictly in ${langName} using clean markdown.`
+    : SYSTEM_PROMPTS.final_judge;
+
   try {
     const response = await client.chat.completions.create({
       model: AI_MODELS.summarization,
       messages: [
-        { role: "system", content: SYSTEM_PROMPTS.final_judge },
+        { role: "system", content: systemPrompt },
         { role: "user", content: prompt },
       ],
       temperature: 0.2,

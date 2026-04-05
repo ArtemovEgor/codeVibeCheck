@@ -2,6 +2,7 @@ import { ChatCompletionChunk } from "groq-sdk/resources/chat/completions";
 
 export interface ISendMessagePayload {
   readonly content: string;
+  readonly language?: string;
 }
 
 type ChatRole = "user" | "assistant" | "system";
