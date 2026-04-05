@@ -23,6 +23,7 @@ import {
   getUserLearningStats,
   getUserProgressByTopicId,
   initUserTopicProgress,
+  updateUserTopicProgress,
 } from "./widgets.service";
 
 const app = express();
@@ -471,6 +472,71 @@ app.post("/api/progress/:topicId/init", (request, response) => {
     response.status(200).json({
       success: true,
       data: progress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** POST /api/progress - Update progress after responding to widget */
+app.post("/api/progress", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { topicId, widgetId, xpEarned, totalWidgets } = request.body;
+
+    if (!topicId || !widgetId || totalWidgets === undefined) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: "Missing required fields: topicId, widgetId, totalWidgets",
+      });
+    }
+
+    if (typeof xpEarned !== "number" || xpEarned < 0) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: "xpEarned must be a non-negative number",
+      });
+    }
+
+    const widget = getWidgetById(widgetId);
+    if (!widget) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.widget_not_found,
+      });
+    }
+
+    const topic = getTopicById(topicId);
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const updatedProgress = updateUserTopicProgress(userId, {
+      topicId,
+      widgetId,
+      xpEarned,
+      totalWidgets,
+    });
+
+    response.json({
+      success: true,
+      data: updatedProgress,
     });
   } catch (error) {
     const isAuthError =

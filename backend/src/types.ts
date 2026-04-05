@@ -108,6 +108,13 @@ export interface IUserStats {
   lastActivityAt: string | undefined;
 }
 
+export interface IUpdateProgressPayload {
+  topicId: string;
+  widgetId: string;
+  xpEarned: number;
+  totalWidgets: number;
+}
+
 /** User statistics from AI chat sessions */
 export interface IUserChatStats {
   readonly userId: string;

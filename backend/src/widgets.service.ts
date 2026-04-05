@@ -7,6 +7,7 @@ import {
   ISubmissionResult,
   IUserTopicProgress,
   IUserStats,
+  IUpdateProgressPayload,
 } from "./types";
 
 export function getAllTopics(): ITopic[] {
@@ -410,4 +411,150 @@ export function initUserTopicProgress(
     isCompleted: false,
     isUnlocked,
   };
+}
+
+/**
+ * Updates the user's progress on the topic after a response to the widget.
+ * Called by the front-end after each response.
+ * @param userId - User ID
+ * @param payload - Data to update
+ * @returns - Updated progress record for the topic
+ */
+
+export function updateUserTopicProgress(
+  userId: string,
+  payload: IUpdateProgressPayload,
+): IUserTopicProgress {
+  const { topicId, widgetId, xpEarned, totalWidgets } = payload;
+
+  let progress = getUserProgressByTopicId(userId, topicId);
+  if (!progress) {
+    progress = initUserTopicProgress(userId, topicId);
+  }
+
+  const completedIds = [...progress.completedWidgetIds];
+  const isNewWidget = !completedIds.includes(widgetId);
+
+  if (isNewWidget) {
+    completedIds.push(widgetId);
+    progress.xpEarned += xpEarned;
+  }
+
+  const newCompletedIdsJson = JSON.stringify(completedIds);
+  const isCompleted = completedIds.length >= totalWidgets;
+
+  const now = new Date().toISOString();
+  database
+    .prepare(
+      `
+      UPDATE user_topic_progress
+      SET completedWidgetIds = ?,
+          xpEarned = ?,
+          isCompleted = ?,
+          updatedAt = ?
+      WHERE userId = ? AND topicId = ?
+    `,
+    )
+    .run(
+      newCompletedIdsJson,
+      progress.xpEarned,
+      isCompleted ? 1 : 0,
+      now,
+      userId,
+      topicId,
+    );
+
+  database
+    .prepare(
+      `
+      UPDATE user_learning_stats
+      SET totalXp = totalXp + ?,
+          lastActivityAt = ?,
+          updatedAt = ?
+      WHERE userId = ?
+    `,
+    )
+    .run(xpEarned, now, now, userId);
+
+  if (isCompleted && !progress.isCompleted) {
+    const completedCountResult = database
+      .prepare<[string], { count: number }>(
+        `
+        SELECT COUNT(*) as count
+        FROM user_topic_progress
+        WHERE userId = ? AND isCompleted = 1
+      `,
+      )
+      .get(userId);
+
+    const completedTopicsCount = completedCountResult?.count ?? 0;
+    database
+      .prepare(
+        `
+        UPDATE user_learning_stats
+        SET completedTopicsCount = ?
+        WHERE userId = ?
+      `,
+      )
+      .run(completedTopicsCount, userId);
+  }
+
+  const statsRow = database
+    .prepare<
+      [string],
+      { streak: number }
+    >(`SELECT streak FROM user_learning_stats WHERE userId = ?`)
+    .get(userId);
+
+  const currentStreak = statsRow?.streak ?? 0;
+  const newStreak = xpEarned > 0 ? currentStreak + 1 : 0;
+  database
+    .prepare(`UPDATE user_learning_stats SET streak = ? WHERE userId = ?`)
+    .run(newStreak, userId);
+
+  if (isCompleted && !progress.isCompleted) {
+    const dependentTopics = database
+      .prepare<
+        [string],
+        { topicId: string }
+      >(`SELECT topicId FROM topic_requirements WHERE requiredTopicId = ?`)
+      .all(topicId);
+
+    for (const dep of dependentTopics) {
+      const requirements = database
+        .prepare<
+          [string],
+          { requiredTopicId: string }
+        >(`SELECT requiredTopicId FROM topic_requirements WHERE topicId = ?`)
+        .all(dep.topicId);
+
+      let allCompleted = true;
+      for (const request of requirements) {
+        const requestProgress = database
+          .prepare<
+            [string, string],
+            { isCompleted: number }
+          >(`SELECT isCompleted FROM user_topic_progress WHERE userId = ? AND topicId = ?`)
+          .get(userId, request.requiredTopicId);
+        if (!requestProgress || !requestProgress.isCompleted) {
+          allCompleted = false;
+          break;
+        }
+      }
+
+      if (allCompleted) {
+        database
+          .prepare(
+            `
+            UPDATE user_topic_progress
+            SET isUnlocked = 1, updatedAt = ?
+            WHERE userId = ? AND topicId = ?
+          `,
+          )
+          .run(now, userId, dep.topicId);
+      }
+    }
+  }
+
+  return getUserProgressByTopicId(userId, topicId) as IUserTopicProgress;
 }
