@@ -1,0 +1,128 @@
+[
+  {
+    "id": "core-js",
+    "title": { "ru": "Core JavaScript", "en": "Core JavaScript" },
+    "description": {
+      "ru": "Основы JavaScript: типы данных, операторы, области видимости",
+      "en": "JavaScript fundamentals: data types, operators, scoping"
+    },
+    "difficulty": 1,
+    "order": 1,
+    "requiredTopicIds": [],
+    "widgetIds": [
+      "core-quiz-001",
+      "core-tf-001",
+      "core-cc-001",
+      "core-co-001",
+      "core-quiz-002",
+      "core-tf-002",
+      "core-cc-002",
+      "core-co-002"
+    ]
+  },
+  {
+    "id": "array-methods",
+    "title": { "ru": "Array Methods", "en": "Array Methods" },
+    "description": {
+      "ru": "Методы массивов: map, filter, reduce и другие",
+      "en": "Array methods: map, filter, reduce and more"
+    },
+    "difficulty": 1,
+    "order": 2,
+    "requiredTopicIds": ["core-js"],
+    "widgetIds": [
+      "arr-quiz-001",
+      "arr-tf-001",
+      "arr-cc-001",
+      "arr-co-001",
+      "arr-quiz-002",
+      "arr-tf-002",
+      "arr-cc-002",
+      "arr-co-002"
+    ]
+  },
+  {
+    "id": "async",
+    "title": { "ru": "Async / Await", "en": "Async / Await" },
+    "description": {
+      "ru": "Асинхронный JavaScript: Promise, async/await, event loop",
+      "en": "Asynchronous JavaScript: Promise, async/await, event loop"
+    },
+    "difficulty": 2,
+    "order": 3,
+    "requiredTopicIds": ["core-js"],
+    "widgetIds": [
+      "async-quiz-001",
+      "async-tf-001",
+      "async-cc-001",
+      "async-co-001",
+      "async-quiz-002",
+      "async-tf-002",
+      "async-cc-002",
+      "async-co-002"
+    ]
+  },
+  {
+    "id": "closures",
+    "title": { "ru": "Closures & Scope", "en": "Closures & Scope" },
+    "description": {
+      "ru": "Замыкания, область видимости, контекст выполнения",
+      "en": "Closures, scope, execution context"
+    },
+    "difficulty": 2,
+    "order": 4,
+    "requiredTopicIds": ["core-js", "async"],
+    "widgetIds": [
+      "cls-quiz-001",
+      "cls-tf-001",
+      "cls-cc-001",
+      "cls-co-001",
+      "cls-quiz-002",
+      "cls-tf-002",
+      "cls-cc-002",
+      "cls-co-002"
+    ]
+  },
+  {
+    "id": "typescript",
+    "title": { "ru": "TypeScript Basics", "en": "TypeScript Basics" },
+    "description": {
+      "ru": "Основы TypeScript: типы, интерфейсы, generics",
+      "en": "TypeScript fundamentals: types, interfaces, generics"
+    },
+    "difficulty": 2,
+    "order": 5,
+    "requiredTopicIds": ["core-js"],
+    "widgetIds": [
+      "ts-quiz-001",
+      "ts-tf-001",
+      "ts-cc-001",
+      "ts-co-001",
+      "ts-quiz-002",
+      "ts-tf-002",
+      "ts-cc-002",
+      "ts-co-002"
+    ]
+  },
+  {
+    "id": "proto",
+    "title": { "ru": "Prototypes & this", "en": "Prototypes & this" },
+    "description": {
+      "ru": "Прототипное наследование, контекст this, call/apply/bind",
+      "en": "Prototypal inheritance, this context, call/apply/bind"
+    },
+    "difficulty": 3,
+    "order": 6,
+    "requiredTopicIds": ["core-js", "closures"],
+    "widgetIds": [
+      "proto-quiz-001",
+      "proto-tf-001",
+      "proto-cc-001",
+      "proto-co-001",
+      "proto-quiz-002",
+      "proto-tf-002",
+      "proto-cc-002",
+      "proto-co-002"
+    ]
+  }
+]
