@@ -19,6 +19,7 @@ import {
   getWidgetsByTopicId,
   getWidgetById,
   submitWidgetAnswer,
+  getUserProgress,
 } from "./widgets.service";
 
 const app = express();
@@ -327,6 +328,31 @@ app.post("/api/widgets/:id/submit", (request, response) => {
       }
     }
 
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** GET /api/progress - Get user progress */
+/* If the user has no progress, an empty array is returned. */
+app.get("/api/progress", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const progress = getUserProgress(userId);
+
+    response.json({
+      success: true,
+      data: progress,
+    });
+  } catch (error) {
     const isAuthError =
       error instanceof Error &&
       (error.message === LANG.errors.unauthorized ||

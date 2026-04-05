@@ -5,6 +5,7 @@ import {
   IWidgetRow,
   IWidgetAnswerData,
   ISubmissionResult,
+  IUserTopicProgress,
 } from "./types";
 
 export function getAllTopics(): ITopic[] {
@@ -219,4 +220,34 @@ export function submitWidgetAnswer(
   }
 
   return result;
+}
+
+export function getUserProgress(userId: string): IUserTopicProgress[] {
+  const rows = database
+    .prepare<
+      [string],
+      {
+        topicId: string;
+        completedWidgetIds: string;
+        xpEarned: number;
+        isCompleted: boolean;
+        isUnlocked: boolean;
+      }
+    >(
+      `
+      SELECT topicId, completedWidgetIds, xpEarned, isCompleted, isUnlocked
+      FROM user_topic_progress
+      WHERE userId = ?
+      ORDER BY createdAt ASC
+    `,
+    )
+    .all(userId);
+
+  return rows.map((row) => ({
+    topicId: row.topicId,
+    completedWidgetIds: JSON.parse(row.completedWidgetIds),
+    xpEarned: row.xpEarned,
+    isCompleted: Boolean(row.isCompleted),
+    isUnlocked: Boolean(row.isUnlocked),
+  }));
 }

@@ -93,6 +93,14 @@ export interface ISubmissionResult {
   streakUpdated: boolean;
 }
 
+export interface IUserTopicProgress {
+  topicId: string;
+  completedWidgetIds: string[];
+  xpEarned: number;
+  isCompleted: boolean;
+  isUnlocked: boolean;
+}
+
 /** User statistics from AI chat sessions */
 export interface IUserChatStats {
   readonly userId: string;
