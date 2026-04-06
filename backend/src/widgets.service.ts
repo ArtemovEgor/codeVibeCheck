@@ -80,6 +80,34 @@ export function getTopicById(id: string): ITopic | null {
   };
 }
 
+export function getAllWidgets(): {
+  id: string;
+  type: string;
+  difficulty: number;
+  version: number;
+  tags: string[];
+  payload: Record<string, unknown>;
+}[] {
+  const widgets = database
+    .prepare<[], IWidgetRow>(
+      `
+      SELECT id, type, difficulty, version, tags, payload
+      FROM widgets
+      ORDER BY sortOrder ASC
+    `,
+    )
+    .all();
+
+  return widgets.map((widget) => ({
+    id: widget.id,
+    type: widget.type,
+    difficulty: widget.difficulty,
+    version: widget.version,
+    tags: widget.tags ? JSON.parse(widget.tags) : [],
+    payload: JSON.parse(widget.payload),
+  }));
+}
+
 export function getWidgetsByTopicId(topicId: string): {
   id: string;
   type: string;

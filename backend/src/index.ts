@@ -25,6 +25,7 @@ import {
   initUserTopicProgress,
   updateUserTopicProgress,
   resetUserTopicProgress,
+  getAllWidgets,
 } from "./widgets.service";
 
 const app = express();
@@ -236,6 +237,33 @@ app.get("/api/topics/:id/widgets", (request, response) => {
     }
 
     const widgets = getWidgetsByTopicId(id);
+    response.json({
+      success: true,
+      data: widgets,
+    });
+  } catch (error) {
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** GET /api/widgets - Get all widgets */
+app.get("/api/widgets", (_request, response) => {
+  try {
+    const widgets = getAllWidgets();
+
+    if (widgets.length === 0) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topics_no_data,
+      });
+    }
+
     response.json({
       success: true,
       data: widgets,
