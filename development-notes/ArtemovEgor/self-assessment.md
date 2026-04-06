@@ -1,4 +1,4 @@
-# Self-Assessment — ekaterynavolkova
+# Self-Assessment — ArtemovEgor
 
 **Проект:** codeVibeCheck — интерактивная платформа для подготовки к техническим интервью  
 **PR с self-assessment:** [ссылка на PR](https://github.com/ArtemovEgor/codeVibeCheck/pull/110)  
