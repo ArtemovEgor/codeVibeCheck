@@ -27,7 +27,16 @@ Created as a final assignment of the RS-School Frontend course.
 
 ## Best PRs
 
+- [https://github.com/ArtemovEgor/codeVibeCheck/pull/7](https://github.com/ArtemovEgor/codeVibeCheck/pull/7)
+- [https://github.com/ArtemovEgor/codeVibeCheck/pull/44](https://github.com/ArtemovEgor/codeVibeCheck/pull/44)
+- [https://github.com/ArtemovEgor/codeVibeCheck/pull/23](https://github.com/ArtemovEgor/codeVibeCheck/pull/23)
+- [https://github.com/ArtemovEgor/codeVibeCheck/pull/55](https://github.com/ArtemovEgor/codeVibeCheck/pull/55)
+- [https://github.com/ArtemovEgor/codeVibeCheck/pull/94](https://github.com/ArtemovEgor/codeVibeCheck/pull/94)
+  https://github.com/ArtemovEgor/codeVibeCheck/pull/55
+
 ## Demo video
+
+[https://youtu.be/Aj5yeFkZrQo](https://youtu.be/Aj5yeFkZrQo)
 
 ## Checkpoint 5 video
 
