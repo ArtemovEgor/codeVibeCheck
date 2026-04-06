@@ -285,6 +285,7 @@ export function getUserProgress(userId: string): IUserTopicProgress[] {
         completedWidgetIds: string;
         xpEarned: number;
         isCompleted: boolean;
+        everCompleted: boolean;
         isUnlocked: boolean;
       }
     >(
@@ -302,6 +303,7 @@ export function getUserProgress(userId: string): IUserTopicProgress[] {
     completedWidgetIds: JSON.parse(row.completedWidgetIds),
     xpEarned: row.xpEarned,
     isCompleted: Boolean(row.isCompleted),
+    everCompleted: Boolean(row.everCompleted),
     isUnlocked: Boolean(row.isUnlocked),
   }));
 }
@@ -354,6 +356,7 @@ export function getUserProgressByTopicId(
         completedWidgetIds: string;
         xpEarned: number;
         isCompleted: boolean;
+        everCompleted: boolean;
         isUnlocked: boolean;
       }
     >(
@@ -374,6 +377,7 @@ export function getUserProgressByTopicId(
     completedWidgetIds: JSON.parse(row.completedWidgetIds),
     xpEarned: row.xpEarned,
     isCompleted: Boolean(row.isCompleted),
+    everCompleted: Boolean(row.everCompleted),
     isUnlocked: Boolean(row.isUnlocked),
   };
 }
@@ -390,6 +394,7 @@ export function initUserTopicProgress(
         completedWidgetIds: string;
         xpEarned: number;
         isCompleted: boolean;
+        everCompleted: boolean;
         isUnlocked: boolean;
       }
     >(
@@ -407,6 +412,7 @@ export function initUserTopicProgress(
       completedWidgetIds: JSON.parse(existing.completedWidgetIds),
       xpEarned: existing.xpEarned,
       isCompleted: Boolean(existing.isCompleted),
+      everCompleted: Boolean(existing.everCompleted),
       isUnlocked: Boolean(existing.isUnlocked),
     };
   }
@@ -462,6 +468,7 @@ export function initUserTopicProgress(
     completedWidgetIds: [],
     xpEarned: 0,
     isCompleted: false,
+    everCompleted: false,
     isUnlocked,
   };
 }
@@ -494,7 +501,9 @@ export function updateUserTopicProgress(
   }
 
   const newCompletedIdsJson = JSON.stringify(completedIds);
-  const isCompleted = completedIds.length >= totalWidgets;
+  const isCompleted = completedIds.length >= (totalWidgets ?? 0);
+  const newEverCompleted = isCompleted || progress.everCompleted ? 1 : 0;
+  console.log(isCompleted);
 
   const now = new Date().toISOString();
   database
@@ -504,6 +513,7 @@ export function updateUserTopicProgress(
       SET completedWidgetIds = ?,
           xpEarned = ?,
           isCompleted = ?,
+          everCompleted = ?,
           updatedAt = ?
       WHERE userId = ? AND topicId = ?
     `,
@@ -512,6 +522,7 @@ export function updateUserTopicProgress(
       newCompletedIdsJson,
       progress.xpEarned,
       isCompleted ? 1 : 0,
+      newEverCompleted,
       now,
       userId,
       topicId,
@@ -599,12 +610,23 @@ export function updateUserTopicProgress(
         database
           .prepare(
             `
-            UPDATE user_topic_progress
-            SET isUnlocked = 1, updatedAt = ?
-            WHERE userId = ? AND topicId = ?
-          `,
+      INSERT INTO user_topic_progress (
+        userId, 
+        topicId, 
+        isUnlocked, 
+        completedWidgetIds, 
+        xpEarned, 
+        isCompleted, 
+        createdAt, 
+        updatedAt
+      ) 
+      VALUES (?, ?, 1, '[]', 0, 0, ?, ?)
+      ON CONFLICT(userId, topicId) DO UPDATE SET 
+        isUnlocked = 1, 
+        updatedAt = excluded.updatedAt
+      `,
           )
-          .run(now, userId, dep.topicId);
+          .run(userId, dep.topicId, now, now);
       }
     }
   }
