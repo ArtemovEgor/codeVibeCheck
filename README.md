@@ -4,13 +4,6 @@ codeVibeCheck is an interactive training simulator for technical interview prepa
 
 Created as a final assignment of the RS-School Frontend course.
 
-## What We Are Proud Of
-
-We built more than just a quiz app — a full educational platform with a custom **Widget Engine** that supports various interactive task types.  
-We are proud of our **AI Interviewer**: a real-time streaming chat powered by the **Groq API** that conducts technical interviews, evaluates answers with XP scoring, and generates a comprehensive performance report.  
-Special attention was given to the architecture: we implemented a **transparent Mock/Real API switching** layer, a robust **localization system (EN/RU)**, and a sophisticated **progress tracking** system.
-Under the hood: a handwritten **Node.js + Express** server using **JWT + bcrypt** for secure authentication and **SQLite** for reliable data persistence.
-
 ## Deploy
 
 [https://artemovegor.github.io/codeVibeCheck/](https://artemovegor.github.io/codeVibeCheck/)
@@ -34,16 +27,7 @@ Under the hood: a handwritten **Node.js + Express** server using **JWT + bcrypt*
 
 ## Best PRs
 
-- [https://github.com/ArtemovEgor/codeVibeCheck/pull/7](https://github.com/ArtemovEgor/codeVibeCheck/pull/7)
-- [https://github.com/ArtemovEgor/codeVibeCheck/pull/44](https://github.com/ArtemovEgor/codeVibeCheck/pull/44)
-- [https://github.com/ArtemovEgor/codeVibeCheck/pull/23](https://github.com/ArtemovEgor/codeVibeCheck/pull/23)
-- [https://github.com/ArtemovEgor/codeVibeCheck/pull/55](https://github.com/ArtemovEgor/codeVibeCheck/pull/55)
-- [https://github.com/ArtemovEgor/codeVibeCheck/pull/94](https://github.com/ArtemovEgor/codeVibeCheck/pull/94)
-  https://github.com/ArtemovEgor/codeVibeCheck/pull/55
-
 ## Demo video
-
-[https://youtu.be/Aj5yeFkZrQo](https://youtu.be/Aj5yeFkZrQo)
 
 ## Checkpoint 5 video
 
