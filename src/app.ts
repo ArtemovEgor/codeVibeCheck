@@ -19,6 +19,7 @@ import { STORAGE_KEYS } from "./constants/storage-keys";
 import { i18n } from "./services/localization-service";
 import { CodeCompletionStrategy } from "./components/widgets/code-completion/code-completion-strategy";
 import { CodeOrderingStrategy } from "./components/widgets/code-ordering/code-ordering-strategy";
+import { ProfilePage } from "./pages/profile/profile";
 
 export default class App {
   private readonly parentNode: HTMLElement;
@@ -76,6 +77,9 @@ export default class App {
       },
     );
     router.register(ROUTES.LIBRARY, () => new Library(), {
+      isProtected: true,
+    });
+    router.register(ROUTES.PROFILE, () => new ProfilePage(), {
       isProtected: true,
     });
     router.register(ROUTES.NOT_FOUND, () => new NotFoundContent(), {});
