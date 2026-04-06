@@ -42,8 +42,10 @@ import { ENDPOINTS } from "./endpoints";
 import { widgetsMock } from "./mock/widgets.mock";
 
 class WidgetsApi {
+  private isMockData = true; //apiService.isMockMode
+
   public async getTopics(): Promise<ITopic[]> {
-    const result = apiService.isMockMode
+    const result = this.isMockData
       ? await widgetsMock.getTopics()
       : await apiService.send<IApiResponse<ITopic[]>>(
           ENDPOINTS.TOPICS.GET_ALL,
@@ -55,7 +57,7 @@ class WidgetsApi {
   }
 
   public async getWidgets(): Promise<Widget[]> {
-    const result = apiService.isMockMode
+    const result = this.isMockData
       ? await widgetsMock.getWidgets()
       : await apiService.send<IApiResponse<Widget[]>>(
           ENDPOINTS.WIDGETS.GET_ALL,
@@ -67,7 +69,7 @@ class WidgetsApi {
   }
 
   public async getTopicById(id: string): Promise<ITopic> {
-    const result = apiService.isMockMode
+    const result = this.isMockData
       ? await widgetsMock.getTopicById(id)
       : await apiService.send<IApiResponse<ITopic>>(
           ENDPOINTS.TOPICS.GET_BY_ID(id),
@@ -77,7 +79,7 @@ class WidgetsApi {
   }
 
   public async getWidgetsByTopicId(topicId: string): Promise<Widget[]> {
-    const result = apiService.isMockMode
+    const result = this.isMockData
       ? await widgetsMock.getWidgetsByTopicId(topicId)
       : await apiService.send<IApiResponse<Widget[]>>(
           ENDPOINTS.TOPICS.GET_WIDGETS(topicId),
@@ -87,7 +89,7 @@ class WidgetsApi {
   }
 
   public async getWidgetById(id: string): Promise<Widget> {
-    const result = apiService.isMockMode
+    const result = this.isMockData
       ? await widgetsMock.getWidgetById(id)
       : await apiService.send<IApiResponse<Widget>>(
           ENDPOINTS.WIDGETS.GET_BY_ID(id),
@@ -100,7 +102,7 @@ class WidgetsApi {
     widgetId: string,
     answer: WidgetAnswer,
   ): Promise<IVerdict> {
-    const result = apiService.isMockMode
+    const result = this.isMockData
       ? await widgetsMock.submitAnswer(widgetId, answer)
       : await apiService.send<IApiResponse<IVerdict>>(
           ENDPOINTS.WIDGETS.SUBMIT_ANSWER(widgetId),

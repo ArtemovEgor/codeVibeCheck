@@ -9,8 +9,10 @@ import { ENDPOINTS } from "./endpoints";
 import { progressMock } from "./mock/progress.mock";
 
 class ProgressApi {
+  private isMockData = true; //apiService.isMockMode
+
   public async getAll(): Promise<IUserTopicProgress[]> {
-    const response = apiService.isMockMode
+    const response = this.isMockData
       ? await progressMock.getAll()
       : await apiService.send<IApiResponse<IUserTopicProgress[]>>(
           ENDPOINTS.PROGRESS.GET_ALL,
@@ -23,7 +25,7 @@ class ProgressApi {
   }
 
   public async getByTopicId(topicId: string): Promise<IUserTopicProgress> {
-    const response = apiService.isMockMode
+    const response = this.isMockData
       ? await progressMock.getByTopicId(topicId)
       : await apiService.send<IApiResponse<IUserTopicProgress>>(
           ENDPOINTS.PROGRESS.GET_BY_TOPIC(topicId),
@@ -36,7 +38,7 @@ class ProgressApi {
   }
 
   public async initTopic(topicId: string): Promise<IUserTopicProgress> {
-    const response = apiService.isMockMode
+    const response = this.isMockData
       ? await progressMock.initTopic(topicId)
       : await apiService.send<IApiResponse<IUserTopicProgress>>(
           ENDPOINTS.PROGRESS.INIT_TOPIC(topicId),
@@ -48,7 +50,7 @@ class ProgressApi {
   public async update(
     payload: IUpdateProgressPayload,
   ): Promise<IUserTopicProgress> {
-    const response = apiService.isMockMode
+    const response = this.isMockData
       ? await progressMock.update(payload)
       : await apiService.send<IApiResponse<IUserTopicProgress>>(
           ENDPOINTS.PROGRESS.UPDATE,
@@ -62,7 +64,7 @@ class ProgressApi {
   }
 
   public async getUserStats(): Promise<IUserStats> {
-    const response = apiService.isMockMode
+    const response = this.isMockData
       ? await progressMock.getUserStats()
       : await apiService.send<IApiResponse<IUserStats>>(
           ENDPOINTS.PROGRESS.GET_STATS,
@@ -75,7 +77,7 @@ class ProgressApi {
   }
 
   public async resetTopic(topicId: string): Promise<void> {
-    const response = apiService.isMockMode
+    const response = this.isMockData
       ? await progressMock.resetTopic(topicId)
       : await apiService.send<IApiResponse<void>>(
           ENDPOINTS.PROGRESS.RESET_TOPIC(topicId),
