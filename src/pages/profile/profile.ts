@@ -63,10 +63,23 @@ export class ProfilePage extends BaseComponent implements Page {
     });
 
     const changeAvatar = new BaseComponent({
-      tag: "button",
+      tag: "label",
       className: "profile__avatar-button",
-      parent: avatarBlock,
       text: i18n.t().profile.changeAvatar,
+      attributes: {
+        for: "file-upload",
+      },
+      parent: avatarBlock,
+    });
+
+    new BaseComponent({
+      tag: "input",
+      className: "profile__avatar-file-input",
+      attributes: {
+        id: "file-upload",
+        type: "file",
+      },
+      parent: avatarBlock,
     });
 
     changeAvatar.on("click", () => {
