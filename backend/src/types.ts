@@ -123,3 +123,37 @@ export interface IUserChatStats {
   readonly lastChatXpEarned: number;
   readonly lastSessionResult?: string;
 }
+
+/**
+ * Answer Definitions for "quiz" type widgets.
+ */
+export interface IQuizAnswer {
+  selectedIndex: number;
+}
+
+/**
+ * Answer Definitions for "true-false" type widgets.
+ */
+export interface ITrueFalseAnswer {
+  value: boolean;
+}
+
+/**
+ * Answer Definitions for "code-completion" type widgets.
+ */
+export interface ICodeCompletionAnswer {
+  values: string[];
+}
+
+/**
+ * Answer Definitions for "code-ordering" type widgets.
+ */
+export interface ICodeOrderingAnswer {
+  order: number[];
+}
+
+export type WidgetAnswer =
+  | IQuizAnswer
+  | ITrueFalseAnswer
+  | ICodeCompletionAnswer
+  | ICodeOrderingAnswer;

@@ -8,6 +8,11 @@ import {
   IUserTopicProgress,
   IUserStats,
   IUpdateProgressPayload,
+  WidgetAnswer,
+  IQuizAnswer,
+  ITrueFalseAnswer,
+  ICodeCompletionAnswer,
+  ICodeOrderingAnswer,
 } from "./types";
 
 export function getAllTopics(): ITopic[] {
@@ -172,7 +177,7 @@ export function getWidgetById(widgetId: string): {
 export function submitWidgetAnswer(
   widgetId: string,
   userId: string,
-  userAnswer: number | boolean | string[] | number[],
+  userAnswer: WidgetAnswer,
 ): ISubmissionResult {
   const widget = database
     .prepare<
@@ -196,12 +201,32 @@ export function submitWidgetAnswer(
   const { type, difficulty } = widget;
 
   let isCorrect: boolean;
-  if (type === "quiz" || type === "true-false") {
-    isCorrect = userAnswer === correctAnswer;
-  } else if (type === "code-completion" || type === "code-ordering") {
-    isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correctAnswer);
-  } else {
-    throw new Error("UNKNOWN_WIDGET_TYPE");
+  switch (type) {
+    case "quiz": {
+      const answer = userAnswer as IQuizAnswer;
+      isCorrect = answer.selectedIndex === correctAnswer;
+      break;
+    }
+    case "true-false": {
+      const answer = userAnswer as ITrueFalseAnswer;
+      isCorrect = answer.value === correctAnswer;
+      break;
+    }
+    case "code-completion": {
+      const answer = userAnswer as ICodeCompletionAnswer;
+      isCorrect =
+        JSON.stringify(answer.values) === JSON.stringify(correctAnswer);
+      break;
+    }
+    case "code-ordering": {
+      const answer = userAnswer as ICodeOrderingAnswer;
+      isCorrect =
+        JSON.stringify(answer.order) === JSON.stringify(correctAnswer);
+      break;
+    }
+    default: {
+      throw new Error("UNKNOWN_WIDGET_TYPE");
+    }
   }
 
   const xpEarned = isCorrect ? difficulty * 10 : 0;
