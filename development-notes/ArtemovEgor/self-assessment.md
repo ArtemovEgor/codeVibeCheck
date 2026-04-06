@@ -1,4 +1,8 @@
-# ArtemovEgor: Feature List & Project Contribution
+# Self-Assessment — ekaterynavolkova
+
+**Проект:** codeVibeCheck — интерактивная платформа для подготовки к техническим интервью  
+**PR с self-assessment:** [ссылка на PR](https://github.com/ArtemovEgor/codeVibeCheck/pull/110)  
+**Репозиторий:** https://github.com/ArtemovEgor/codeVibeCheck
 
 ## Таблица фич
 
