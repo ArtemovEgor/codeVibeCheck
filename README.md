@@ -22,7 +22,7 @@ Under the hood: a handwritten **Node.js + Express** server using **JWT + bcrypt*
 ## Project team and their development notes
 
 - [Alexander Akatov](https://github.com/Al-E-xXx), [development notes](https://github.com/ArtemovEgor/codeVibeCheck/tree/main/development-notes/Al-E-xXx)
-- [Kateryna Volkova](https://github.com/EkaterynaVolkova), [development notes](https://github.com/ArtemovEgor/codeVibeCheck/tree/main/development-notes/ekaterynavolkova)
+- [Kateryna Volkova](https://github.com/EkaterynaVolkova), [development notes](https://github.com/ArtemovEgor/codeVibeCheck/tree/main/development-notes/EkaterynaVolkova)
 - [Egor Artemov](https://github.com/ArtemovEgor), [development notes](https://github.com/ArtemovEgor/codeVibeCheck/tree/main/development-notes/ArtemovEgor)
 
 ## [Meeting notes](https://github.com/ArtemovEgor/codeVibeCheck/tree/development-notes/meeting-notes)
