@@ -9,6 +9,7 @@ Created as a final assignment of the RS-School Frontend course.
 We built more than just a quiz app — a full educational platform with a custom **Widget Engine** that supports various interactive task types.  
 We are proud of our **AI Interviewer**: a real-time streaming chat powered by the **Groq API** that conducts technical interviews, evaluates answers with XP scoring, and generates a comprehensive performance report.  
 Special attention was given to the architecture: we implemented a **transparent Mock/Real API switching** layer, a robust **localization system (EN/RU)**, and a sophisticated **progress tracking** system.
+Under the hood: a handwritten **Node.js + Express** server using **JWT + bcrypt** for secure authentication and **SQLite** for reliable data persistence.
 
 ## Deploy
 
