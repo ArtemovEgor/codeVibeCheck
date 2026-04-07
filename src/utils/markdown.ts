@@ -23,7 +23,19 @@ const marked = new Marked(
   }),
 );
 
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  };
+  return text.replaceAll(/[&<>"']/g, (m) => map[m]);
+}
+
 export function renderMarkdown(raw: string): string {
-  const html = marked.parse(raw) as string;
+  const escaped = escapeHtml(raw);
+  const html = marked.parse(escaped) as string;
   return DOMPurify.sanitize(html);
 }

@@ -54,24 +54,44 @@ describe("markdown validation", () => {
     });
   });
 
-  describe("sanitization", () => {
-    it("removes script tags", () => {
+  describe("html escaping", () => {
+    it("escapes raw html tags and displays them as text", () => {
+      const result = renderMarkdown("<h1>Heading</h1>");
+      expect(result).toEqual("<p>&lt;h1&gt;Heading&lt;/h1&gt;</p>\n");
+    });
+
+    it("escapes html attributes in raw tags", () => {
+      const result = renderMarkdown('<img src="x" onerror="alert(1)">');
+      expect(result).toEqual('<p>&lt;img src="x" onerror="alert(1)"&gt;</p>\n');
+    });
+
+    it("works correctly with markdown combined with raw html", () => {
+      const result = renderMarkdown("**Bold** and <div>Tag</div>");
+      expect(result).toEqual(
+        "<p><strong>Bold</strong> and &lt;div&gt;Tag&lt;/div&gt;</p>\n",
+      );
+    });
+
+    it("escapes special characters correctly", () => {
+      const result = renderMarkdown("& < > \" '");
+      // Adjusted to match DOMPurify's behavior of unescaping quotes in text nodes
+      expect(result).toEqual("<p>&amp; &lt; &gt; \" '</p>\n");
+    });
+  });
+
+  describe("sanitization vs escaping", () => {
+    it("escapes script tags instead of removing them", () => {
       const malicious = "Dangerous <script>alert('XSS')</script> content";
       const result = renderMarkdown(malicious);
 
-      expect(result).not.toContain("<script>");
-      expect(result).toContain("<p>Dangerous  content</p>");
+      expect(result).toContain("&lt;script&gt;");
+      expect(result).toContain("alert('XSS')");
+      expect(result).toEqual(
+        "<p>Dangerous &lt;script&gt;alert('XSS')&lt;/script&gt; content</p>\n",
+      );
     });
 
-    it("removes dangerous attributes like onerror", () => {
-      const malicious = '<img src="x" onerror="alert(1)">';
-      const result = renderMarkdown(malicious);
-
-      expect(result).not.toContain("onerror");
-      expect(result).toContain('<img src="x">');
-    });
-
-    it("blocks javascript: links", () => {
+    it("blocks javascript: links through marked/dompurify while escaping the label if needed", () => {
       const malicious = "[Click me](javascript:alert(1))";
       const result = renderMarkdown(malicious);
 
