@@ -3,7 +3,7 @@ import Link from "@/components/link/link";
 import { ROUTES } from "@/constants/routes";
 import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
 import "./sidebar.scss";
-import { SIDEBAR_ICONS } from "@/assets/icons";
+import { SIDEBAR_ICONS, ICONS } from "@/assets/icons";
 import { authApi } from "@/api/auth.api";
 import { router } from "@/router/router";
 import type { IUser } from "@/types/shared";
@@ -121,14 +121,33 @@ export class Sidebar extends BaseComponent {
   }
 
   private renderSidebarFooter(): void {
+    new BaseComponent({
+      className: "sidebar__divider",
+      parent: this,
+    });
+
     const sidebarFooterWrap = new BaseComponent({
       className: "sidebar__footer",
       parent: this,
     });
 
+    this.renderSettings(sidebarFooterWrap);
+    this.renderUserSection(sidebarFooterWrap);
+  }
+
+  private renderSettings(parent: BaseComponent): void {
+    const settingsRow = new BaseComponent({
+      className: "sidebar__settings",
+      parent,
+    });
+
+    settingsRow.addChildren([new LangSwitcher(), new ThemeSwitcher()]);
+  }
+
+  private renderUserSection(parent: BaseComponent): void {
     this.userWrap = new BaseComponent({
       className: "sidebar__user sidebar__user--loading",
-      parent: sidebarFooterWrap,
+      parent,
     });
 
     this.renderAvatar(this.userWrap);
@@ -140,19 +159,22 @@ export class Sidebar extends BaseComponent {
       parent: this.userWrap,
     });
 
-    sidebarFooterWrap.addChildren([new LangSwitcher()]);
-    sidebarFooterWrap.addChildren([new ThemeSwitcher()]);
-
     const logoutButton = new BaseComponent({
       tag: "button",
-      className: "btn sidebar__logout",
-      text: i18n.t().sidebar.nav.logout,
-      parent: sidebarFooterWrap,
+      className: "sidebar__logout",
+      parent: this.userWrap,
     });
 
-    logoutButton.on("click", async () => {
+    logoutButton.getNode().innerHTML = ICONS.logout;
+
+    logoutButton.on("click", async (event) => {
+      event.stopPropagation();
       await authApi.logout();
       router.navigate(ROUTES.LANDING);
+    });
+
+    this.userWrap.on("click", () => {
+      router.navigate(ROUTES.PROFILE);
     });
   }
 
