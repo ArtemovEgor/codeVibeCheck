@@ -38,6 +38,8 @@ COPY --from=builder /app/backend/data/*.json ./resources/
 RUN mkdir -p /app/data
 
 ENV PORT=3001
+ENV DB_PATH=/app/data/database.sqlite
+ENV SEED_DATA_DIR=/app/resources
 EXPOSE 3001
 
 CMD ["node", "dist/index.js"]
