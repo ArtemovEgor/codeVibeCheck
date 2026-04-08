@@ -506,7 +506,7 @@ export function updateUserTopicProgress(
     .prepare<
       [string],
       IUserStats
-    >(`SELECT streak, lastActivityAt, totalXp, completedTopicsCount FROM user_learning_stats WHERE userId = ?`)
+    >(`SELECT streak, lastActivityAt, totalXp, completedTopicsCount AS completedTopics FROM user_learning_stats WHERE userId = ?`)
     .get(userId);
 
   const completedIds = [...progress.completedWidgetIds];
