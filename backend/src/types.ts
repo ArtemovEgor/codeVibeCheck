@@ -7,6 +7,8 @@ export interface IUser {
   readonly avatarUrl: string | undefined;
   /** Timestamp of account creation */
   readonly createdAt: string;
+  /** Centralized score from chats and widgets */
+  readonly totalScore: number;
 }
 
 /** Payload sent to POST /api/auth/register */
@@ -37,6 +39,7 @@ export interface IDatabaseUser {
   passwordHash: string;
   avatarUrl: string | null;
   createdAt: string;
+  totalScore: number;
 }
 
 /** Widgets */
@@ -62,6 +65,60 @@ export interface IWidget {
   answerData?: Record<string, unknown>;
 }
 
+export interface ITopicRow {
+  id: string;
+  title: string;
+  description: string | null;
+  difficulty: number;
+  sortOrder: number;
+}
+
+export interface IWidgetRow {
+  id: string;
+  type: string;
+  difficulty: number;
+  version: number;
+  tags: string | null;
+  payload: string;
+  sortOrder: number;
+  answerData?: string;
+}
+
+export interface IWidgetAnswerData {
+  correctAnswer: number | boolean | string[] | number[];
+  explanation?: { ru: string; en: string };
+}
+
+export interface ISubmissionResult {
+  isCorrect: boolean;
+  xpEarned: number;
+  explanation?: { ru: string; en: string };
+  correctAnswer: number | boolean | string[] | number[];
+}
+
+export interface IUserTopicProgress {
+  topicId: string;
+  completedWidgetIds: string[];
+  xpEarned: number;
+  isCompleted: boolean;
+  everCompleted: boolean;
+  isUnlocked: boolean;
+}
+
+export interface IUserStats {
+  totalXp: number;
+  completedTopics: number;
+  streak: number;
+  lastActivityAt: string | undefined;
+}
+
+export interface IUpdateProgressPayload {
+  topicId: string;
+  widgetId: string;
+  xpEarned: number;
+  totalWidgets: number;
+}
+
 /** User statistics from AI chat sessions */
 export interface IUserChatStats {
   readonly userId: string;
@@ -70,3 +127,37 @@ export interface IUserChatStats {
   readonly lastChatXpEarned: number;
   readonly lastSessionResult?: string;
 }
+
+/**
+ * Answer Definitions for "quiz" type widgets.
+ */
+export interface IQuizAnswer {
+  selectedIndex: number;
+}
+
+/**
+ * Answer Definitions for "true-false" type widgets.
+ */
+export interface ITrueFalseAnswer {
+  value: boolean;
+}
+
+/**
+ * Answer Definitions for "code-completion" type widgets.
+ */
+export interface ICodeCompletionAnswer {
+  values: string[];
+}
+
+/**
+ * Answer Definitions for "code-ordering" type widgets.
+ */
+export interface ICodeOrderingAnswer {
+  order: number[];
+}
+
+export type WidgetAnswer =
+  | IQuizAnswer
+  | ITrueFalseAnswer
+  | ICodeCompletionAnswer
+  | ICodeOrderingAnswer;

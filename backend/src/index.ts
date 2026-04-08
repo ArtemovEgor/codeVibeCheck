@@ -1,8 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import "./database";
-import { registerUser, loginUser } from "./auth.service";
+import dataBase from "./database";
+import { registerUser, loginUser, getUserById } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
 import {
@@ -13,6 +13,20 @@ import {
 } from "./ai/ai.service";
 import { ISendMessagePayload } from "./ai/ai.types";
 import { verifyToken } from "./utils/verify-token";
+import {
+  getAllTopics,
+  getTopicById,
+  getWidgetsByTopicId,
+  getWidgetById,
+  submitWidgetAnswer,
+  getUserProgress,
+  getUserLearningStats,
+  getUserProgressByTopicId,
+  initUserTopicProgress,
+  updateUserTopicProgress,
+  resetUserTopicProgress,
+  getAllWidgets,
+} from "./widgets.service";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -121,6 +135,506 @@ app.post("/api/auth/login", (request, response) => {
   }
 });
 
+/** GET /api/auth/me - Get Current User Profile */
+app.get("/api/auth/me", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const user = getUserById(userId);
+
+    if (!user) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.user_not_found,
+      });
+    }
+
+    response.status(200).json({
+      data: user,
+      success: true,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+    response.status(status).json({ success: false, status, message });
+  }
+});
+
+// Widget EndPoints
+/** GET /api/topics - Get all topics */
+app.get("/api/topics", (_request, response) => {
+  try {
+    const topics = getAllTopics();
+
+    if (topics.length === 0) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topics_no_data,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: topics,
+    });
+  } catch (error) {
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** GET /api/topics/:id - Get topic by id */
+app.get("/api/topics/:id", (request, response) => {
+  try {
+    const { id } = request.params;
+    const topic = getTopicById(id);
+
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: topic,
+    });
+  } catch (error) {
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** GET /api/topics/:id/widgets - Get all widgets for topick by id */
+app.get("/api/topics/:id/widgets", (request, response) => {
+  try {
+    const { id } = request.params;
+    const topic = getTopicById(id);
+
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const widgets = getWidgetsByTopicId(id);
+    response.json({
+      success: true,
+      data: widgets,
+    });
+  } catch (error) {
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** GET /api/widgets - Get all widgets */
+app.get("/api/widgets", (_request, response) => {
+  try {
+    const widgets = getAllWidgets();
+
+    if (widgets.length === 0) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topics_no_data,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: widgets,
+    });
+  } catch (error) {
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** GET /api/widgets/:id - Get widget by id */
+app.get("/api/widgets/:id", (request, response) => {
+  try {
+    const { id } = request.params;
+    const widget = getWidgetById(id);
+
+    if (!widget) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.widget_not_found,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: widget,
+    });
+  } catch (error) {
+    console.error("Ошибка при получении виджета по ID:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : LANG.errors.server_error,
+    });
+  }
+});
+
+/** POST /api/widgets/:id/submit - Answer check */
+app.post("/api/widgets/:id/submit", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { id: widgetId } = request.params;
+
+    if (!widgetId) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.missing_widget_id,
+      });
+    }
+
+    const { answer } = request.body;
+    if (answer === undefined) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.answer_required,
+      });
+    }
+
+    const verdict = submitWidgetAnswer(widgetId, userId, answer);
+
+    // PERSIST XP to centralized users table if correct
+    if (verdict.isCorrect && verdict.xpEarned > 0) {
+      dataBase
+        .prepare("UPDATE users SET totalScore = totalScore + ? WHERE id = ?")
+        .run(verdict.xpEarned, userId);
+
+      console.log(
+        `[XP AWARD] User ${userId} gained ${verdict.xpEarned} XP from widget ${widgetId}`,
+      );
+    }
+
+    response.status(200).json({
+      success: true,
+      data: verdict,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "WIDGET_NOT_FOUND") {
+        return response.status(404).json({
+          success: false,
+          status: 404,
+          message: LANG.errors.widget_not_found,
+        });
+      }
+      if (error.message === "UNKNOWN_WIDGET_TYPE") {
+        return response.status(400).json({
+          success: false,
+          status: 400,
+          message: LANG.errors.unsupported_widget_type,
+        });
+      }
+      if (error.message === "INVALID_ANSWER_DATA") {
+        return response.status(500).json({
+          success: false,
+          status: 500,
+          message: LANG.errors.invalid_answer_data,
+        });
+      }
+    }
+
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** GET /api/progress - Get user progress */
+/* If the user has no progress, an empty array is returned. */
+app.get("/api/progress", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const progress = getUserProgress(userId);
+
+    response.json({
+      success: true,
+      data: progress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** GET /api/progress/stats - Get user stats */
+app.get("/api/progress/stats", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const stats = getUserLearningStats(userId);
+
+    response.json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** GET /api/progress/:topicId - Get user progress by topic id */
+app.get("/api/progress/:topicId", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { topicId } = request.params;
+
+    if (!topicId) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.missing_topic_id,
+      });
+    }
+
+    const topic = getTopicById(topicId);
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const progress = getUserProgressByTopicId(userId, topicId);
+    if (!progress) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.progress_not_found,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: progress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** POST /api/progress/:topicId/init - Init progress by topic id */
+app.post("/api/progress/:topicId/init", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { topicId } = request.params;
+
+    if (!topicId) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.missing_topic_id,
+      });
+    }
+
+    const topic = getTopicById(topicId);
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const progress = initUserTopicProgress(userId, topicId);
+
+    response.status(200).json({
+      success: true,
+      data: progress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** POST /api/progress - Update progress after responding to widget */
+app.post("/api/progress", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { topicId, widgetId, xpEarned, totalWidgets } = request.body;
+
+    if (!topicId || !widgetId || totalWidgets === undefined) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: `${LANG.errors.missing_fields}: topicId, widgetId, totalWidgets`,
+      });
+    }
+
+    if (typeof xpEarned !== "number" || xpEarned < 0) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.invalid_xp,
+      });
+    }
+
+    const widget = getWidgetById(widgetId);
+    if (!widget) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.widget_not_found,
+      });
+    }
+
+    const topic = getTopicById(topicId);
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const updatedProgress = updateUserTopicProgress(userId, {
+      topicId,
+      widgetId,
+      xpEarned,
+      totalWidgets,
+    });
+
+    response.json({
+      success: true,
+      data: updatedProgress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
+/** PATCH /api/progress/:topicId/reset - Resetting progress by theme (clearing widgets and XP) */
+app.patch("/api/progress/:topicId/reset", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { topicId } = request.params;
+
+    if (!topicId) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.missing_topic_id,
+      });
+    }
+
+    const topic = getTopicById(topicId);
+    if (!topic) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.topic_not_found,
+      });
+    }
+
+    const updatedProgress = resetUserTopicProgress(userId, topicId);
+
+    response.json({
+      success: true,
+      data: updatedProgress,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+
+    response.status(status).json({ success: false, message });
+  }
+});
+
 // AI EndPoints
 app.post("/api/ai/chat", async (request, response) => {
   const controller = new AbortController();
@@ -174,6 +688,39 @@ app.post("/api/ai/chat", async (request, response) => {
         error instanceof Error ? error.message : LANG.errors.internal_error;
       response.status(status).json({ success: false, message });
     }
+  }
+});
+
+/** GET /api/user/score - Get Current User Total Score */
+app.get("/api/user/score", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const user = getUserById(userId);
+
+    if (!user) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.user_not_found,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: {
+        totalScore: (user as { totalScore?: number }).totalScore || 0,
+      },
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.server_error;
+    response.status(status).json({ success: false, message });
   }
 });
 

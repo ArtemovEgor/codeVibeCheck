@@ -12,6 +12,7 @@ const MOCK_USER: IUser = {
   email: "alex@example.com",
   avatarUrl: undefined,
   createdAt: new Date().toISOString(),
+  totalScore: 120,
 };
 
 const MOCK_TOKEN = "mock-jwt-token";

@@ -42,7 +42,7 @@ import { ENDPOINTS } from "./endpoints";
 import { widgetsMock } from "./mock/widgets.mock";
 
 class WidgetsApi {
-  private isMockData = true; //apiService.isMockMode
+  private isMockData = apiService.isMockMode; //apiService.isMockMode
 
   public async getTopics(): Promise<ITopic[]> {
     const result = this.isMockData

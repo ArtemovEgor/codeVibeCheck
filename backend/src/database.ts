@@ -21,7 +21,8 @@ dataBase.exec(`
     email TEXT UNIQUE NOT NULL,
     passwordHash TEXT NOT NULL,
     avatarUrl TEXT,
-    createdAt TEXT NOT NULL
+    createdAt TEXT NOT NULL,
+    totalScore INTEGER DEFAULT 0
   )
 `);
 
@@ -158,6 +159,24 @@ dataBase.exec(`
 dataBase.exec(`
   CREATE INDEX IF NOT EXISTS idx_user_learning_stats_userId ON user_learning_stats(userId)
 `);
+
+// Migration: Add totalScore to users table if not exists
+try {
+  const tableInfo = dataBase.prepare("PRAGMA table_info(users)").all() as {
+    name: string;
+  }[];
+  const hasTotalScore = tableInfo.some((info) => info.name === "totalScore");
+
+  if (!hasTotalScore) {
+    dataBase.exec("ALTER TABLE users ADD COLUMN totalScore INTEGER DEFAULT 0");
+    console.log("[MIGRATION] Added totalScore column to users table");
+  }
+} catch (error) {
+  console.error(
+    "[MIGRATION ERROR] Failed to check/add totalScore column:",
+    error,
+  );
+}
 
 fillDatabase(dataBase);
 

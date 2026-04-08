@@ -68,15 +68,15 @@ export class CodeCompletionStrategy implements IWidgetStrategy {
       pre.getNode().append(document.createTextNode(part));
 
       if (index < parts.length - 1) {
-        const correctValue =
-          payload.correctValues && payload.correctValues[index]
-            ? payload.correctValues[index]
-            : "";
+        const width =
+          payload.blankWidths?.[index] ||
+          payload.correctValues?.[index]?.length ||
+          5;
 
         const input = document.createElement("input");
         input.type = "text";
         input.className = "widget__blank";
-        input.style.width = `${correctValue.length + 2}ch`;
+        input.style.width = `${width + 2}ch`;
         input.spellcheck = false;
 
         input.addEventListener("input", () => {

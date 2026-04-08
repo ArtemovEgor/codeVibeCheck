@@ -162,6 +162,27 @@ export async function* sendChatMessage(
     xpAwarded: scoreData ? convertChatScoreToXP(scoreData.score) : 0,
   });
 
+  const xpAwarded = scoreData ? convertChatScoreToXP(scoreData.score) : 0;
+  if (xpAwarded > 0) {
+    dataBase
+      .prepare("UPDATE users SET totalScore = totalScore + ? WHERE id = ?")
+      .run(xpAwarded, userId);
+
+    // Also update user_stats.totalXp live
+    const existingStats = getUserChatStats(userId);
+    if (existingStats) {
+      dataBase
+        .prepare("UPDATE user_stats SET totalXp = totalXp + ? WHERE userId = ?")
+        .run(xpAwarded, userId);
+    } else {
+      dataBase
+        .prepare(
+          "INSERT INTO user_stats (userId, totalXp, chatSessionsCompleted, lastChatXpEarned) VALUES (?, ?, ?, ?)",
+        )
+        .run(userId, xpAwarded, 0, 0);
+    }
+  }
+
   if (isFinalTurn) {
     const finalReport = await generateFinalReport(userId, language);
 
@@ -392,14 +413,13 @@ async function saveSessionStats(
     if (existingStats) {
       const updateQuery = dataBase.prepare(`
         UPDATE user_stats 
-        SET totalXp = totalXp + ?,
-            chatSessionsCompleted = chatSessionsCompleted + 1,
+        SET chatSessionsCompleted = chatSessionsCompleted + 1,
             lastChatXpEarned = ?,
             lastSessionResult = ?
         WHERE userId = ?
       `);
 
-      updateQuery.run(sessionXpTotal, sessionXpTotal, finalReport, userId);
+      updateQuery.run(sessionXpTotal, finalReport, userId);
     } else {
       const insertQuery = dataBase.prepare(`
         INSERT INTO user_stats (userId, totalXp, chatSessionsCompleted, lastChatXpEarned, lastSessionResult)
