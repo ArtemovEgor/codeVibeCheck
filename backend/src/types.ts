@@ -78,6 +78,7 @@ export interface IWidgetRow {
   tags: string | null;
   payload: string;
   sortOrder: number;
+  answerData?: string;
 }
 
 export interface IWidgetAnswerData {
@@ -90,7 +91,6 @@ export interface ISubmissionResult {
   xpEarned: number;
   explanation?: { ru: string; en: string };
   correctAnswer: number | boolean | string[] | number[];
-  streakUpdated: boolean;
 }
 
 export interface IUserTopicProgress {

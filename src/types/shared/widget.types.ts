@@ -59,6 +59,7 @@ export interface ICodeCompletionPayload {
   code: string; // "const result = arr.___(x => x > 0);"
   hints: ILocalizedString[];
   correctValues?: string[]; // ["filter"]
+  blankWidths?: number[];
 }
 
 /**

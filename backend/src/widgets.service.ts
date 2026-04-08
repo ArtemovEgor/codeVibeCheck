@@ -96,21 +96,46 @@ export function getAllWidgets(): {
   const widgets = database
     .prepare<[], IWidgetRow>(
       `
-      SELECT id, type, difficulty, version, tags, payload
+      SELECT id, type, difficulty, version, tags, payload, answerData
       FROM widgets
       ORDER BY sortOrder ASC
     `,
     )
     .all();
 
-  return widgets.map((widget) => ({
-    id: widget.id,
-    type: widget.type,
-    difficulty: widget.difficulty,
-    version: widget.version,
-    tags: widget.tags ? JSON.parse(widget.tags) : [],
-    payload: JSON.parse(widget.payload),
-  }));
+  return widgets.map((widget) => {
+    const payload = JSON.parse(widget.payload);
+    const tags = widget.tags ? JSON.parse(widget.tags) : [];
+    let blankWidths: number[] = [];
+    if (widget.type === "code-completion" && widget.answerData) {
+      try {
+        const ad = JSON.parse(widget.answerData) as IWidgetAnswerData;
+
+        if (Array.isArray(ad.correctAnswer)) {
+          blankWidths = (ad.correctAnswer as string[]).map(
+            (value) => String(value).length,
+          );
+        }
+      } catch (error) {
+        console.error(
+          `Error parsing answerData for widget ${widget.id}:`,
+          error,
+        );
+      }
+    }
+
+    return {
+      id: widget.id,
+      type: widget.type,
+      difficulty: widget.difficulty,
+      version: widget.version,
+      tags: tags,
+      payload: {
+        ...payload,
+        ...(blankWidths.length > 0 && { blankWidths }),
+      },
+    };
+  });
 }
 
 export function getWidgetsByTopicId(topicId: string): {
@@ -231,42 +256,10 @@ export function submitWidgetAnswer(
 
   const xpEarned = isCorrect ? difficulty * 10 : 0;
 
-  const now = new Date().toISOString();
-
-  const stats = database
-    .prepare<
-      [string],
-      { totalXp: number; streak: number }
-    >(`SELECT totalXp, streak FROM user_learning_stats WHERE userId = ?`)
-    .get(userId);
-
-  const oldStreak = stats?.streak ?? 0;
-  const newTotalXp = (stats?.totalXp ?? 0) + xpEarned;
-  const newStreak = isCorrect ? oldStreak + 1 : 0;
-  const streakUpdated = isCorrect;
-
-  if (stats) {
-    database
-      .prepare(
-        `UPDATE user_learning_stats
-        SET totalXp = ?, streak = ?, lastActivityAt = ?, updatedAt = ?
-        WHERE userId = ?`,
-      )
-      .run(newTotalXp, newStreak, now, now, userId);
-  } else {
-    database
-      .prepare(
-        `INSERT INTO user_learning_stats (userId, totalXp, streak, lastActivityAt, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?, ?, ?)`,
-      )
-      .run(userId, newTotalXp, newStreak, now, now, now);
-  }
-
   const result: ISubmissionResult = {
     isCorrect,
     xpEarned,
     correctAnswer,
-    streakUpdated,
   };
 
   if (type === "true-false" && explanation) {
@@ -563,18 +556,33 @@ export function updateUserTopicProgress(
       .run(completedTopicsCount, userId);
   }
 
-  const statsRow = database
+  const stats = database
     .prepare<
       [string],
-      { streak: number }
-    >(`SELECT streak FROM user_learning_stats WHERE userId = ?`)
+      IUserStats
+    >(`SELECT streak, lastActivityAt FROM user_learning_stats WHERE userId = ?`)
     .get(userId);
 
-  const currentStreak = statsRow?.streak ?? 0;
-  const newStreak = xpEarned > 0 ? currentStreak + 1 : 0;
+  const today = new Date().toISOString().split("T")[0];
+  const lastDate = stats?.lastActivityAt;
+  const lastDateFormatted = lastDate ? lastDate.slice(0, 10) : "";
+
+  let newStreak = stats?.streak ?? 0;
+  console.log(lastDateFormatted, today);
+
+  if (xpEarned > 0) {
+    if (!lastDateFormatted || isMoreThanOneDayAgo(lastDateFormatted)) {
+      newStreak = 1;
+    } else if (lastDateFormatted !== today) {
+      newStreak += 1;
+    }
+  }
+
   database
-    .prepare(`UPDATE user_learning_stats SET streak = ? WHERE userId = ?`)
-    .run(newStreak, userId);
+    .prepare(
+      `UPDATE user_learning_stats SET streak = ?, lastActivityAt = ? WHERE userId = ?`,
+    )
+    .run(newStreak, today, userId);
 
   if (isCompleted && !progress.isCompleted) {
     const dependentTopics = database
@@ -632,6 +640,17 @@ export function updateUserTopicProgress(
   }
 
   return getUserProgressByTopicId(userId, topicId) as IUserTopicProgress;
+}
+
+function isMoreThanOneDayAgo(lastDateString: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const lastDate = new Date(lastDateString);
+  lastDate.setHours(0, 0, 0, 0);
+  const diffInMs = today.getTime() - lastDate.getTime();
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+  return diffInDays > 1;
 }
 
 export function resetUserTopicProgress(
