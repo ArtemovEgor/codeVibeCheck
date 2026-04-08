@@ -39,6 +39,7 @@ RUN mkdir -p /app/data
 
 ENV PORT=3001
 ENV DB_PATH=/app/data/database.sqlite
+ENV UPLOADS_DIR=/app/data/uploads
 ENV SEED_DATA_DIR=/app/resources
 EXPOSE 3001
 
