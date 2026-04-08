@@ -7,6 +7,7 @@ import {
   IAuthResponse,
   ILoginCredentials,
   IDatabaseUser,
+  IUser,
 } from "./types";
 import { EN } from "./locale/en";
 
@@ -107,5 +108,28 @@ export function loginUser(data: ILoginCredentials): IAuthResponse {
   return {
     user: userResponse,
     token,
+  };
+}
+
+/**
+ * Get User by ID
+ *
+ * @param id - User ID
+ * @returns - User object or null if not found
+ */
+export function getUserById(id: string): IUser | null {
+  const findStmt = dataBase.prepare("SELECT * FROM users WHERE id = ?");
+  const user = findStmt.get(id) as IDatabaseUser | undefined;
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatarUrl || undefined,
+    createdAt: user.createdAt,
   };
 }

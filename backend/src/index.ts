@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import "./database";
-import { registerUser, loginUser } from "./auth.service";
+import { registerUser, loginUser, getUserById } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
 import {
@@ -118,6 +118,37 @@ app.post("/api/auth/login", (request, response) => {
       status: statusCode,
       message: error instanceof Error ? error.message : LANG.errors.login_error,
     });
+  }
+});
+
+/** GET /api/auth/me - Get Current User Profile */
+app.get("/api/auth/me", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const user = getUserById(userId);
+
+    if (!user) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.user_not_found,
+      });
+    }
+
+    response.status(200).json({
+      data: user,
+      success: true,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.internal_error;
+    response.status(status).json({ success: false, status, message });
   }
 });
 
