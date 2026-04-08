@@ -178,6 +178,17 @@ function curry(func) {
     },
     locked: "Эта тема заблокирована. Сначала пройдите необходимые темы.",
   },
+  profile: {
+    title: "Профиль",
+    name: "Имя",
+    email: "Почта",
+    changeAvatar: "Сменить аватар",
+    change: "Изменить",
+    changePassword: "Сменить пароль",
+    newPassword: "Новый пароль",
+    confirmPassword: "Подтверждение пароля",
+    updatePassword: "Обновить пароль",
+  },
   breadcrumbs: {
     separator: " › ",
   },
@@ -189,7 +200,7 @@ function curry(func) {
       left: `
 function handleMissingPage(url: string): never {
   let attempts = 0;
-  
+
   while (attempts < 9999) {
     console.log("Ищем страницу...");
     attempts++;
@@ -204,7 +215,7 @@ function handleMissingPage(url: string): never {
     at Object.navigate (/app/node_modules/react-router/dist/index.js:1337:0)
     at User.makeMistake (/life/choices.ts:101:1)
   \`;
-  
+
   throw theVoid;
 }
       `,
