@@ -39,7 +39,7 @@ class ProgressApi {
   public async update(
     payload: IUpdateProgressPayload,
   ): Promise<IUserTopicProgress> {
-    const result = this.isMockData
+    const response = this.isMockData
       ? await progressMock.update(payload)
       : await apiService.send<IApiResponse<IUserTopicProgress>>(
           ENDPOINTS.PROGRESS.UPDATE,
@@ -48,16 +48,30 @@ class ProgressApi {
             body: JSON.stringify(payload),
           },
         );
-    return result.data;
+
+    return response.data;
   }
 
   public async getUserStats(): Promise<IUserStats> {
-    const response = await progressMock.getUserStats();
+    const response = this.isMockData
+      ? await progressMock.getUserStats()
+      : await apiService.send<IApiResponse<IUserStats>>(
+          ENDPOINTS.PROGRESS.GET_STATS,
+          {
+            method: "GET",
+          },
+        );
+
     return response.data;
   }
 
   public async resetTopic(topicId: string): Promise<void> {
-    const response = await progressMock.resetTopic(topicId);
+    const response = this.isMockData
+      ? await progressMock.resetTopic(topicId)
+      : await apiService.send<IApiResponse<void>>(
+          ENDPOINTS.PROGRESS.RESET_TOPIC(topicId),
+          { method: "PATCH" },
+        );
     return response.data;
   }
 }
