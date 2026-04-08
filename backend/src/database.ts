@@ -3,7 +3,8 @@ import path from "node:path";
 import fs from "node:fs";
 import { fillDatabase } from "./add.widgets.data";
 
-const databasePath = path.resolve(__dirname, "../data/database.sqlite");
+const databasePath =
+  process.env.DB_PATH ?? path.resolve(__dirname, "../data/database.sqlite");
 
 if (!fs.existsSync(path.dirname(databasePath))) {
   fs.mkdirSync(path.dirname(databasePath), { recursive: true });

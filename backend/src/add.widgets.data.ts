@@ -7,7 +7,8 @@ interface IWidgetWithTopic extends IWidget {
   topicId: string;
 }
 
-const DATA_DIR = path.resolve(__dirname, "../data");
+const DATA_DIR =
+  process.env.SEED_DATA_DIR ?? path.resolve(__dirname, "../data");
 const ALLOWED_TABLES = new Set(["topics", "topic_requirements", "widgets"]);
 
 type DB = Database.Database;

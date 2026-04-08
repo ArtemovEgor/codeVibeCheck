@@ -32,12 +32,15 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/package.json ./package.json
-COPY --from=builder /app/backend/data/*.json ./data/
+COPY --from=builder /app/backend/data/*.json ./resources/
 
 # 8. Setup database directory
 RUN mkdir -p /app/data
 
 ENV PORT=3001
+ENV DB_PATH=/app/data/database.sqlite
+ENV UPLOADS_DIR=/app/data/uploads
+ENV SEED_DATA_DIR=/app/resources
 EXPOSE 3001
 
 CMD ["node", "dist/index.js"]
