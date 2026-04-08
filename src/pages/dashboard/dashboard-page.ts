@@ -14,6 +14,7 @@ import { TopicCard } from "@/components/topic-card/topic-card";
 import { Button } from "@/components/button/button";
 import { ROUTES } from "@/constants/routes";
 import { router } from "@/router/router";
+import { ICONS } from "@/assets/icons";
 
 export class DashboardPage extends BaseComponent implements Page {
   private interactSector: BaseComponent | undefined = undefined;
@@ -118,13 +119,6 @@ export class DashboardPage extends BaseComponent implements Page {
       className: "dashboard__resume",
     });
 
-    new BaseComponent({
-      tag: "h2",
-      className: "dashboard__sector-title",
-      text: i18n.t().dashboard.components.resume.title,
-      parent: resumeComponent,
-    });
-
     if (progressData && progressData.lastActiveTopic) {
       const card = new TopicCard(
         progressData.lastActiveTopic.topic,
@@ -160,29 +154,30 @@ export class DashboardPage extends BaseComponent implements Page {
     stats: IUserStats | undefined,
     user: IUser | undefined,
   ): BaseComponent {
-    const userName = user?.name ?? "User";
-    const streak = stats ? stats.streak : 0;
-
     const titleWrap = new BaseComponent({
       className: "dashboard__header-titles",
     });
 
-    new BaseComponent({
-      tag: "h1",
-      className: "dashboard__title",
-      text: i18n.t().dashboard.title,
-      parent: titleWrap,
-    });
+    this.renderHeaderSubtitle(titleWrap, user?.name, stats?.streak);
+    this.renderScoreBadge(titleWrap, user?.totalScore);
 
+    return titleWrap;
+  }
+
+  private renderHeaderSubtitle(
+    parent: BaseComponent,
+    name?: string,
+    streak = 0,
+  ): void {
     const subtitleContainer = new BaseComponent({
       className: "dashboard__subtitle-container",
-      parent: titleWrap,
+      parent,
     });
 
     new BaseComponent({
       tag: "p",
       className: "dashboard__subtitle",
-      text: `${i18n.t().dashboard.welcome}, ${userName}!`,
+      text: `${i18n.t().dashboard.welcome}, ${name ?? i18n.t().default_user}!`,
       parent: subtitleContainer,
     });
 
@@ -192,8 +187,31 @@ export class DashboardPage extends BaseComponent implements Page {
       text: i18n.t().widgets.stats.streak(streak),
       parent: subtitleContainer,
     });
+  }
 
-    return titleWrap;
+  private renderScoreBadge(parent: BaseComponent, score?: number): void {
+    if (score !== undefined) {
+      const badge = new BaseComponent({
+        tag: "div",
+        className: "dashboard__score-badge",
+        parent,
+      });
+
+      const icon = new BaseComponent({
+        tag: "span",
+        className: "dashboard__score-icon",
+        parent: badge,
+      });
+
+      icon.getNode().innerHTML = ICONS.star;
+
+      new BaseComponent({
+        tag: "span",
+        className: "dashboard__score-value",
+        text: i18n.t().widgets.stats.xp_value(score),
+        parent: badge,
+      });
+    }
   }
 
   private async loadUser(): Promise<IUser | undefined> {

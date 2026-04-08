@@ -61,6 +61,7 @@ export function registerUser(data: IRegisterCredentials): IAuthResponse {
     email,
     avatarUrl: undefined,
     createdAt,
+    totalScore: 0,
   };
 
   return {
@@ -103,6 +104,7 @@ export function loginUser(data: ILoginCredentials): IAuthResponse {
     email: user.email,
     avatarUrl: user.avatarUrl || undefined,
     createdAt: user.createdAt,
+    totalScore: user.totalScore || 0,
   };
 
   return {
@@ -131,5 +133,6 @@ export function getUserById(id: string): IUser | null {
     email: user.email,
     avatarUrl: user.avatarUrl || undefined,
     createdAt: user.createdAt,
+    totalScore: user.totalScore || 0,
   };
 }

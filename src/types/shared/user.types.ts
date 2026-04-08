@@ -16,6 +16,8 @@ export interface IUser {
   readonly avatarUrl: string | undefined;
   /** Timestamp of account creation */
   readonly createdAt: string;
+  /** Total score accumulated by the user */
+  readonly totalScore: number;
 }
 
 // ── Auth ────────────────────────────────────────────────────────────────────

@@ -7,6 +7,8 @@ export interface IUser {
   readonly avatarUrl: string | undefined;
   /** Timestamp of account creation */
   readonly createdAt: string;
+  /** Centralized score from chats and widgets */
+  readonly totalScore: number;
 }
 
 /** Payload sent to POST /api/auth/register */
@@ -37,6 +39,7 @@ export interface IDatabaseUser {
   passwordHash: string;
   avatarUrl: string | null;
   createdAt: string;
+  totalScore: number;
 }
 
 /** Widgets */

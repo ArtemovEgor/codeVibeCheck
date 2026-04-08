@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import "./database";
+import dataBase from "./database";
 import { registerUser, loginUser, getUserById } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
@@ -326,11 +326,22 @@ app.post("/api/widgets/:id/submit", (request, response) => {
       return response.status(400).json({
         success: false,
         status: 400,
-        message: "Answer is required",
+        message: LANG.errors.answer_required,
       });
     }
 
     const verdict = submitWidgetAnswer(widgetId, userId, answer);
+
+    // PERSIST XP to centralized users table if correct
+    if (verdict.isCorrect && verdict.xpEarned > 0) {
+      dataBase
+        .prepare("UPDATE users SET totalScore = totalScore + ? WHERE id = ?")
+        .run(verdict.xpEarned, userId);
+
+      console.log(
+        `[XP AWARD] User ${userId} gained ${verdict.xpEarned} XP from widget ${widgetId}`,
+      );
+    }
 
     response.status(200).json({
       success: true,
@@ -349,14 +360,14 @@ app.post("/api/widgets/:id/submit", (request, response) => {
         return response.status(400).json({
           success: false,
           status: 400,
-          message: "Unsupported widget type",
+          message: LANG.errors.unsupported_widget_type,
         });
       }
       if (error.message === "INVALID_ANSWER_DATA") {
         return response.status(500).json({
           success: false,
           status: 500,
-          message: "Invalid answer data in database",
+          message: LANG.errors.invalid_answer_data,
         });
       }
     }
@@ -526,7 +537,7 @@ app.post("/api/progress", (request, response) => {
       return response.status(400).json({
         success: false,
         status: 400,
-        message: "Missing required fields: topicId, widgetId, totalWidgets",
+        message: `${LANG.errors.missing_fields}: topicId, widgetId, totalWidgets`,
       });
     }
 
@@ -534,7 +545,7 @@ app.post("/api/progress", (request, response) => {
       return response.status(400).json({
         success: false,
         status: 400,
-        message: "xpEarned must be a non-negative number",
+        message: LANG.errors.invalid_xp,
       });
     }
 
@@ -677,6 +688,39 @@ app.post("/api/ai/chat", async (request, response) => {
         error instanceof Error ? error.message : LANG.errors.internal_error;
       response.status(status).json({ success: false, message });
     }
+  }
+});
+
+/** GET /api/user/score - Get Current User Total Score */
+app.get("/api/user/score", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const user = getUserById(userId);
+
+    if (!user) {
+      return response.status(404).json({
+        success: false,
+        status: 404,
+        message: LANG.errors.user_not_found,
+      });
+    }
+
+    response.json({
+      success: true,
+      data: {
+        totalScore: (user as { totalScore?: number }).totalScore || 0,
+      },
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    const status = isAuthError ? 401 : 500;
+    const message =
+      error instanceof Error ? error.message : LANG.errors.server_error;
+    response.status(status).json({ success: false, message });
   }
 });
 
