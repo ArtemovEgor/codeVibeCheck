@@ -149,7 +149,7 @@ export function getWidgetsByTopicId(topicId: string): {
   const widgets = database
     .prepare<[string], IWidgetRow>(
       `
-      SELECT id, type, difficulty, version, tags, payload
+      SELECT id, type, difficulty, version, tags, payload, answerData
       FROM widgets
       WHERE topicId = ?
       ORDER BY sortOrder ASC
@@ -157,14 +157,39 @@ export function getWidgetsByTopicId(topicId: string): {
     )
     .all(topicId);
 
-  return widgets.map((widget) => ({
-    id: widget.id,
-    type: widget.type,
-    difficulty: widget.difficulty,
-    version: widget.version,
-    tags: widget.tags ? JSON.parse(widget.tags) : [],
-    payload: JSON.parse(widget.payload),
-  }));
+  return widgets.map((widget) => {
+    const payload = JSON.parse(widget.payload);
+    const tags = widget.tags ? JSON.parse(widget.tags) : [];
+    let blankWidths: number[] = [];
+    if (widget.type === "code-completion" && widget.answerData) {
+      try {
+        const ad = JSON.parse(widget.answerData) as IWidgetAnswerData;
+
+        if (Array.isArray(ad.correctAnswer)) {
+          blankWidths = (ad.correctAnswer as string[]).map(
+            (value) => String(value).length,
+          );
+        }
+      } catch (error) {
+        console.error(
+          `Error parsing answerData for widget ${widget.id}:`,
+          error,
+        );
+      }
+    }
+
+    return {
+      id: widget.id,
+      type: widget.type,
+      difficulty: widget.difficulty,
+      version: widget.version,
+      tags: tags,
+      payload: {
+        ...payload,
+        ...(blankWidths.length > 0 && { blankWidths }),
+      },
+    };
+  });
 }
 
 export function getWidgetById(widgetId: string): {
@@ -466,109 +491,37 @@ export function initUserTopicProgress(
   };
 }
 
-/**
- * Updates the user's progress on the topic after a response to the widget.
- * Called by the front-end after each response.
- * @param userId - User ID
- * @param payload - Data to update
- * @returns - Updated progress record for the topic
- */
-
 export function updateUserTopicProgress(
   userId: string,
   payload: IUpdateProgressPayload,
 ): IUserTopicProgress {
   const { topicId, widgetId, xpEarned, totalWidgets } = payload;
-
-  let progress = getUserProgressByTopicId(userId, topicId);
-  if (!progress) {
-    progress = initUserTopicProgress(userId, topicId);
-  }
-
-  const completedIds = [...progress.completedWidgetIds];
-  const isNewWidget = !completedIds.includes(widgetId);
-
-  if (isNewWidget) {
-    completedIds.push(widgetId);
-    progress.xpEarned += xpEarned;
-  }
-
-  const newCompletedIdsJson = JSON.stringify(completedIds);
-  const isCompleted = completedIds.length >= (totalWidgets ?? 0);
-  const newEverCompleted = isCompleted || progress.everCompleted ? 1 : 0;
-  console.log(isCompleted);
-
   const now = new Date().toISOString();
-  database
-    .prepare(
-      `
-      UPDATE user_topic_progress
-      SET completedWidgetIds = ?,
-          xpEarned = ?,
-          isCompleted = ?,
-          everCompleted = ?,
-          updatedAt = ?
-      WHERE userId = ? AND topicId = ?
-    `,
-    )
-    .run(
-      newCompletedIdsJson,
-      progress.xpEarned,
-      isCompleted ? 1 : 0,
-      newEverCompleted,
-      now,
-      userId,
-      topicId,
-    );
+  const today = now.split("T")[0];
 
-  database
-    .prepare(
-      `
-      UPDATE user_learning_stats
-      SET totalXp = totalXp + ?,
-          lastActivityAt = ?,
-          updatedAt = ?
-      WHERE userId = ?
-    `,
-    )
-    .run(xpEarned, now, now, userId);
-
-  if (isCompleted && !progress.isCompleted) {
-    const completedCountResult = database
-      .prepare<[string], { count: number }>(
-        `
-        SELECT COUNT(*) as count
-        FROM user_topic_progress
-        WHERE userId = ? AND isCompleted = 1
-      `,
-      )
-      .get(userId);
-
-    const completedTopicsCount = completedCountResult?.count ?? 0;
-    database
-      .prepare(
-        `
-        UPDATE user_learning_stats
-        SET completedTopicsCount = ?
-        WHERE userId = ?
-      `,
-      )
-      .run(completedTopicsCount, userId);
-  }
-
+  const progress =
+    getUserProgressByTopicId(userId, topicId) ||
+    initUserTopicProgress(userId, topicId);
   const stats = database
     .prepare<
       [string],
       IUserStats
-    >(`SELECT streak, lastActivityAt FROM user_learning_stats WHERE userId = ?`)
+    >(`SELECT streak, lastActivityAt, totalXp, completedTopicsCount FROM user_learning_stats WHERE userId = ?`)
     .get(userId);
 
-  const today = new Date().toISOString().split("T")[0];
-  const lastDate = stats?.lastActivityAt;
-  const lastDateFormatted = lastDate ? lastDate.slice(0, 10) : "";
+  const completedIds = [...progress.completedWidgetIds];
+  const isNewWidget = !completedIds.includes(widgetId);
+  if (isNewWidget) {
+    completedIds.push(widgetId);
+    progress.xpEarned += xpEarned;
+  }
+  const isCompleted = completedIds.length >= (totalWidgets ?? 0);
+  const wasAlreadyCompleted = progress.everCompleted;
 
+  const lastDateFormatted = stats?.lastActivityAt
+    ? stats.lastActivityAt.slice(0, 10)
+    : "";
   let newStreak = stats?.streak ?? 0;
-  console.log(lastDateFormatted, today);
 
   if (xpEarned > 0) {
     if (!lastDateFormatted || isMoreThanOneDayAgo(lastDateFormatted)) {
@@ -578,13 +531,49 @@ export function updateUserTopicProgress(
     }
   }
 
+  const newTotalXp = (stats?.totalXp ?? 0) + xpEarned;
+
+  const newCompletedCount =
+    isCompleted && !wasAlreadyCompleted
+      ? (stats?.completedTopics ?? 0) + 1
+      : (stats?.completedTopics ?? 0);
+
   database
     .prepare(
-      `UPDATE user_learning_stats SET streak = ?, lastActivityAt = ? WHERE userId = ?`,
+      `
+    UPDATE user_topic_progress
+    SET completedWidgetIds = ?, xpEarned = ?, isCompleted = ?, everCompleted = ?, updatedAt = ?
+    WHERE userId = ? AND topicId = ?
+  `,
     )
-    .run(newStreak, today, userId);
+    .run(
+      JSON.stringify(completedIds),
+      progress.xpEarned,
+      isCompleted ? 1 : 0,
+      isCompleted || progress.everCompleted ? 1 : 0,
+      now,
+      userId,
+      topicId,
+    );
 
-  if (isCompleted && !progress.isCompleted) {
+  database
+    .prepare(
+      `
+    INSERT INTO user_learning_stats (
+      userId, totalXp, streak, lastActivityAt, completedTopicsCount, createdAt, updatedAt
+    ) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(userId) DO UPDATE SET
+      totalXp = excluded.totalXp,
+      streak = excluded.streak,
+      lastActivityAt = excluded.lastActivityAt,
+      completedTopicsCount = excluded.completedTopicsCount,
+      updatedAt = excluded.updatedAt
+    `,
+    )
+    .run(userId, newTotalXp, newStreak, today, newCompletedCount, now, now);
+
+  if (isCompleted && !progress.everCompleted) {
     const dependentTopics = database
       .prepare<
         [string],
@@ -608,6 +597,7 @@ export function updateUserTopicProgress(
             { isCompleted: number }
           >(`SELECT isCompleted FROM user_topic_progress WHERE userId = ? AND topicId = ?`)
           .get(userId, request.requiredTopicId);
+
         if (!requestProgress || !requestProgress.isCompleted) {
           allCompleted = false;
           break;
@@ -618,21 +608,15 @@ export function updateUserTopicProgress(
         database
           .prepare(
             `
-      INSERT INTO user_topic_progress (
-        userId, 
-        topicId, 
-        isUnlocked, 
-        completedWidgetIds, 
-        xpEarned, 
-        isCompleted, 
-        createdAt, 
-        updatedAt
-      ) 
-      VALUES (?, ?, 1, '[]', 0, 0, ?, ?)
-      ON CONFLICT(userId, topicId) DO UPDATE SET 
-        isUnlocked = 1, 
-        updatedAt = excluded.updatedAt
-      `,
+          INSERT INTO user_topic_progress (
+            userId, topicId, isUnlocked, completedWidgetIds, 
+            xpEarned, isCompleted, everCompleted, createdAt, updatedAt
+          ) 
+          VALUES (?, ?, 1, '[]', 0, 0, 0, ?, ?)
+          ON CONFLICT(userId, topicId) DO UPDATE SET 
+            isUnlocked = 1, 
+            updatedAt = excluded.updatedAt
+        `,
           )
           .run(userId, dep.topicId, now, now);
       }

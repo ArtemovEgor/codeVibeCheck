@@ -69,9 +69,9 @@ export class CodeCompletionStrategy implements IWidgetStrategy {
 
       if (index < parts.length - 1) {
         const width =
-          payload.blankWidths && payload.blankWidths[index]
-            ? payload.blankWidths[index]
-            : 5;
+          payload.blankWidths?.[index] ||
+          payload.correctValues?.[index]?.length ||
+          5;
 
         const input = document.createElement("input");
         input.type = "text";
