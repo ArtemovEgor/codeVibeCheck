@@ -22,5 +22,10 @@ export const EN = {
     server_error: "Internal server error",
     topics_no_data: "Topics data not found",
     user_not_found: "User not found",
+    missing_topic_id: "Topic ID is required",
+    topic_not_found: "Topic not found",
+    missing_widget_id: "Missing widget id",
+    widget_not_found: "Widget not found",
+    progress_not_found: "Progress not found",
   },
 };
