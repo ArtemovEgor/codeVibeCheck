@@ -8,5 +8,5 @@ try {
   console.log("[SEED] Manual seeding completed successfully.");
 } catch (error) {
   console.error("[SEED] Error during manual seeding:", error);
-  process.exit(1);
+  throw error;
 }
