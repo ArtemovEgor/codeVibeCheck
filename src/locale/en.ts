@@ -177,6 +177,17 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
     },
     locked: "This topic is locked. Complete required topics first.",
   },
+  profile: {
+    title: "Profile",
+    name: "Name",
+    email: "Email",
+    changeAvatar: "Change avatar",
+    change: "Change",
+    changePassword: "Change password",
+    newPassword: "New password",
+    confirmPassword: "Confirm password",
+    updatePassword: "Update password",
+  },
   breadcrumbs: {
     separator: " › ",
   },
@@ -188,7 +199,7 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
       left: `
 function handleMissingPage(url: string): never {
   let attempts = 0;
-  
+
   while (attempts < 9999) {
     console.log("Searching for the page...");
     attempts++;
@@ -203,7 +214,7 @@ function handleMissingPage(url: string): never {
     at Object.navigate (/app/node_modules/react-router/dist/index.js:1337:0)
     at User.makeMistake (/life/choices.ts:101:1)
   \`;
-  
+
   throw theVoid;
 }
       `,
