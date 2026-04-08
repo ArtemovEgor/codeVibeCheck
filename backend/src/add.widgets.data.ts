@@ -13,7 +13,7 @@ const ALLOWED_TABLES = new Set(["topics", "topic_requirements", "widgets"]);
 type DB = Database.Database;
 
 // Helpers
-function validatePrerequisites(database: DB): boolean {
+function validatePrerequisites(database: DB, force = false): boolean {
   if (!fs.existsSync(DATA_DIR)) {
     console.warn(`Data directory not found: ${DATA_DIR}`);
     return false;
@@ -28,13 +28,15 @@ function validatePrerequisites(database: DB): boolean {
     }
   }
 
-  const tablesToCheck = ["topics", "topic_requirements", "widgets"];
-  for (const tableName of tablesToCheck) {
-    if (!isTableEmpty(database, tableName)) {
-      console.log(
-        `Table "${tableName}" already contains data. Seed aborted to avoid data corruption.`,
-      );
-      return false;
+  if (!force) {
+    const tablesToCheck = ["topics", "topic_requirements", "widgets"];
+    for (const tableName of tablesToCheck) {
+      if (!isTableEmpty(database, tableName)) {
+        console.log(
+          `Table "${tableName}" already contains data. Seed aborted to avoid data corruption.`,
+        );
+        return false;
+      }
     }
   }
 
@@ -159,7 +161,7 @@ function seedTopics(database: DB, topics: ITopic[]): void {
   console.log("Seeding topics table...");
 
   const stmt = database.prepare(`
-    INSERT INTO topics (id, title, description, difficulty, sortOrder, createdAt, updatedAt)
+    INSERT OR REPLACE INTO topics (id, title, description, difficulty, sortOrder, createdAt, updatedAt)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
@@ -211,7 +213,7 @@ function seedTopicRequirements(database: DB, topics: ITopic[]): void {
   console.log("Seeding topic_requirements table...");
 
   const stmt = database.prepare(`
-    INSERT OR IGNORE INTO topic_requirements (topicId, requiredTopicId)
+    INSERT OR REPLACE INTO topic_requirements (topicId, requiredTopicId)
     VALUES (?, ?)
   `);
 
@@ -296,7 +298,7 @@ function seedWidgets(database: DB, topics: ITopic[], widgets: IWidget[]): void {
   console.log("Seeding widgets table...");
 
   const stmt = database.prepare(`
-    INSERT INTO widgets (id, topicId, type, payload, answerData, difficulty, version, tags, sortOrder, createdAt, updatedAt)
+    INSERT OR REPLACE INTO widgets (id, topicId, type, payload, answerData, difficulty, version, tags, sortOrder, createdAt, updatedAt)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
@@ -329,10 +331,10 @@ function seedWidgets(database: DB, topics: ITopic[], widgets: IWidget[]): void {
   console.log(`Added widgets: ${enrichedWidgets.length}`);
 }
 
-export function fillDatabase(database: DB): void {
-  console.log("Initializing data...");
+export function fillDatabase(database: DB, force = false): void {
+  console.log(`Initializing data (force=${force})...`);
 
-  if (!validatePrerequisites(database)) {
+  if (!validatePrerequisites(database, force)) {
     return;
   }
 
