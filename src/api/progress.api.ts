@@ -9,7 +9,7 @@ import { ENDPOINTS } from "./endpoints";
 import { progressMock } from "./mock/progress.mock";
 
 class ProgressApi {
-  private isMockData = true; //apiService.isMockMode
+  private isMockData = apiService.isMockMode; //apiService.isMockMode
 
   public async getAll(): Promise<IUserTopicProgress[]> {
     const response = this.isMockData

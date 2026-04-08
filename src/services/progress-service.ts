@@ -63,7 +63,10 @@ export class ProgressService {
     let activeProgress = null;
 
     for (let index = progress.length - 1; index >= 0; index--) {
-      if (!progress[index].isCompleted) {
+      if (
+        !progress[index].isCompleted &&
+        progress[index].completedWidgetIds.length > 0
+      ) {
         activeProgress = progress[index];
         break;
       }
