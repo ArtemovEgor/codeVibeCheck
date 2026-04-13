@@ -102,18 +102,21 @@
     flex-grow: 1;
   }
 
-  &__name-wrapper {
+  &__name-wrapper,
+  &__mail-wrapper {
     width: 100%;
   }
 
-  &__name-input-wrapper {
+  &__name-input-wrapper,
+  &__mail-input-wrapper {
     display: flex;
     gap: 10px;
     height: 40px;
     margin-top: 10px;
   }
 
-  &__name-input {
+  &__name-input,
+  &__mail-input {
     width: 75%;
     transition: var(--transition-base);
     font-size: var(--text-sm);
@@ -126,7 +129,8 @@
     transition: var(--transition-base);
   }
 
-  &__name-change-button {
+  &__name-change-button,
+  &__mail-change-button {
     flex-shrink: 1;
     min-width: 114px;
     transition: var(--transition-base);
@@ -137,6 +141,13 @@
     padding-left: var(--space-4);
     padding-right: var(--space-4);
     background-color: transparent;
+    transition: var(--transition-base);
+  }
+
+  &__name-change-button.disabled,
+  &__mail-change-button.disabled {
+    pointer-events: none;
+    opacity: 0.4;
   }
 
   &__name-error,
@@ -212,9 +223,16 @@
 }
 
 /*--- Errors ---*/
-.profile__name-wrapper.error {
-  .profile__name-input {
+.profile__name-wrapper.error,
+.profile__mail-wrapper.error {
+  .profile__name-input,
+  .profile__mail-input {
     color: var(--accent-error);
+  }
+
+  .profile__name-input:focus-visible,
+  .profile__mail-input:focus-visible {
+    outline: 2px solid var(--accent-error);
   }
 }
 

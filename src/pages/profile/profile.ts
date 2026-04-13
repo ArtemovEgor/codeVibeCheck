@@ -15,11 +15,17 @@ export class ProfilePage extends BaseComponent implements Page {
   private userInitials = "";
 
   private NAME_REGEX = new RegExp(INPUT_VALIDATION.NAME, "u");
+  private MAIL_REGEX = new RegExp(INPUT_VALIDATION.EMAIL, "u");
 
   private nameInput!: BaseComponent<HTMLInputElement>;
   private nameChangeBtn!: BaseComponent<HTMLInputElement>;
   private nameWrapper!: BaseComponent<HTMLInputElement>;
   private nameError!: BaseComponent<HTMLInputElement>;
+
+  private mailInput!: BaseComponent<HTMLInputElement>;
+  private mailChangeBtn!: BaseComponent<HTMLInputElement>;
+  private mailWrapper!: BaseComponent<HTMLInputElement>;
+  private mailError!: BaseComponent<HTMLInputElement>;
 
   constructor() {
     super({ tag: "div", className: "profile" });
@@ -173,7 +179,7 @@ export class ProfilePage extends BaseComponent implements Page {
 
     this.nameChangeBtn = new BaseComponent({
       tag: "button",
-      className: "profile__name-change-button",
+      className: "profile__name-change-button disabled",
       text: i18n.t().profile.change,
       parent: nameInputWrapper,
     });
@@ -185,42 +191,43 @@ export class ProfilePage extends BaseComponent implements Page {
   }
 
   private renderMailChanger(parent: BaseComponent): void {
-    const nameWrapper = new BaseComponent({
-      className: "profile__name-wrapper",
+    this.mailWrapper = new BaseComponent({
+      className: "profile__mail-wrapper",
       parent: parent,
     });
 
     new BaseComponent({
-      className: "profile__name-title-wrapper",
+      className: "profile__mail-title-wrapper",
       text: i18n.t().profile.email,
-      parent: nameWrapper,
+      parent: this.mailWrapper,
     });
 
-    const nameInputWrapper = new BaseComponent({
-      className: "profile__name-input-wrapper",
-      parent: nameWrapper,
+    const mailInputWrapper = new BaseComponent({
+      className: "profile__mail-input-wrapper",
+      parent: this.mailWrapper,
     });
 
-    new BaseComponent({
+    this.mailInput = new BaseComponent({
       tag: "input",
-      className: "profile__name-input",
+      className: "profile__mail-input",
       attributes: {
         id: "user-mail-input",
         type: "text",
         value: this.user?.email as string,
       },
-      parent: nameInputWrapper,
+      parent: mailInputWrapper,
     });
 
-    const nameChange = new BaseComponent({
+    this.mailChangeBtn = new BaseComponent({
       tag: "button",
-      className: "profile__name-change-button",
+      className: "profile__mail-change-button disabled",
       text: i18n.t().profile.change,
-      parent: nameInputWrapper,
+      parent: mailInputWrapper,
     });
 
-    nameChange.on("click", () => {
-      console.log("Change Mail");
+    this.mailError = new BaseComponent({
+      className: "profile__mail-error",
+      parent: this.mailWrapper,
     });
   }
 
@@ -318,6 +325,30 @@ export class ProfilePage extends BaseComponent implements Page {
     return { success: true, message: "" };
   }
 
+  private validateMail(value: string): IValidationResult {
+    const MAX_LENGTH = 254;
+
+    if (!value.trim()) {
+      return { success: false, message: i18n.t().common.validation.empty };
+    }
+
+    if (value.length > MAX_LENGTH) {
+      return {
+        success: false,
+        message: `${i18n.t().common.validation.too_long}: ${MAX_LENGTH}`,
+      };
+    }
+
+    if (!this.MAIL_REGEX.test(value)) {
+      return {
+        success: false,
+        message: i18n.t().common.validation.email_error,
+      };
+    }
+
+    return { success: true, message: "" };
+  }
+
   // Events
   private eventsInit() {
     this.nameInput.on("input", () => {
@@ -331,10 +362,39 @@ export class ProfilePage extends BaseComponent implements Page {
         this.nameWrapper.toggleClass("error", true);
         this.nameError.setText(validateResult.message);
       }
+
+      if (this.user?.name === inputElement.value) {
+        this.nameChangeBtn.toggleClass("disabled", true);
+      } else {
+        this.nameChangeBtn.toggleClass("disabled", false);
+      }
+    });
+
+    this.mailInput.on("input", () => {
+      const inputElement = this.mailInput.getNode();
+      const validateResult = this.validateMail(inputElement.value);
+
+      if (validateResult.success) {
+        this.mailWrapper.toggleClass("error", false);
+        this.mailError.setText("");
+      } else {
+        this.mailWrapper.toggleClass("error", true);
+        this.mailError.setText(validateResult.message);
+      }
+
+      if (this.user?.name === inputElement.value) {
+        this.mailChangeBtn.toggleClass("disabled", true);
+      } else {
+        this.mailChangeBtn.toggleClass("disabled", false);
+      }
     });
 
     this.nameChangeBtn.on("click", () => {
       console.log("Change Name");
+    });
+
+    this.mailChangeBtn.on("click", () => {
+      console.log("Change Mail");
     });
   }
 
