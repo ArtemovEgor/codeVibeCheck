@@ -123,6 +123,7 @@
     padding-left: var(--space-4);
     padding-right: var(--space-4);
     background-color: transparent;
+    transition: var(--transition-base);
   }
 
   &__name-change-button {
@@ -136,6 +137,17 @@
     padding-left: var(--space-4);
     padding-right: var(--space-4);
     background-color: transparent;
+  }
+
+  &__name-error,
+  &__mail-error {
+    padding-top: 4px;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+    font-size: 12px;
+    color: var(--accent-error);
+    transition: var(--transition-base);
+    min-height: 24px;
   }
 
   &__right-column {
@@ -196,6 +208,13 @@
 
   &__change-passwd-button:hover {
     background: var(--bg-surface-hover);
+  }
+}
+
+/*--- Errors ---*/
+.profile__name-wrapper.error {
+  .profile__name-input {
+    color: var(--accent-error);
   }
 }
 

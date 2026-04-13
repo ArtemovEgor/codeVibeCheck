@@ -1,21 +1,60 @@
-import BaseComponent from "@/components/base/base-component";
+import type { IUser, IApiError } from "@/types/shared";
+import type { IValidationResult } from "@/types/shared/profile";
 import type Page from "../page";
+
+import BaseComponent from "@/components/base/base-component";
 import { i18n } from "@/services/localization-service";
-// import Notification from "@/components/notification/notification";
-// import { NotificationType } from "@/constants/notification";
-// import { Button } from "@/components/button/button";
+import Notification from "@/components/notification/notification";
+import { NotificationType } from "@/constants/notification";
+import { INPUT_VALIDATION } from "@/constants/input-validation";
+import { authApi } from "@/api/auth.api";
 import "./profile.scss";
 
 export class ProfilePage extends BaseComponent implements Page {
+  private user: IUser | undefined = undefined;
+  private userInitials = "";
+
+  private NAME_REGEX = new RegExp(INPUT_VALIDATION.NAME, "u");
+
+  private nameInput!: BaseComponent<HTMLInputElement>;
+  private nameChangeBtn!: BaseComponent<HTMLInputElement>;
+  private nameWrapper!: BaseComponent<HTMLInputElement>;
+  private nameError!: BaseComponent<HTMLInputElement>;
+
   constructor() {
     super({ tag: "div", className: "profile" });
     void this.init();
   }
 
   public async init(): Promise<void> {
+    await this.loadUser();
     this.render();
+    this.eventsInit();
   }
 
+  private async loadUser(): Promise<void> {
+    try {
+      this.user = await authApi.getCurrentUser();
+      this.getUserInitials();
+      console.log(this.user);
+    } catch (error) {
+      const apiError = error as IApiError;
+      Notification.show(apiError.message, NotificationType.ERROR);
+    }
+  }
+
+  private getUserInitials(): void {
+    if (this.user?.name) {
+      this.userInitials = this.user.name
+        .split(" ")
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join("")
+        .toUpperCase();
+    }
+  }
+
+  // Renders
   private render(): void {
     this.getNode().replaceChildren();
     this.renderTitle();
@@ -59,7 +98,7 @@ export class ProfilePage extends BaseComponent implements Page {
     new BaseComponent({
       className: "profile__avatar",
       parent: avatarBlock,
-      text: "A",
+      text: this.userInitials,
     });
 
     const changeAvatar = new BaseComponent({
@@ -105,7 +144,7 @@ export class ProfilePage extends BaseComponent implements Page {
   }
 
   private renderNameChanger(parent: BaseComponent): void {
-    const nameWrapper = new BaseComponent({
+    this.nameWrapper = new BaseComponent({
       className: "profile__name-wrapper",
       parent: parent,
     });
@@ -113,34 +152,35 @@ export class ProfilePage extends BaseComponent implements Page {
     new BaseComponent({
       className: "profile__name-title-wrapper",
       text: i18n.t().profile.name,
-      parent: nameWrapper,
+      parent: this.nameWrapper,
     });
 
     const nameInputWrapper = new BaseComponent({
       className: "profile__name-input-wrapper",
-      parent: nameWrapper,
+      parent: this.nameWrapper,
     });
 
-    new BaseComponent({
+    this.nameInput = new BaseComponent({
       tag: "input",
       className: "profile__name-input",
       attributes: {
         id: "user-name-input",
         type: "text",
-        Value: "Alex",
+        Value: this.user?.name as string,
       },
       parent: nameInputWrapper,
     });
 
-    const nameChange = new BaseComponent({
+    this.nameChangeBtn = new BaseComponent({
       tag: "button",
       className: "profile__name-change-button",
       text: i18n.t().profile.change,
       parent: nameInputWrapper,
     });
 
-    nameChange.on("click", () => {
-      console.log("Change Name");
+    this.nameError = new BaseComponent({
+      className: "profile__name-error",
+      parent: this.nameWrapper,
     });
   }
 
@@ -167,7 +207,7 @@ export class ProfilePage extends BaseComponent implements Page {
       attributes: {
         id: "user-mail-input",
         type: "text",
-        value: "alex@test.com",
+        value: this.user?.email as string,
       },
       parent: nameInputWrapper,
     });
@@ -250,6 +290,51 @@ export class ProfilePage extends BaseComponent implements Page {
 
     changePasswd.on("click", () => {
       console.log("Change Password");
+    });
+  }
+
+  private validateName(value: string): IValidationResult {
+    const MIN_LENGTH = 2;
+    const MAX_LENGTH = 30;
+
+    if (!value.trim()) {
+      return { success: false, message: i18n.t().common.validation.empty };
+    }
+
+    if (value.length < MIN_LENGTH || value.length > MAX_LENGTH) {
+      return {
+        success: false,
+        message: `${i18n.t().common.validation.too_short}: ${MIN_LENGTH},  ${i18n.t().common.validation.too_long}: ${MAX_LENGTH}`,
+      };
+    }
+
+    if (!this.NAME_REGEX.test(value)) {
+      return {
+        success: false,
+        message: i18n.t().common.validation.name_error,
+      };
+    }
+
+    return { success: true, message: "" };
+  }
+
+  // Events
+  private eventsInit() {
+    this.nameInput.on("input", () => {
+      const inputElement = this.nameInput.getNode();
+      const validateResult = this.validateName(inputElement.value);
+
+      if (validateResult.success) {
+        this.nameWrapper.toggleClass("error", false);
+        this.nameError.setText("");
+      } else {
+        this.nameWrapper.toggleClass("error", true);
+        this.nameError.setText(validateResult.message);
+      }
+    });
+
+    this.nameChangeBtn.on("click", () => {
+      console.log("Change Name");
     });
   }
 
