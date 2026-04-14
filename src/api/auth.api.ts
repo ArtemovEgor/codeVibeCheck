@@ -84,6 +84,17 @@ class AuthApi {
     );
     return response.data;
   }
+
+  public async updateEmail(email: string): Promise<{ email: string }> {
+    const response = await apiService.send<IApiResponse<{ email: string }>>(
+      ENDPOINTS.AUTH.UPDATE_EMAIL,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ email }),
+      },
+    );
+    return response.data;
+  }
 }
 
 export const authApi = new AuthApi();

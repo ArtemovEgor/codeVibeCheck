@@ -37,5 +37,10 @@ export const EN = {
     name_invalid:
       "Name can only contain letters, spaces, hyphens and apostrophes",
     name_length: "Number of characters",
+    email_required: "Email is required",
+    email_empty: "Email cannot be empty",
+    email_too_long: "Email is too long (max 254 characters)",
+    email_invalid: "Please enter a valid email address",
+    email_already_used: "This email is already registered",
   },
 };

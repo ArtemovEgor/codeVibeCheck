@@ -193,6 +193,8 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
     saving: "Saving...",
     nameUpdateSuccess: "Name updated successfully",
     nameUpdateError: "Failed to update name",
+    emailUpdateSuccess: "Email updated successfully",
+    emailUpdateError: "Failed to update email",
   },
   breadcrumbs: {
     separator: " › ",

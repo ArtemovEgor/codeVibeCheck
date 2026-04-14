@@ -51,6 +51,7 @@ export class ProfilePage extends BaseComponent implements Page {
     this.passwordEventInit();
     this.confirmPasswordEventInit();
     this.changeNameInit();
+    this.changeMailInit();
   }
 
   private async loadUser(): Promise<void> {
@@ -498,6 +499,70 @@ export class ProfilePage extends BaseComponent implements Page {
     this.nameChangeBtn.toggleClass("disabled", false);
   }
 
+  // Mail change
+  private async processEmailChange(): Promise<void> {
+    const newEmail = this.getMailInputValue();
+    if (!this.isEmailValidForSubmit(newEmail)) return;
+
+    this.setMailChangeButtonLoading(true);
+    try {
+      const { email: updatedEmail } = await authApi.updateEmail(newEmail);
+      this.applyEmailUpdate(updatedEmail);
+      Notification.show(
+        i18n.t().profile.emailUpdateSuccess,
+        NotificationType.SUCCESS,
+      );
+    } catch (error) {
+      this.onEmailChangeError(error as Error);
+    } finally {
+      this.setMailChangeButtonLoading(false);
+    }
+  }
+
+  private getMailInputValue(): string {
+    return this.mailInput.getNode().value.trim();
+  }
+
+  private isEmailValidForSubmit(email: string): boolean {
+    const validation = this.validateMail(email);
+    if (!validation.success) {
+      this.mailWrapper.toggleClass("error", true);
+      this.mailError.setText(validation.message);
+      return false;
+    }
+    return true;
+  }
+
+  private setMailChangeButtonLoading(isLoading: boolean): void {
+    const button = this.mailChangeBtn.getNode();
+    if (isLoading) {
+      button.textContent = i18n.t().profile.saving;
+      this.mailChangeBtn.toggleClass("disabled", true);
+    } else {
+      button.textContent = i18n.t().profile.change;
+      const isDisabled = this.user?.email === this.getMailInputValue();
+      this.mailChangeBtn.toggleClass("disabled", isDisabled);
+    }
+  }
+
+  private applyEmailUpdate(updatedEmail: string): void {
+    if (this.user) {
+      this.user = { ...this.user, email: updatedEmail };
+    }
+    this.mailInput.getNode().value = updatedEmail;
+    this.mailWrapper.toggleClass("error", false);
+    this.mailError.setText("");
+    this.mailChangeBtn.toggleClass("disabled", true);
+  }
+
+  private onEmailChangeError(error: Error): void {
+    Notification.show(
+      error.message || i18n.t().profile.emailUpdateError,
+      NotificationType.ERROR,
+    );
+    this.mailChangeBtn.toggleClass("disabled", false);
+  }
+
   // Events
   private nameEventInit() {
     this.nameInput.on("input", () => {
@@ -538,10 +603,6 @@ export class ProfilePage extends BaseComponent implements Page {
       } else {
         this.mailChangeBtn.toggleClass("disabled", false);
       }
-    });
-
-    this.mailChangeBtn.on("click", () => {
-      console.log("Change Mail");
     });
 
     this.changePasswd.on("click", () => {
@@ -586,9 +647,15 @@ export class ProfilePage extends BaseComponent implements Page {
     });
   }
 
-  private changeNameInit(): void {
+  private changeNameInit() {
     this.nameChangeBtn.on("click", async () => {
       await this.processNameChange();
+    });
+  }
+
+  private changeMailInit() {
+    this.mailChangeBtn.on("click", async () => {
+      await this.processEmailChange();
     });
   }
 

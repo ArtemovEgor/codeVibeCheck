@@ -171,3 +171,52 @@ export function updateUserName(id: string, newName: string): IUser {
     totalScore: updatedUser.totalScore || 0,
   };
 }
+
+/**
+ * Update user's email
+ *
+ * @param id - User ID
+ * @param newEmail - New Email
+ * @returns Updated user object
+ * @throws Error - If user not found or validation fails
+ */
+export function updateUserEmail(id: string, newEmail: string): IUser {
+  const trimmedEmail = newEmail.trim().toLowerCase();
+  const EMAIL_REGEX = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+
+  if (!trimmedEmail) {
+    throw new Error(LANG.errors.email_empty);
+  }
+  if (trimmedEmail.length > 254) {
+    throw new Error(LANG.errors.email_too_long);
+  }
+  if (!EMAIL_REGEX.test(trimmedEmail)) {
+    throw new Error(LANG.errors.email_invalid);
+  }
+
+  // Uniqueness check
+  const checkStmt = dataBase.prepare(
+    "SELECT id FROM users WHERE email = ? AND id != ?",
+  );
+  const existing = checkStmt.get(trimmedEmail, id) as
+    | { id: string }
+    | undefined;
+  if (existing) {
+    throw new Error(LANG.errors.email_already_used);
+  }
+
+  const updateStmt = dataBase.prepare(`
+    UPDATE users SET email = ? WHERE id = ? RETURNING *
+  `);
+  const updated = updateStmt.get(trimmedEmail, id) as IDatabaseUser | undefined;
+  if (!updated) throw new Error(LANG.errors.user_not_found);
+
+  return {
+    id: updated.id,
+    name: updated.name,
+    email: updated.email,
+    avatarUrl: updated.avatarUrl || undefined,
+    createdAt: updated.createdAt,
+    totalScore: updated.totalScore || 0,
+  };
+}

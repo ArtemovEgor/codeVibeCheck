@@ -5,6 +5,7 @@ export const ENDPOINTS = {
     REGISTER: "/api/auth/register", // POST — RegisterCredentials → AuthResponse
     ME: "/api/auth/me", // GET  — → User (requires token)
     UPDATE_NAME: "/api/auth/name", // PATCH
+    UPDATE_EMAIL: "/api/auth/email", // PATCH
   },
   PROFILE: {
     CHAT_STATS: "/api/profile/chat-stats", // GET → IUserChatStats (requires token)

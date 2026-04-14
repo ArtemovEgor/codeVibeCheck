@@ -7,6 +7,7 @@ import {
   loginUser,
   getUserById,
   updateUserName,
+  updateUserEmail,
 } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
@@ -222,6 +223,63 @@ app.patch("/api/auth/name", (request, response) => {
     }
 
     console.error("Update name error:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message: LANG.errors.internal_error,
+    });
+  }
+});
+
+/** PATCH /api/auth/email - Update current user's email */
+app.patch("/api/auth/email", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { email } = request.body;
+
+    if (!email || typeof email !== "string") {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.email_required,
+      });
+    }
+
+    const updatedUser = updateUserEmail(userId, email);
+
+    response.status(200).json({
+      success: true,
+      data: { email: updatedUser.email },
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    if (isAuthError) {
+      return response.status(401).json({
+        success: false,
+        status: 401,
+        message: error.message,
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message === LANG.errors.email_empty ||
+        error.message === LANG.errors.email_too_long ||
+        error.message === LANG.errors.email_invalid ||
+        error.message === LANG.errors.email_already_used)
+    ) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: error.message,
+      });
+    }
+
+    console.error("Update email error:", error);
     response.status(500).json({
       success: false,
       status: 500,
