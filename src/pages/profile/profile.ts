@@ -15,7 +15,6 @@ export class ProfilePage extends BaseComponent implements Page {
   private user: IUser | undefined = undefined;
   private userInitials = "";
 
-  private changeAvatarBtn!: BaseComponent<HTMLButtonElement>;
   private avatarWrapper!: BaseComponent<HTMLButtonElement>;
 
   private NAME_REGEX = new RegExp(INPUT_VALIDATION.NAME, "u");
@@ -129,7 +128,7 @@ export class ProfilePage extends BaseComponent implements Page {
       text: this.userInitials,
     });
 
-    this.changeAvatarBtn = new BaseComponent({
+    new BaseComponent({
       tag: "label",
       className: "profile__avatar-button",
       text: i18n.t().profile.changeAvatar,
