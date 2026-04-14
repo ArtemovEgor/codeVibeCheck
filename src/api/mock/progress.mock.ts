@@ -1,0 +1,353 @@
+import type { IApiError, IApiResponse } from "@/types/shared";
+import type {
+  IUpdateProgressPayload,
+  IUserStats,
+  IUserTopicProgress,
+} from "@/types/shared/user.types";
+import { storageService } from "@/services/storage-service";
+import { STORAGE_KEYS } from "@/constants/storage-keys";
+import { delay } from "./delay";
+import { MOCK_TOPICS } from "@/api/mock/widgets.mock.data";
+
+const NOT_FOUND_STATUS = 404;
+const INTERNAL_SERVER_ERROR = 500;
+
+class ProgressMock {
+  private getProgressFromStorage(): IUserTopicProgress[] {
+    return storageService.getStorage(STORAGE_KEYS.MOCK_PROGRESS, []);
+  }
+
+  /**
+   * Returns progress for all topics the user has started.
+   * Does not initialize missing topics — returns empty array if no progress yet.
+   * Used by Library page — missing topics are displayed with default values on the frontend.
+   */
+  public async getAll(): Promise<IApiResponse<IUserTopicProgress[]>> {
+    await delay();
+    const all = this.getProgressFromStorage();
+    return { success: true, data: all };
+  }
+
+  /**
+   * Returns progress for a specific topic by topicId.
+   * If no progress found — creates a new entry with default values
+   * (xpEarned: 0, isCompleted: false, isUnlocked: calculated from requiredTopicIds).
+   * Used by Practice page to restore position and check if topic is accessible.
+   */
+  public async getByTopicId(
+    topicId: string,
+  ): Promise<IApiResponse<IUserTopicProgress>> {
+    await delay();
+
+    const all = this.getProgressFromStorage();
+    let progress = all.find((p) => p.topicId === topicId);
+
+    if (!progress) {
+      const completedTopicIds = this.getCompletedTopicIds(all);
+      progress = {
+        topicId,
+        completedWidgetIds: [],
+        xpEarned: 0,
+        everCompleted: false,
+        isCompleted: false,
+        isUnlocked: this.calculateIsUnlocked(topicId, completedTopicIds),
+      };
+      all.push(progress);
+      storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
+    }
+
+    return { success: true, data: progress };
+  }
+
+  /**
+   * Initializes progress for a topic when the user first visits it.
+   * If progress already exists — returns it unchanged (idempotent).
+   * If not — creates a new entry with empty completedWidgetIds and
+   * isUnlocked calculated based on completed requiredTopicIds.
+   * Called only when getByTopicId returns 404.
+   */
+  public async initTopic(
+    topicId: string,
+  ): Promise<IApiResponse<IUserTopicProgress>> {
+    await delay();
+    const all = this.getProgressFromStorage();
+    const existing = all.find((p) => p.topicId === topicId);
+
+    if (existing) return { success: true, data: existing };
+
+    const completedTopicIds = this.getCompletedTopicIds(all);
+    const newProgress: IUserTopicProgress = {
+      topicId,
+      completedWidgetIds: [],
+      xpEarned: 0,
+      everCompleted: false,
+      isCompleted: false,
+      isUnlocked: this.calculateIsUnlocked(topicId, completedTopicIds),
+    };
+
+    all.push(newProgress);
+    storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
+
+    return { success: true, data: newProgress };
+  }
+
+  /**
+   * Updates progress after the user submits a widget answer.
+   * If progress exists — updates completedWidgetIds, xpEarned, isCompleted.
+   * If not — creates a new progress entry via createTopicProgress().
+   * Also updates overall user stats (totalXp, completedTopics) via updateUserStats().
+   * Throws 500 if the updated record cannot be found after saving.
+   */
+  public async update(
+    payload: IUpdateProgressPayload,
+  ): Promise<IApiResponse<IUserTopicProgress>> {
+    await delay();
+
+    const all = this.getProgressFromStorage();
+    const existing = all.find((p) => p.topicId === payload.topicId);
+
+    if (existing) {
+      this.updateTopicProgress(existing, payload, all);
+      const isCompleted = existing.isCompleted;
+      this.updateUserStats(payload, isCompleted, all);
+    } else {
+      this.createTopicProgress(payload, all);
+    }
+
+    storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
+
+    const updated = all.find((p) => p.topicId === payload.topicId);
+
+    if (!updated)
+      throw this.createError(
+        `Failed to update progress: ${payload.topicId}`,
+        INTERNAL_SERVER_ERROR,
+      );
+
+    return { success: true, data: updated };
+  }
+
+  /**
+   * Updates topic progress after a widget answer.
+   * Adds widgetId to completedWidgetIds if not already present.
+   * Recalculates isCompleted based on totalWidgets.
+   * Unlocks dependent topics if topic is completed.
+   */
+  private updateTopicProgress(
+    existing: IUserTopicProgress,
+    payload: IUpdateProgressPayload,
+    all: IUserTopicProgress[],
+  ): void {
+    if (!existing.completedWidgetIds.includes(payload.widgetId)) {
+      existing.completedWidgetIds.push(payload.widgetId);
+    }
+
+    existing.xpEarned += payload.xpEarned;
+
+    existing.isCompleted =
+      existing.completedWidgetIds.length === payload.totalWidgets;
+
+    if (existing.isCompleted) {
+      existing.everCompleted = true;
+      this.unlockDependentTopics(all);
+    }
+  }
+
+  /**
+   * Updates overall user statistics after a widget answer.
+   * totalXp increases on every answer including repeat attempts.
+   * completedTopics is recalculated only when a topic is newly completed.
+   * streak — TODO: implement based on lastActivityAt
+   */
+  private updateUserStats(
+    payload: IUpdateProgressPayload,
+    isCompleted: boolean,
+    all: IUserTopicProgress[],
+  ): void {
+    const stats = storageService.getStorage<IUserStats>(
+      STORAGE_KEYS.USER_STATS,
+      {
+        totalXp: 0,
+        completedTopics: 0,
+        streak: 0,
+        lastActivityAt: undefined,
+      },
+    );
+
+    stats.totalXp += payload.xpEarned;
+
+    if (isCompleted) {
+      stats.completedTopics = all.filter((p) => p.everCompleted).length;
+    }
+
+    stats.streak = this.calculateStreak(stats);
+    stats.lastActivityAt = this.getTodayString();
+
+    storageService.setStorage(STORAGE_KEYS.USER_STATS, stats);
+  }
+
+  /**
+   * Resets progress for a specific topic without removing the entry.
+   * Clears completedWidgetIds, xpEarned and isCompleted.
+   * everCompleted and isUnlocked are preserved — so dependent topics stay unlocked.
+   * If no progress found for the topic — does nothing.
+   */
+  public async resetTopic(topicId: string): Promise<IApiResponse<void>> {
+    await delay();
+    const all = this.getProgressFromStorage();
+    const existing = all.find((p) => p.topicId === topicId);
+
+    if (existing) {
+      existing.completedWidgetIds = [];
+      existing.xpEarned = 0;
+      existing.isCompleted = false;
+      storageService.setStorage(STORAGE_KEYS.MOCK_PROGRESS, all);
+    }
+
+    return { success: true, data: undefined };
+  }
+
+  /**
+   * Creates a new progress entry for a topic on first widget answer.
+   * isCompleted defaults to false — only updateTopicProgress can set it to true.
+   * isUnlocked is calculated based on completed requiredTopicIds.
+   */
+  private createTopicProgress(
+    payload: IUpdateProgressPayload,
+    all: IUserTopicProgress[],
+  ): void {
+    const completedTopicIds = this.getCompletedTopicIds(all);
+    all.push({
+      topicId: payload.topicId,
+      completedWidgetIds: [payload.widgetId],
+      xpEarned: payload.xpEarned,
+      everCompleted: false,
+      isCompleted: false,
+      isUnlocked: this.calculateIsUnlocked(payload.topicId, completedTopicIds),
+    });
+  }
+
+  /**
+   * Returns true if all requiredTopicIds are completed.
+   * Topics with empty requiredTopicIds (e.g. core-js) are always unlocked.
+   * Returns false if topic is not found in MOCK_TOPICS.
+   */
+  private calculateIsUnlocked(
+    topicId: string,
+    completedTopicIds: string[],
+  ): boolean {
+    const topic = MOCK_TOPICS.find((topic) => topic.id === topicId);
+    if (!topic) return false;
+    if (topic.requiredTopicIds.length === 0) return true;
+    return topic.requiredTopicIds.every((id) => completedTopicIds.includes(id));
+  }
+
+  /**
+   * Returns ids of all completed topics from current progress array.
+   * Used to calculate isUnlocked for dependent topics.
+   */
+  private getCompletedTopicIds(all: IUserTopicProgress[]): string[] {
+    return all
+      .filter((topic) => topic.everCompleted)
+      .map((topic) => topic.topicId);
+  }
+
+  /**
+   * Iterates all topics with dependencies and unlocks them
+   * if all their requiredTopicIds are now completed.
+   * Called after a topic is marked as isCompleted.
+   * Mutates progress objects in place — caller must save to storage.
+   */
+  private unlockDependentTopics(all: IUserTopicProgress[]): void {
+    const completedTopicIds = this.getCompletedTopicIds(all);
+
+    for (const topic of MOCK_TOPICS) {
+      if (topic.requiredTopicIds.length === 0) continue;
+
+      const progress = all.find((p) => p.topicId === topic.id);
+      if (progress && !progress.isUnlocked) {
+        progress.isUnlocked = this.calculateIsUnlocked(
+          topic.id,
+          completedTopicIds,
+        );
+      }
+    }
+  }
+
+  /**
+   * Returns overall user statistics (totalXp, completedTopics, streak).
+   * If no stats found in storage — returns default values with zeros.
+   * Used by Practice page right panel and Dashboard.
+   */
+  public async getUserStats(): Promise<IApiResponse<IUserStats>> {
+    await delay();
+
+    const stats = storageService.getStorage<IUserStats>(
+      STORAGE_KEYS.USER_STATS,
+      {
+        totalXp: 0,
+        completedTopics: 0,
+        streak: 0,
+        lastActivityAt: undefined,
+      },
+    );
+
+    return { success: true, data: stats };
+  }
+
+  /**
+   * Calculates the current activity streak in days.
+   * If no previous activity — returns 1 (first day).
+   * If last activity was today — streak unchanged (already counted).
+   * If last activity was yesterday — streak increases by 1.
+   * If last activity was earlier — streak resets to 1.
+   */
+  private calculateStreak(stats: IUserStats): number {
+    const today = this.getTodayString();
+    const last = stats.lastActivityAt;
+
+    if (!last) return 1;
+
+    if (last === today) return stats.streak;
+
+    const yesterday = this.getYesterdayString();
+    if (last === yesterday) return stats.streak + 1;
+
+    return 1;
+  }
+
+  /**
+   * Returns today's date as an ISO date string (e.g. "2024-01-15").
+   * Uses Swedish locale which formats dates as YYYY-MM-DD.
+   */
+  private getTodayString(): string {
+    return new Date().toLocaleDateString("sv"); // "2024-01-15"
+  }
+
+  /**
+   * Returns yesterday's date as an ISO date string (e.g. "2024-01-14").
+   * Used to determine if the streak should be incremented.
+   */
+  private getYesterdayString(): string {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    return date.toLocaleDateString("sv");
+  }
+
+  /**
+   * Creates and returns an IApiError object.
+   * Default status is 404. Pass INTERNAL_SERVER_ERROR (500) for server-side failures.
+   */
+  private createError(
+    message: string,
+    status: number = NOT_FOUND_STATUS,
+  ): IApiError {
+    return {
+      success: false as const,
+      status: status,
+      message,
+    };
+  }
+}
+
+export const progressMock = new ProgressMock();

@@ -1,0 +1,92 @@
+import { describe, it, expect, beforeEach } from "vitest";
+import { loginUser, registerUser } from "./auth.service";
+import database from "./database";
+
+beforeEach(() => {
+  database.prepare("DELETE FROM users").run();
+});
+
+describe("registerUser", () => {
+  it("should register a new user with valid data", () => {
+    const testUser = {
+      name: "Test User",
+      email: "test@example.com",
+      password: "password123",
+    };
+
+    const result = registerUser(testUser);
+
+    expect(result.user).toBeDefined();
+    expect(result.user.name).toBe(testUser.name);
+    expect(result.user.email).toBe(testUser.email);
+    expect(result.token).toBeDefined();
+    expect(result.user.id).toBeDefined();
+    expect(result.user.createdAt).toBeDefined();
+  });
+
+  it("should throw error when password is too short", () => {
+    const testUser = {
+      name: "Test User",
+      email: "test@example.com",
+      password: "123",
+    };
+
+    expect(() => registerUser(testUser)).toThrow();
+
+    expect(() => registerUser(testUser)).toThrow(/password/i);
+  });
+
+  it("should throw error when email is invalid", () => {
+    const testUser = {
+      name: "Test User",
+      email: "not-an-email",
+      password: "password123",
+    };
+
+    expect(() => registerUser(testUser)).toThrow();
+    expect(() => registerUser(testUser)).toThrow(/mail|email/i);
+  });
+
+  it("should throw error when email already exists", () => {
+    const firstUser = {
+      name: "First User",
+      email: "existing@example.com",
+      password: "password123",
+    };
+
+    registerUser(firstUser);
+
+    const secondUser = {
+      name: "Second User",
+      email: "existing@example.com",
+      password: "anotherpassword123",
+    };
+
+    expect(() => registerUser(secondUser)).toThrow();
+    expect(() => registerUser(secondUser)).toThrow(
+      /already exists|user_already_exist/i,
+    );
+  });
+});
+
+describe("loginUser", () => {
+  it("should login with correct credentials", () => {
+    const testUser = {
+      name: "Test User",
+      email: "login@test.com",
+      password: "password123",
+    };
+
+    registerUser(testUser);
+
+    const result = loginUser({
+      email: "login@test.com",
+      password: "password123",
+    });
+
+    expect(result.user).toBeDefined();
+    expect(result.user.email).toBe("login@test.com");
+    expect(result.user.name).toBe("Test User");
+    expect(result.token).toBeDefined();
+  });
+});

@@ -6,7 +6,7 @@ import unicorn from "eslint-plugin-unicorn";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "node_modules", "public"],
+    ignores: ["dist", "node_modules", "public", "backend/dist"],
   },
 
   js.configs.recommended,
@@ -14,15 +14,16 @@ export default tseslint.config(
   ...tseslint.configs.stylistic,
   unicorn.configs.recommended,
 
+  // === Frontend (src/) ===
   {
-    files: ["**/*.{ts,tsx,js,mjs}"],
+    files: ["src/**/*.{ts,tsx,js,mjs}"],
     languageOptions: {
       globals: {
-        ...globals.browser,
+        ...globals.browser, // Only for front
       },
       parserOptions: {
         projectService: {
-          allowDefaultProject: ["vite.config.ts", "eslint.config.ts"],
+          allowDefaultProject: ["vite.config.ts", "eslint.config.mts"],
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -39,7 +40,38 @@ export default tseslint.config(
   {
     files: ["src/services/**/*.ts"],
     rules: {
-      "unicorn/no-null": "off", // Disabling for services to allow API requests that require null
+      "unicorn/no-null": "off",
+    },
+  },
+
+  // === Test Overrides ===
+  {
+    files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "max-lines-per-function": "off",
+    },
+  },
+
+  // === Backend (backend/src/) ===
+  {
+    files: ["backend/src/**/*.{ts,js}"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      parserOptions: {
+        project: "./backend/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      "no-console": "off",
+      "unicorn/no-null": "off",
+      "max-lines-per-function": "off",
+      "no-undef": "off",
+      "n/no-unsupported-features/node-builtins": "off",
+      "unicorn/prefer-module": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 

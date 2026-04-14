@@ -1,0 +1,87 @@
+.widget {
+  &--true-false {
+    @include flex-column;
+    gap: var(--space-6);
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  &__question {
+    @include card;
+    @include heading(var(--text-xl), var(--weight-semibold));
+    line-height: var(--leading-normal);
+  }
+
+  &__options {
+    @include flex-column;
+    gap: var(--space-3);
+
+    .widget__option {
+      width: 100%;
+      padding: var(--space-3) var(--space-5);
+      text-align: left;
+      font-size: var(--text-base);
+      font-weight: var(--weight-medium);
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition:
+        var(--transition-colors),
+        transform var(--transition-base);
+      @include focus-ring;
+
+      &:hover:not(&--selected):not(&--correct):not(&--wrong):not(&--disabled) {
+        border-color: var(--accent-primary);
+        box-shadow: var(--shadow-glow);
+        background: var(--bg-surface-hover);
+        transform: translateX(4px);
+      }
+
+      &--selected {
+        border-color: var(--accent-primary);
+        background: var(--accent-primary-light);
+        color: var(--accent-primary);
+        box-shadow: var(--shadow-glow);
+      }
+
+      &--correct {
+        border-color: var(--accent-success);
+        background: var(--accent-success-light);
+        color: var(--accent-success);
+        pointer-events: none;
+      }
+
+      &--wrong {
+        border-color: var(--accent-error);
+        background: var(--accent-error-light);
+        color: var(--accent-error);
+        pointer-events: none;
+        @include shake;
+      }
+
+      &--disabled {
+        pointer-events: none;
+        opacity: var(--hover-opacity);
+      }
+    }
+  }
+
+  &__submit {
+    @include btn-primary;
+    align-self: flex-end;
+    padding: var(--space-3) var(--space-8);
+
+    &:disabled {
+      opacity: var(--active-opacity);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    &--hidden {
+      display: none;
+    }
+  }
+}

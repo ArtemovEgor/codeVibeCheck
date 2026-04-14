@@ -1,0 +1,138 @@
+import { randomUUID } from "node:crypto";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import dataBase from "./database";
+import {
+  IRegisterCredentials,
+  IAuthResponse,
+  ILoginCredentials,
+  IDatabaseUser,
+  IUser,
+} from "./types";
+import { EN } from "./locale/en";
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-prod";
+const SALT_ROUNDS = 10;
+const TOKEN_EXPIRED = "1h";
+const LANG = EN;
+
+/**
+ * Registers a new user
+ *
+ * @param data - Data from the client (email, password, name)
+ * @returns - Object with user and token
+ * @throws Error - If the email is busy or the data is invalid
+ */
+export function registerUser(data: IRegisterCredentials): IAuthResponse {
+  const { name, email, password } = data;
+
+  if (password.length < 6) {
+    throw new Error(LANG.errors.password_length);
+  }
+
+  if (!email || !email.includes("@")) {
+    throw new Error(LANG.errors.mail_error);
+  }
+
+  const findStmt = dataBase.prepare("SELECT id FROM users WHERE email = ?");
+  const existingUser = findStmt.get(email) as { id: string } | undefined;
+
+  if (existingUser) {
+    throw new Error(LANG.errors.user_already_exist);
+  }
+
+  const salt = bcrypt.genSaltSync(SALT_ROUNDS);
+  const passwordHash = bcrypt.hashSync(password, salt);
+  const id = randomUUID();
+  const createdAt = new Date().toISOString();
+
+  const insertStmt = dataBase.prepare(`
+    INSERT INTO users (id, name, email, passwordHash, avatarUrl, createdAt)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  insertStmt.run(id, name, email, passwordHash, null, createdAt);
+
+  const token = jwt.sign({ id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRED });
+
+  const user: IAuthResponse["user"] = {
+    id,
+    name,
+    email,
+    avatarUrl: undefined,
+    createdAt,
+    totalScore: 0,
+  };
+
+  return {
+    user,
+    token,
+  };
+}
+
+/**
+ * Login User
+ *
+ * @param data - Data from the client (email, password)
+ * @returns - Object with user and token
+ * @throws - Error - If the user is not found or the password is incorrect
+ */
+
+export function loginUser(data: ILoginCredentials): IAuthResponse {
+  const { email, password } = data;
+
+  const findStmt = dataBase.prepare("SELECT * FROM users WHERE email = ?");
+  const user = findStmt.get(email) as IDatabaseUser | undefined;
+
+  if (!user) {
+    throw new Error(LANG.errors.incorrect_mail_password);
+  }
+
+  const isPasswordValid = bcrypt.compareSync(password, user.passwordHash);
+
+  if (!isPasswordValid) {
+    throw new Error(LANG.errors.incorrect_mail_password);
+  }
+
+  const token = jwt.sign({ id: user.id }, JWT_SECRET, {
+    expiresIn: TOKEN_EXPIRED,
+  });
+
+  const userResponse: IAuthResponse["user"] = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatarUrl || undefined,
+    createdAt: user.createdAt,
+    totalScore: user.totalScore || 0,
+  };
+
+  return {
+    user: userResponse,
+    token,
+  };
+}
+
+/**
+ * Get User by ID
+ *
+ * @param id - User ID
+ * @returns - User object or null if not found
+ */
+export function getUserById(id: string): IUser | null {
+  const findStmt = dataBase.prepare("SELECT * FROM users WHERE id = ?");
+  const user = findStmt.get(id) as IDatabaseUser | undefined;
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatarUrl || undefined,
+    createdAt: user.createdAt,
+    totalScore: user.totalScore || 0,
+  };
+}

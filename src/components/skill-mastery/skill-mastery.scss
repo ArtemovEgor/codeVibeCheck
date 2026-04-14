@@ -1,0 +1,76 @@
+.skill-mastery {
+  @include flex-column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  &__title {
+    @include heading(var(--text-lg));
+    margin-bottom: var(--space-2);
+  }
+
+  &__item {
+    @include flex-column;
+    gap: var(--space-1);
+  }
+
+  &__info {
+    @include flex-between;
+    @include label;
+    font-weight: var(--weight-bold);
+  }
+
+  &__label {
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__value {
+    color: var(--accent-primary);
+  }
+
+  &__progress-wrapper {
+    @include progress-track;
+    background-color: var(--bg-surface-hover);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+
+  &__progress-bar {
+    @include progress-fill;
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    box-shadow: 0 0 12px var(--accent-primary);
+    transition: width var(--transition-slow) ease-out;
+    animation: slideIn 1s ease-out forwards;
+  }
+
+  &__sub-info {
+    @include label;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-align: right;
+    opacity: 0.8;
+  }
+
+  &__item--theory {
+    --bar-color: var(--accent-blue);
+  }
+  &__item--coding {
+    --bar-color: var(--accent-purple);
+  }
+  &__item--logic {
+    --bar-color: var(--accent-success);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+  }
+}

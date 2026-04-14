@@ -1,0 +1,177 @@
+import BaseComponent from "@/components/base/base-component";
+import { Button } from "@/components/button/button";
+import { RU } from "@/locale/ru";
+import {
+  WIDGET_TYPES,
+  type ILocalizedString,
+  type ITrueFalseAnswer,
+  type ITrueFalsePayload,
+  type IVerdict,
+  type IWidgetStrategy,
+  type Widget,
+  type WidgetAnswerValue,
+} from "@/types/shared/widget.types";
+import "./true-false-strategy.scss";
+import { i18n } from "@/services/localization-service.ts";
+
+const OPTIONS = [
+  {
+    value: true,
+    label: {
+      en: i18n.t().widgets.true_false.true,
+      ru: RU.widgets.true_false.true,
+    },
+  },
+  {
+    value: false,
+    label: {
+      en: i18n.t().widgets.true_false.false,
+      ru: RU.widgets.true_false.false,
+    },
+  },
+] as const;
+
+export class TrueFalseStrategy implements IWidgetStrategy {
+  public type = WIDGET_TYPES.TRUE_FALSE;
+
+  private selectedValue: boolean | undefined = undefined;
+  private submitButton: Button | undefined = undefined;
+  private optionButtons: Button[] = [];
+
+  public render(
+    widget: Widget,
+    onAnswer: (answer: ITrueFalseAnswer) => void,
+  ): BaseComponent {
+    if (widget.type !== this.type)
+      throw new Error(
+        `TrueFalseStrategy received wrong widget type: ${widget.type}`,
+      );
+
+    // reset variables before each render
+    this.selectedValue = undefined;
+    this.optionButtons = [];
+    this.submitButton = undefined;
+    const container = new BaseComponent({
+      className: "widget widget--true-false",
+    });
+
+    new BaseComponent({
+      tag: "h2",
+      className: "widget__question",
+      text: i18n.getLocalizedField(widget.payload.statement),
+      parent: container,
+    });
+
+    const optionsContainer = new BaseComponent({
+      tag: "div",
+      className: "widget__options",
+      parent: container,
+    });
+
+    for (const option of OPTIONS) {
+      this.optionButtons.push(
+        this.renderOption(option.value, option.label, optionsContainer),
+      );
+    }
+
+    this.submitButton = this.renderSubmitButton(onAnswer, container);
+
+    return container;
+  }
+
+  private renderOption(
+    index: boolean,
+    option: ILocalizedString,
+    parent: BaseComponent,
+  ): Button {
+    const button = new Button({
+      className: "widget__option",
+      text: i18n.getLocalizedField(option),
+      parent: parent,
+    });
+
+    button.on("click", () => {
+      for (const option of this.optionButtons) {
+        option.getNode().classList.remove("widget__option--selected");
+      }
+      button.getNode().classList.add("widget__option--selected");
+      this.selectedValue = index;
+      if (this.submitButton) this.submitButton.setDisabled(false);
+    });
+
+    return button;
+  }
+
+  private renderSubmitButton(
+    onAnswer: (answer: ITrueFalseAnswer) => void,
+    parent: BaseComponent,
+  ): Button {
+    const submitButton = new Button({
+      className: "widget__submit",
+      text: i18n.t().widgets.submit,
+      parent: parent,
+    });
+
+    submitButton.setDisabled(true);
+
+    submitButton.on("click", () => {
+      const selectedValue = this.selectedValue;
+      if (selectedValue === undefined) return;
+      submitButton.setDisabled(true);
+      onAnswer({ value: selectedValue });
+    });
+
+    return submitButton;
+  }
+
+  public validate(answer: ITrueFalseAnswer, widget: Widget): boolean {
+    if (widget.type !== this.type) return false;
+
+    return answer.value === widget.payload.correctValue;
+  }
+
+  public showVerdict(verdict: IVerdict, widget: Widget): void {
+    if (widget.type !== this.type) return;
+
+    for (const option of this.optionButtons) {
+      option.getNode().classList.add("widget__option--disabled");
+    }
+
+    this.submitButton?.getNode().classList.add("widget__submit--hidden");
+
+    if (this.selectedValue !== undefined) {
+      const correctIndex = OPTIONS.findIndex(
+        (option) => option.value === this.selectedValue,
+      );
+      this.optionButtons[correctIndex]
+        ?.getNode()
+        .classList.add(
+          verdict.isCorrect
+            ? "widget__option--correct"
+            : "widget__option--wrong",
+        );
+    }
+
+    const correctValue = verdict.correctAnswer;
+
+    if (
+      !verdict.isCorrect &&
+      correctValue !== undefined &&
+      typeof correctValue === "boolean"
+    ) {
+      const correctIndex = OPTIONS.findIndex(
+        (option) => option.value === correctValue,
+      );
+      if (correctIndex !== -1) {
+        this.optionButtons[correctIndex]
+          ?.getNode()
+          .classList.add("widget__option--correct");
+      }
+    }
+  }
+
+  public getCorrectValue(widget: Widget): WidgetAnswerValue {
+    const payload = widget.payload as ITrueFalsePayload;
+    return payload.correctValue;
+  }
+}

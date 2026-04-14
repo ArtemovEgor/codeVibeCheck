@@ -1,0 +1,93 @@
+import BaseComponent from "../../base/base-component";
+import Link from "../../link/link";
+import { ThemeSwitcher } from "../theme-switcher/theme-switcher";
+import { SCROLL_THRESHOLD } from "./header.constants";
+import "./header.scss";
+import { ROUTES } from "@/constants/routes";
+import { LangSwitcher } from "../language-switcher/language-switcher";
+import { i18n } from "@/services/localization-service.ts";
+
+export class Header extends BaseComponent {
+  constructor() {
+    super({ tag: "header", className: "header" });
+    this.render();
+    this.initScrollHandler();
+  }
+
+  private render(): void {
+    const container = new BaseComponent({
+      className: "container header__container",
+      parent: this,
+    });
+
+    const logoLink = new Link({
+      href: `#${ROUTES.LANDING}`,
+      className: "logo",
+      parent: container,
+    });
+
+    new BaseComponent({
+      tag: "span",
+      className: "logo__icon",
+      text: i18n.t().common.app.logo,
+      parent: logoLink,
+    });
+
+    new BaseComponent({
+      tag: "span",
+      className: "logo__text",
+      text: i18n.t().common.app.name,
+      parent: logoLink,
+    });
+
+    const right = new BaseComponent({
+      className: "header__right",
+      parent: container,
+    });
+
+    this.createLangSwitcher(right);
+    this.createThemeSwitcher(right);
+    this.createActions(right);
+  }
+
+  private createLangSwitcher(parent: BaseComponent): void {
+    parent.addChildren([new LangSwitcher()]);
+  }
+
+  private createThemeSwitcher(parent: BaseComponent): void {
+    parent.addChildren([new ThemeSwitcher()]);
+  }
+
+  private createActions(parent: BaseComponent): void {
+    const actions = new BaseComponent({
+      className: "header__actions",
+      parent,
+    });
+
+    new Link({
+      text: i18n.t().common.auth.login,
+      href: `#${ROUTES.LOGIN}`,
+      variant: "ghost",
+      parent: actions,
+    });
+    new Link({
+      text: i18n.t().common.auth.signup,
+      href: `#${ROUTES.REGISTER}`,
+      variant: "primary",
+      parent: actions,
+    });
+  }
+
+  private scrollHandler = (): void => {
+    this.toggleClass("header--scrolled", window.scrollY > SCROLL_THRESHOLD);
+  };
+
+  private initScrollHandler(): void {
+    window.addEventListener("scroll", this.scrollHandler, { passive: true });
+  }
+
+  public destroy(): void {
+    window.removeEventListener("scroll", this.scrollHandler);
+    super.destroy();
+  }
+}

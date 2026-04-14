@@ -1,0 +1,38 @@
+.auth-switch {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background-color: var(--bg-surface-hover);
+  border-radius: var(--radius-full);
+
+  &__tab {
+    @include focus-ring;
+    @include click-press;
+
+    flex: 1;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-full);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition:
+      background var(--transition-slow),
+      color var(--transition-slow),
+      box-shadow var(--transition-slow);
+
+    &:hover:not(.auth-switch__tab--active) {
+      color: var(--text-primary);
+      background-color: var(--bg-surface);
+    }
+
+    &--active {
+      background: var(--gradient-primary);
+      color: var(--text-inverse);
+      box-shadow: var(--shadow-sm);
+      cursor: default;
+    }
+  }
+}
