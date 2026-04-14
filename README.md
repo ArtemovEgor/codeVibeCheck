@@ -4,6 +4,69 @@ codeVibeCheck is an interactive training simulator for technical interview prepa
 
 Created as a final assignment of the RS-School Frontend course.
 
+## Local Setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Frontend
+
+1. Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/ArtemovEgor/codeVibeCheck.git
+cd codeVibeCheck
+npm install
+```
+
+2. Create a `.env` file in the project root (or edit the existing one):
+
+```env
+VITE_API_MODE=real        # "mock" or "real"
+VITE_MOCK_DELAY=300       # mock network delay in ms
+VITE_API_URL=http://localhost:3001
+PORT=3000
+```
+
+3. Start the dev server:
+
+```bash
+npm run dev
+```
+
+The frontend will be available at `http://localhost:3000`.
+
+### Backend
+
+1. Go to the `backend` directory and install dependencies:
+
+```bash
+cd backend
+npm install
+```
+
+2. Create a `.env` file inside `backend/`:
+
+```env
+PORT=3001
+JWT_SECRET=your-secret-key
+GROQ_API_KEY=your-groq-api-key   # get it at https://console.groq.com
+```
+
+3. Start the backend server:
+
+```bash
+npm start
+```
+
+The API will be available at `http://localhost:3001`.
+
+> **Note:** The AI Interviewer feature requires a valid `GROQ_API_KEY`. Set `VITE_API_MODE=mock` in the frontend `.env` to run without a real backend.
+
+---
+
 ## What We Are Proud Of
 
 We built more than just a quiz app — a full educational platform with a custom **Widget Engine** that supports various interactive task types.  
