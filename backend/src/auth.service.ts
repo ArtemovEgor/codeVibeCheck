@@ -136,3 +136,141 @@ export function getUserById(id: string): IUser | null {
     totalScore: user.totalScore || 0,
   };
 }
+
+/**
+ * Update user's name
+ *
+ * @param id - User ID
+ * @param newName - New name
+ * @returns Updated user object
+ * @throws Error - If user not found or validation fails
+ */
+export function updateUserName(id: string, newName: string): IUser {
+  const NAME_REGEX = /^[a-zA-Zа-яА-ЯёЁ\s\-']+$/u;
+  const MIN_LENGTH = 2;
+  const MAX_LENGTH = 30;
+
+  const trimmed = newName.trim();
+  if (!trimmed) throw new Error(LANG.errors.name_empty);
+  if (trimmed.length < MIN_LENGTH || trimmed.length > MAX_LENGTH)
+    throw new Error(LANG.errors.name_length);
+  if (!NAME_REGEX.test(trimmed)) throw new Error(LANG.errors.name_invalid);
+
+  const updateStmt = dataBase.prepare(`
+    UPDATE users SET name = ? WHERE id = ? RETURNING *
+  `);
+  const updatedUser = updateStmt.get(trimmed, id) as IDatabaseUser | undefined;
+  if (!updatedUser) throw new Error(LANG.errors.user_not_found);
+
+  return {
+    id: updatedUser.id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    avatarUrl: updatedUser.avatarUrl || undefined,
+    createdAt: updatedUser.createdAt,
+    totalScore: updatedUser.totalScore || 0,
+  };
+}
+
+/**
+ * Update user's email
+ *
+ * @param id - User ID
+ * @param newEmail - New Email
+ * @returns Updated user object
+ * @throws Error - If user not found or validation fails
+ */
+export function updateUserEmail(id: string, newEmail: string): IUser {
+  const trimmedEmail = newEmail.trim().toLowerCase();
+  const EMAIL_REGEX = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+
+  if (!trimmedEmail) {
+    throw new Error(LANG.errors.email_empty);
+  }
+  if (trimmedEmail.length > 254) {
+    throw new Error(LANG.errors.email_too_long);
+  }
+  if (!EMAIL_REGEX.test(trimmedEmail)) {
+    throw new Error(LANG.errors.email_invalid);
+  }
+
+  // Uniqueness check
+  const checkStmt = dataBase.prepare(
+    "SELECT id FROM users WHERE email = ? AND id != ?",
+  );
+  const existing = checkStmt.get(trimmedEmail, id) as
+    | { id: string }
+    | undefined;
+  if (existing) {
+    throw new Error(LANG.errors.email_already_used);
+  }
+
+  const updateStmt = dataBase.prepare(`
+    UPDATE users SET email = ? WHERE id = ? RETURNING *
+  `);
+  const updated = updateStmt.get(trimmedEmail, id) as IDatabaseUser | undefined;
+  if (!updated) throw new Error(LANG.errors.user_not_found);
+
+  return {
+    id: updated.id,
+    name: updated.name,
+    email: updated.email,
+    avatarUrl: updated.avatarUrl || undefined,
+    createdAt: updated.createdAt,
+    totalScore: updated.totalScore || 0,
+  };
+}
+
+export function updateUserPassword(id: string, newPassword: string): void {
+  const MIN_LENGTH = 6;
+  const MAX_LENGTH = 50;
+  const PASSWORD_REGEX = /^.{6,50}$/;
+
+  if (!newPassword) {
+    throw new Error(LANG.errors.password_empty);
+  }
+  if (newPassword.length < MIN_LENGTH || newPassword.length > MAX_LENGTH) {
+    throw new Error(LANG.errors.password_length);
+  }
+  if (!PASSWORD_REGEX.test(newPassword)) {
+    throw new Error(LANG.errors.password_invalid);
+  }
+
+  const salt = bcrypt.genSaltSync(SALT_ROUNDS);
+  const passwordHash = bcrypt.hashSync(newPassword, salt);
+
+  const updateStmt = dataBase.prepare(`
+    UPDATE users SET passwordHash = ? WHERE id = ?
+  `);
+  const result = updateStmt.run(passwordHash, id);
+
+  if (result.changes === 0) {
+    throw new Error(LANG.errors.user_not_found);
+  }
+}
+
+export function updateUserAvatar(userId: string, avatarUrl: string): IUser {
+  const updateStatement = dataBase.prepare(`
+    UPDATE users
+    SET avatarUrl = ?
+    WHERE id = ?
+    RETURNING *
+  `);
+
+  const updatedUser = updateStatement.get(avatarUrl, userId) as
+    | IDatabaseUser
+    | undefined;
+
+  if (!updatedUser) {
+    throw new Error(LANG.errors.user_not_found);
+  }
+
+  return {
+    id: updatedUser.id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    avatarUrl: updatedUser.avatarUrl || undefined,
+    createdAt: updatedUser.createdAt,
+    totalScore: updatedUser.totalScore || 0,
+  };
+}

@@ -32,5 +32,22 @@ export const EN = {
     invalid_answer_data: "Invalid answer data in database",
     missing_fields: "Missing required fields",
     invalid_xp: "xpEarned must be a non-negative number",
+    name_required: "Name is required",
+    name_empty: "The name cannot be empty",
+    name_invalid:
+      "Name can only contain letters, spaces, hyphens and apostrophes",
+    name_length: "Number of characters",
+    email_required: "Email is required",
+    email_empty: "Email cannot be empty",
+    email_too_long: "Email is too long (max 254 characters)",
+    email_invalid: "Please enter a valid email address",
+    email_already_used: "This email is already registered",
+    password_required: "Password is required",
+    password_empty: "Password cannot be empty",
+    password_invalid:
+      "Password must contain at least one letter and one number",
+    avatar_required: "No file uploaded",
+    avatar_too_large: "File size must be less than 2MB",
+    avatar_invalid_type: "Only JPEG, PNG, WEBP, GIF images are allowed",
   },
 };

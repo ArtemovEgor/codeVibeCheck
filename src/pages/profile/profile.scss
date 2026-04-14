@@ -7,6 +7,12 @@
   align-items: center;
   gap: var(--space-6);
 
+  input:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
   &__title {
     width: 100%;
     font-size: var(--text-2xl);
@@ -102,18 +108,21 @@
     flex-grow: 1;
   }
 
-  &__name-wrapper {
+  &__name-wrapper,
+  &__mail-wrapper {
     width: 100%;
   }
 
-  &__name-input-wrapper {
+  &__name-input-wrapper,
+  &__mail-input-wrapper {
     display: flex;
     gap: 10px;
     height: 40px;
     margin-top: 10px;
   }
 
-  &__name-input {
+  &__name-input,
+  &__mail-input {
     width: 75%;
     transition: var(--transition-base);
     font-size: var(--text-sm);
@@ -123,9 +132,11 @@
     padding-left: var(--space-4);
     padding-right: var(--space-4);
     background-color: transparent;
+    transition: var(--transition-base);
   }
 
-  &__name-change-button {
+  &__name-change-button,
+  &__mail-change-button {
     flex-shrink: 1;
     min-width: 114px;
     transition: var(--transition-base);
@@ -136,6 +147,26 @@
     padding-left: var(--space-4);
     padding-right: var(--space-4);
     background-color: transparent;
+    transition: var(--transition-base);
+  }
+
+  &__name-change-button.disabled,
+  &__mail-change-button.disabled,
+  &__change-passwd-button.disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  &__name-error,
+  &__mail-error,
+  &__passwd-error {
+    padding-top: 4px;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+    font-size: 12px;
+    color: var(--accent-error);
+    transition: var(--transition-base);
+    min-height: 24px;
   }
 
   &__right-column {
@@ -152,6 +183,10 @@
     margin-bottom: 1rem;
   }
 
+  &__password-wrapper {
+    margin-bottom: 1rem;
+  }
+
   &__right-column-label {
     margin-bottom: 0.5rem;
   }
@@ -161,7 +196,6 @@
     align-items: center;
     width: 100%;
     height: 40px;
-    margin-bottom: 1rem;
     transition: var(--transition-base);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
@@ -199,6 +233,24 @@
   }
 }
 
+/*--- Errors ---*/
+.profile__name-wrapper.error,
+.profile__mail-wrapper.error,
+.profile__password-wrapper.error,
+.profile__confirm-password-wrapper.error {
+  .profile__name-input,
+  .profile__mail-input,
+  .profile__passwd {
+    color: var(--accent-error);
+  }
+
+  .profile__name-input:focus-visible,
+  .profile__mail-input:focus-visible,
+  .profile__passwd:focus-visible {
+    outline: 2px solid var(--accent-error);
+  }
+}
+
 @media (max-width: 1200px) {
   .profile {
     &__content-wrapper {
@@ -233,18 +285,21 @@
       margin-top: 1.5rem;
     }
 
-    &__name-input-wrapper {
+    &__name-input-wrapper,
+    &__mail-input-wrapper {
       flex-direction: column;
       width: 100%;
       height: auto;
     }
 
-    &__name-input {
-      width: 100%;
+    &__name-input,
+    &__mail-input {
+      width: 100% !important;
       height: 40px;
     }
 
-    &__name-change-button {
+    &__name-change-button,
+    &__mail-change-button {
       height: 40px;
     }
 
