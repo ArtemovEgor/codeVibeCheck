@@ -16,16 +16,27 @@ export class ProfilePage extends BaseComponent implements Page {
 
   private NAME_REGEX = new RegExp(INPUT_VALIDATION.NAME, "u");
   private MAIL_REGEX = new RegExp(INPUT_VALIDATION.EMAIL, "u");
+  private PASSWORD_REGEX = new RegExp(INPUT_VALIDATION.PASSWORD, "u");
 
   private nameInput!: BaseComponent<HTMLInputElement>;
-  private nameChangeBtn!: BaseComponent<HTMLInputElement>;
+  private nameChangeBtn!: BaseComponent<HTMLButtonElement>;
   private nameWrapper!: BaseComponent<HTMLInputElement>;
   private nameError!: BaseComponent<HTMLInputElement>;
 
   private mailInput!: BaseComponent<HTMLInputElement>;
-  private mailChangeBtn!: BaseComponent<HTMLInputElement>;
+  private mailChangeBtn!: BaseComponent<HTMLButtonElement>;
   private mailWrapper!: BaseComponent<HTMLInputElement>;
   private mailError!: BaseComponent<HTMLInputElement>;
+
+  private rightColumn!: BaseComponent<HTMLInputElement>;
+  private passwdWrapper!: BaseComponent<HTMLInputElement>;
+  private passwdInput!: BaseComponent<HTMLInputElement>;
+  private passwdError!: BaseComponent<HTMLInputElement>;
+  private confirmPasswdWrapper!: BaseComponent<HTMLInputElement>;
+  private confirmPasswdInput!: BaseComponent<HTMLInputElement>;
+  private confirmPasswdError!: BaseComponent<HTMLInputElement>;
+  private changePasswd!: BaseComponent<HTMLButtonElement>;
+  private newPassValue = "";
 
   constructor() {
     super({ tag: "div", className: "profile" });
@@ -35,7 +46,10 @@ export class ProfilePage extends BaseComponent implements Page {
   public async init(): Promise<void> {
     await this.loadUser();
     this.render();
-    this.eventsInit();
+    this.nameEventInit();
+    this.mailEventInit();
+    this.passwordEventInit();
+    this.confirmPasswordEventInit();
   }
 
   private async loadUser(): Promise<void> {
@@ -232,14 +246,14 @@ export class ProfilePage extends BaseComponent implements Page {
   }
 
   private renderRightColumn(parent: BaseComponent): void {
-    const rightCol = new BaseComponent({
+    this.rightColumn = new BaseComponent({
       className: "profile__right-column",
       parent: parent,
     });
 
-    this.renderRightColTitle(rightCol);
-    this.renderPasswd(rightCol);
-    this.renderConfirmPasswd(rightCol);
+    this.renderRightColTitle(this.rightColumn);
+    this.renderPasswd(this.rightColumn);
+    this.renderConfirmPasswd(this.rightColumn);
   }
 
   private renderRightColTitle(parent: BaseComponent): void {
@@ -252,13 +266,18 @@ export class ProfilePage extends BaseComponent implements Page {
   }
 
   private renderPasswd(parent: BaseComponent): void {
-    new BaseComponent({
-      className: "profile__right-column-label",
-      text: i18n.t().profile.newPassword,
+    this.passwdWrapper = new BaseComponent({
+      className: "profile__password-wrapper",
       parent: parent,
     });
 
     new BaseComponent({
+      className: "profile__right-column-label",
+      text: i18n.t().profile.newPassword,
+      parent: this.passwdWrapper,
+    });
+
+    this.passwdInput = new BaseComponent({
       tag: "input",
       className: "profile__passwd",
       attributes: {
@@ -266,18 +285,28 @@ export class ProfilePage extends BaseComponent implements Page {
         type: "password",
         placeholder: "******",
       },
-      parent: parent,
+      parent: this.passwdWrapper,
+    });
+
+    this.passwdError = new BaseComponent({
+      className: "profile__passwd-error",
+      parent: this.passwdWrapper,
     });
   }
 
   private renderConfirmPasswd(parent: BaseComponent): void {
-    new BaseComponent({
-      className: "profile__right-column-label",
-      text: i18n.t().profile.confirmPassword,
+    this.confirmPasswdWrapper = new BaseComponent({
+      className: "profile__confirm-password-wrapper",
       parent: parent,
     });
 
     new BaseComponent({
+      className: "profile__right-column-label",
+      text: i18n.t().profile.confirmPassword,
+      parent: this.confirmPasswdWrapper,
+    });
+
+    this.confirmPasswdInput = new BaseComponent({
       tag: "input",
       className: "profile__passwd",
       attributes: {
@@ -285,21 +314,23 @@ export class ProfilePage extends BaseComponent implements Page {
         type: "password",
         placeholder: "******",
       },
-      parent: parent,
+      parent: this.confirmPasswdWrapper,
     });
 
-    const changePasswd = new BaseComponent({
+    this.confirmPasswdError = new BaseComponent({
+      className: "profile__passwd-error",
+      parent: this.confirmPasswdWrapper,
+    });
+
+    this.changePasswd = new BaseComponent({
       tag: "button",
-      className: "profile__change-passwd-button",
+      className: "profile__change-passwd-button disabled",
       text: i18n.t().profile.changePassword,
       parent: parent,
     });
-
-    changePasswd.on("click", () => {
-      console.log("Change Password");
-    });
   }
 
+  // Helpers
   private validateName(value: string): IValidationResult {
     const MIN_LENGTH = 2;
     const MAX_LENGTH = 30;
@@ -349,8 +380,50 @@ export class ProfilePage extends BaseComponent implements Page {
     return { success: true, message: "" };
   }
 
+  private validatePassword(value: string): IValidationResult {
+    const MIN_LENGTH = 6;
+    const MAX_LENGTH = 50;
+
+    if (!value) {
+      return {
+        success: false,
+        message: i18n.t().common.validation.empty,
+      };
+    }
+
+    if (!this.PASSWORD_REGEX.test(value)) {
+      return {
+        success: false,
+        message: `${i18n.t().common.validation.from} ${MIN_LENGTH} ${i18n.t().common.validation.to} ${MAX_LENGTH} ${i18n.t().common.validation.characters}`,
+      };
+    }
+
+    return { success: true, message: "" };
+  }
+
+  private validatePasswordConfirm(
+    mainPassword: string,
+    confirmPassword: string,
+  ): IValidationResult {
+    if (!confirmPassword) {
+      return {
+        success: false,
+        message: i18n.t().common.validation.empty,
+      };
+    }
+
+    if (mainPassword !== confirmPassword) {
+      return {
+        success: false,
+        message: i18n.t().common.validation.do_not_match,
+      };
+    }
+
+    return { success: true, message: "" };
+  }
+
   // Events
-  private eventsInit() {
+  private nameEventInit() {
     this.nameInput.on("input", () => {
       const inputElement = this.nameInput.getNode();
       const validateResult = this.validateName(inputElement.value);
@@ -369,7 +442,9 @@ export class ProfilePage extends BaseComponent implements Page {
         this.nameChangeBtn.toggleClass("disabled", false);
       }
     });
+  }
 
+  private mailEventInit() {
     this.mailInput.on("input", () => {
       const inputElement = this.mailInput.getNode();
       const validateResult = this.validateMail(inputElement.value);
@@ -395,6 +470,47 @@ export class ProfilePage extends BaseComponent implements Page {
 
     this.mailChangeBtn.on("click", () => {
       console.log("Change Mail");
+    });
+
+    this.changePasswd.on("click", () => {
+      console.log("Change Password");
+    });
+  }
+
+  private passwordEventInit() {
+    this.passwdInput.on("input", () => {
+      const inputElement = this.passwdInput.getNode();
+      const validateResult = this.validatePassword(inputElement.value);
+
+      this.newPassValue = inputElement.value;
+
+      if (validateResult.success) {
+        this.passwdWrapper.toggleClass("error", false);
+        this.passwdError.setText("");
+      } else {
+        this.passwdWrapper.toggleClass("error", true);
+        this.passwdError.setText(validateResult.message);
+      }
+    });
+  }
+
+  private confirmPasswordEventInit() {
+    this.confirmPasswdInput.on("input", () => {
+      const inputElement = this.confirmPasswdInput.getNode();
+      const validateResult = this.validatePasswordConfirm(
+        this.newPassValue,
+        inputElement.value,
+      );
+
+      if (validateResult.success) {
+        this.confirmPasswdWrapper.toggleClass("error", false);
+        this.confirmPasswdError.setText("");
+        this.changePasswd.toggleClass("disabled", false);
+      } else {
+        this.confirmPasswdWrapper.toggleClass("error", true);
+        this.confirmPasswdError.setText(validateResult.message);
+        this.changePasswd.toggleClass("disabled", true);
+      }
     });
   }
 

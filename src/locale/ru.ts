@@ -24,6 +24,9 @@ export const RU = {
       too_short: "Минимальная длина",
       too_long: "Максимальная длина",
       characters: "символов",
+      from: "От",
+      to: "до",
+      do_not_match: "Пароли не совпадают",
     },
     app: {
       name: "codeVibeCheck",

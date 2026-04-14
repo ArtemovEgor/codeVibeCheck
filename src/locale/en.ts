@@ -24,6 +24,9 @@ export const EN = {
       too_short: "Minimum length is",
       too_long: "Maximum length is",
       characters: "characters",
+      from: "From",
+      to: "to",
+      do_not_match: "The passwords don't match",
     },
     app: {
       name: "codeVibeCheck",
