@@ -32,5 +32,10 @@ export const EN = {
     invalid_answer_data: "Invalid answer data in database",
     missing_fields: "Missing required fields",
     invalid_xp: "xpEarned must be a non-negative number",
+    name_required: "Name is required",
+    name_empty: "The name cannot be empty",
+    name_invalid:
+      "Name can only contain letters, spaces, hyphens and apostrophes",
+    name_length: "Number of characters",
   },
 };

@@ -73,6 +73,17 @@ class AuthApi {
     }
     apiService.clearToken();
   }
+
+  public async updateName(name: string): Promise<{ name: string }> {
+    const response = await apiService.send<IApiResponse<{ name: string }>>(
+      ENDPOINTS.AUTH.UPDATE_NAME,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ name }),
+      },
+    );
+    return response.data;
+  }
 }
 
 export const authApi = new AuthApi();

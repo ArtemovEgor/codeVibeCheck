@@ -191,6 +191,9 @@ function curry(func) {
     newPassword: "Новый пароль",
     confirmPassword: "Подтверждение пароля",
     updatePassword: "Обновить пароль",
+    saving: "Сохранение...",
+    nameUpdateSuccess: "Имя успешно обновлено",
+    nameUpdateError: "Не удалось обновить имя",
   },
   breadcrumbs: {
     separator: " › ",

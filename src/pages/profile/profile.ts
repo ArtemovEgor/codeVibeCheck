@@ -50,13 +50,14 @@ export class ProfilePage extends BaseComponent implements Page {
     this.mailEventInit();
     this.passwordEventInit();
     this.confirmPasswordEventInit();
+    this.changeNameInit();
   }
 
   private async loadUser(): Promise<void> {
     try {
       this.user = await authApi.getCurrentUser();
       this.getUserInitials();
-      console.log(this.user);
+      // console.log(this.user);
     } catch (error) {
       const apiError = error as IApiError;
       Notification.show(apiError.message, NotificationType.ERROR);
@@ -422,6 +423,81 @@ export class ProfilePage extends BaseComponent implements Page {
     return { success: true, message: "" };
   }
 
+  // Name change
+  private async processNameChange(): Promise<void> {
+    const newName = this.getNameInputValue();
+    if (!this.isNameValidForSubmit(newName)) return;
+
+    this.setNameChangeButtonLoading(true);
+    try {
+      const { name: updatedName } = await authApi.updateName(newName);
+      this.applyNameUpdate(updatedName);
+      Notification.show(
+        i18n.t().profile.nameUpdateSuccess,
+        NotificationType.SUCCESS,
+      );
+    } catch (error) {
+      this.onNameChangeError(error as Error);
+    } finally {
+      this.setNameChangeButtonLoading(false);
+    }
+  }
+
+  private getNameInputValue(): string {
+    return this.nameInput.getNode().value.trim();
+  }
+
+  private isNameValidForSubmit(name: string): boolean {
+    const validation = this.validateName(name);
+    if (!validation.success) {
+      this.nameWrapper.toggleClass("error", true);
+      this.nameError.setText(validation.message);
+      return false;
+    }
+    return true;
+  }
+
+  private setNameChangeButtonLoading(isLoading: boolean): void {
+    const button = this.nameChangeBtn.getNode();
+    if (isLoading) {
+      button.textContent = i18n.t().profile.saving;
+      this.nameChangeBtn.toggleClass("disabled", true);
+    } else {
+      button.textContent = i18n.t().profile.change;
+      const isDisabled = this.user?.name === this.getNameInputValue();
+      this.nameChangeBtn.toggleClass("disabled", isDisabled);
+    }
+  }
+
+  private applyNameUpdate(updatedName: string): void {
+    if (this.user) {
+      this.user = { ...this.user, name: updatedName };
+    }
+    this.getUserInitials();
+
+    const avatarElement = document.querySelector(".profile__avatar");
+    if (avatarElement) avatarElement.textContent = this.userInitials;
+
+    const sideBarUserNameElement = document.querySelector(".sidebar__username");
+
+    if (sideBarUserNameElement) {
+      sideBarUserNameElement.textContent = updatedName;
+    }
+
+    this.nameInput.getNode().value = updatedName;
+    this.nameWrapper.toggleClass("error", false);
+    this.nameError.setText("");
+    this.nameChangeBtn.toggleClass("disabled", true);
+  }
+
+  private onNameChangeError(error: Error): void {
+    Notification.show(
+      error.message || i18n.t().profile.nameUpdateError,
+      NotificationType.ERROR,
+    );
+    this.nameChangeBtn.toggleClass("disabled", false);
+  }
+
   // Events
   private nameEventInit() {
     this.nameInput.on("input", () => {
@@ -462,10 +538,6 @@ export class ProfilePage extends BaseComponent implements Page {
       } else {
         this.mailChangeBtn.toggleClass("disabled", false);
       }
-    });
-
-    this.nameChangeBtn.on("click", () => {
-      console.log("Change Name");
     });
 
     this.mailChangeBtn.on("click", () => {
@@ -511,6 +583,12 @@ export class ProfilePage extends BaseComponent implements Page {
         this.confirmPasswdError.setText(validateResult.message);
         this.changePasswd.toggleClass("disabled", true);
       }
+    });
+  }
+
+  private changeNameInit(): void {
+    this.nameChangeBtn.on("click", async () => {
+      await this.processNameChange();
     });
   }
 

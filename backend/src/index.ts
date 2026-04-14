@@ -2,7 +2,12 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import dataBase from "./database";
-import { registerUser, loginUser, getUserById } from "./auth.service";
+import {
+  registerUser,
+  loginUser,
+  getUserById,
+  updateUserName,
+} from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
 import {
@@ -163,6 +168,65 @@ app.get("/api/auth/me", (request, response) => {
     const message =
       error instanceof Error ? error.message : LANG.errors.internal_error;
     response.status(status).json({ success: false, status, message });
+  }
+});
+
+/** PATCH /api/profile/name - Update current user's name */
+app.patch("/api/auth/name", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { name } = request.body;
+
+    if (!name || typeof name !== "string") {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.name_required,
+      });
+    }
+
+    const updatedUser = updateUserName(userId, name);
+
+    response.status(200).json({
+      success: true,
+      data: {
+        name: updatedUser.name,
+      },
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    if (isAuthError) {
+      return response.status(401).json({
+        success: false,
+        status: 401,
+        message:
+          error instanceof Error ? error.message : LANG.errors.unauthorized,
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message === LANG.errors.name_empty ||
+        error.message === LANG.errors.name_length ||
+        error.message === LANG.errors.name_invalid)
+    ) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: error.message,
+      });
+    }
+
+    console.error("Update name error:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message: LANG.errors.internal_error,
+    });
   }
 });
 

@@ -190,6 +190,9 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
     newPassword: "New password",
     confirmPassword: "Confirm password",
     updatePassword: "Update password",
+    saving: "Saving...",
+    nameUpdateSuccess: "Name updated successfully",
+    nameUpdateError: "Failed to update name",
   },
   breadcrumbs: {
     separator: " › ",

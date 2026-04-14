@@ -136,3 +136,38 @@ export function getUserById(id: string): IUser | null {
     totalScore: user.totalScore || 0,
   };
 }
+
+/**
+ * Update user's name
+ *
+ * @param id - User ID
+ * @param newName - New name
+ * @returns Updated user object
+ * @throws Error - If user not found or validation fails
+ */
+export function updateUserName(id: string, newName: string): IUser {
+  const NAME_REGEX = /^[a-zA-Zа-яА-ЯёЁ\s\-']+$/u;
+  const MIN_LENGTH = 2;
+  const MAX_LENGTH = 30;
+
+  const trimmed = newName.trim();
+  if (!trimmed) throw new Error(LANG.errors.name_empty);
+  if (trimmed.length < MIN_LENGTH || trimmed.length > MAX_LENGTH)
+    throw new Error(LANG.errors.name_length);
+  if (!NAME_REGEX.test(trimmed)) throw new Error(LANG.errors.name_invalid);
+
+  const updateStmt = dataBase.prepare(`
+    UPDATE users SET name = ? WHERE id = ? RETURNING *
+  `);
+  const updatedUser = updateStmt.get(trimmed, id) as IDatabaseUser | undefined;
+  if (!updatedUser) throw new Error(LANG.errors.user_not_found);
+
+  return {
+    id: updatedUser.id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    avatarUrl: updatedUser.avatarUrl || undefined,
+    createdAt: updatedUser.createdAt,
+    totalScore: updatedUser.totalScore || 0,
+  };
+}
