@@ -197,6 +197,11 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
     emailUpdateError: "Failed to update email",
     passwordUpdateSuccess: "Password updated successfully",
     passwordUpdateError: "Failed to update password",
+    avatarUpdateSuccess: "Avatar updated successfully",
+    avatarUpdateError: "Failed to update avatar",
+    avatarTooLarge: "File is too large (max 2MB)",
+    avatarInvalidType: "Only JPEG, PNG, WEBP, GIF images are allowed",
+    uploading: "Uploading...",
   },
   breadcrumbs: {
     separator: " › ",

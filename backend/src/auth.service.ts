@@ -248,3 +248,29 @@ export function updateUserPassword(id: string, newPassword: string): void {
     throw new Error(LANG.errors.user_not_found);
   }
 }
+
+export function updateUserAvatar(userId: string, avatarUrl: string): IUser {
+  const updateStatement = dataBase.prepare(`
+    UPDATE users
+    SET avatarUrl = ?
+    WHERE id = ?
+    RETURNING *
+  `);
+
+  const updatedUser = updateStatement.get(avatarUrl, userId) as
+    | IDatabaseUser
+    | undefined;
+
+  if (!updatedUser) {
+    throw new Error(LANG.errors.user_not_found);
+  }
+
+  return {
+    id: updatedUser.id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    avatarUrl: updatedUser.avatarUrl || undefined,
+    createdAt: updatedUser.createdAt,
+    totalScore: updatedUser.totalScore || 0,
+  };
+}

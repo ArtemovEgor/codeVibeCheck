@@ -46,5 +46,8 @@ export const EN = {
     password_empty: "Password cannot be empty",
     password_invalid:
       "Password must contain at least one letter and one number",
+    avatar_required: "No file uploaded",
+    avatar_too_large: "File size must be less than 2MB",
+    avatar_invalid_type: "Only JPEG, PNG, WEBP, GIF images are allowed",
   },
 };

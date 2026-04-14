@@ -102,6 +102,16 @@ class AuthApi {
       body: JSON.stringify({ password }),
     });
   }
+
+  public async updateAvatar(file: File): Promise<{ avatarUrl: string }> {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const response = await apiService.send<IApiResponse<{ avatarUrl: string }>>(
+      ENDPOINTS.AUTH.UPDATE_AVATAR,
+      { method: "POST", body: formData },
+    );
+    return response.data;
+  }
 }
 
 export const authApi = new AuthApi();

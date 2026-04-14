@@ -7,6 +7,7 @@ export const ENDPOINTS = {
     UPDATE_NAME: "/api/auth/name", // PATCH
     UPDATE_EMAIL: "/api/auth/email", // PATCH
     UPDATE_PASSWORD: "/api/auth/password", // PATCH
+    UPDATE_AVATAR: "/api/auth/avatar", // POST
   },
   PROFILE: {
     CHAT_STATS: "/api/profile/chat-stats", // GET → IUserChatStats (requires token)

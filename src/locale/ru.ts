@@ -198,6 +198,11 @@ function curry(func) {
     emailUpdateError: "Ошибка обновления email",
     passwordUpdateSuccess: "Пароль обновлен",
     passwordUpdateError: "Ошибка обновления пароля",
+    avatarUpdateSuccess: "Аватар загружен",
+    avatarUpdateError: "Ошибка загрузки аватара",
+    avatarTooLarge: "Файл слишком большой (макс. 2МБ)",
+    avatarInvalidType: "Разрешены только JPEG, PNG, WEBP, GIF",
+    uploading: "Загрузка...",
   },
   breadcrumbs: {
     separator: " › ",

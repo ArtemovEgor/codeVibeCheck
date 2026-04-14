@@ -8,6 +8,7 @@ import Notification from "@/components/notification/notification";
 import { NotificationType } from "@/constants/notification";
 import { INPUT_VALIDATION } from "@/constants/input-validation";
 import { authApi } from "@/api/auth.api";
+import { apiService } from "@/api/api-service";
 import "./profile.scss";
 
 export class ProfilePage extends BaseComponent implements Page {
@@ -53,6 +54,7 @@ export class ProfilePage extends BaseComponent implements Page {
     this.changeNameInit();
     this.changeMailInit();
     this.changePasswordInit();
+    this.changeAvatarInit();
   }
 
   private async loadUser(): Promise<void> {
@@ -661,6 +663,63 @@ export class ProfilePage extends BaseComponent implements Page {
     );
   }
 
+  // Avatar Change
+  private async processAvatarUpload(file: File): Promise<void> {
+    this.setAvatarUploading(true);
+    try {
+      const { avatarUrl } = await authApi.updateAvatar(file);
+      this.applyAvatarUpdate(avatarUrl);
+      Notification.show(
+        i18n.t().profile.avatarUpdateSuccess,
+        NotificationType.SUCCESS,
+      );
+    } catch (error) {
+      this.onAvatarUploadError(error as Error);
+    } finally {
+      this.setAvatarUploading(false);
+    }
+  }
+
+  private setAvatarUploading(isUploading: boolean): void {
+    const avatarButton = document.querySelector(".profile__avatar-button");
+    if (avatarButton) {
+      avatarButton.textContent = isUploading
+        ? i18n.t().profile.uploading
+        : i18n.t().profile.changeAvatar;
+      avatarButton.classList.toggle("disabled", isUploading);
+    }
+  }
+
+  private applyAvatarUpdate(avatarUrl: string | undefined): void {
+    if (this.user) {
+      this.user = { ...this.user, avatarUrl };
+    }
+
+    const avatarContainer = document.querySelector(".profile__avatar");
+    if (!avatarContainer) return;
+
+    avatarContainer.innerHTML = "";
+    if (avatarUrl) {
+      const avatarImage = document.createElement("img");
+      const fullAvatarUrl = `${apiService.getBaseUrl()}${avatarUrl}`;
+      avatarImage.src = fullAvatarUrl;
+      avatarImage.alt = "User Avatar";
+      avatarImage.style.width = "100%";
+      avatarImage.style.height = "100%";
+      avatarImage.style.objectFit = "cover";
+      avatarContainer.append(avatarImage);
+    } else {
+      avatarContainer.textContent = this.userInitials;
+    }
+  }
+
+  private onAvatarUploadError(error: Error): void {
+    Notification.show(
+      error.message || i18n.t().profile.avatarUpdateError,
+      NotificationType.ERROR,
+    );
+  }
+
   // Events
   private nameEventInit() {
     this.nameInput.on("input", () => {
@@ -756,6 +815,46 @@ export class ProfilePage extends BaseComponent implements Page {
   private changePasswordInit(): void {
     this.changePasswd.on("click", async () => {
       await this.processPasswordChange();
+    });
+  }
+
+  private changeAvatarInit(): void {
+    const fileInput = document.querySelector(
+      "#file-upload",
+    ) as HTMLInputElement;
+    if (!fileInput) return;
+
+    fileInput.addEventListener("change", async (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (!file) return;
+
+      const maximumSize = 2 * 1024 * 1024;
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+      ];
+      if (file.size > maximumSize) {
+        Notification.show(
+          i18n.t().profile.avatarTooLarge,
+          NotificationType.ERROR,
+        );
+        target.value = "";
+        return;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        Notification.show(
+          i18n.t().profile.avatarInvalidType,
+          NotificationType.ERROR,
+        );
+        target.value = "";
+        return;
+      }
+
+      await this.processAvatarUpload(file);
+      target.value = "";
     });
   }
 
