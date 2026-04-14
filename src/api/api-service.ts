@@ -80,6 +80,10 @@ class ApiService {
     }
   }
 
+  public getBaseUrl(): string {
+    return this.apiUrl;
+  }
+
   private prepareRequest(
     options: RequestInit = {},
     signal?: AbortSignal,
@@ -88,7 +92,11 @@ class ApiService {
       ...(options.headers as Record<string, string>),
     };
 
-    if (options.body && !headers["Content-Type"]) {
+    if (
+      options.body &&
+      !(options.body instanceof FormData) &&
+      !headers["Content-Type"]
+    ) {
       headers["Content-Type"] = "application/json";
     }
 

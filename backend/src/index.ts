@@ -1,8 +1,21 @@
 import "dotenv/config";
+import multer, { FileFilterCallback } from "multer";
+import path from "node:path";
+import fs from "node:fs";
+import { randomUUID } from "node:crypto";
+import { Request } from "express";
 import express from "express";
 import cors from "cors";
 import dataBase from "./database";
-import { registerUser, loginUser, getUserById } from "./auth.service";
+import {
+  registerUser,
+  loginUser,
+  getUserById,
+  updateUserName,
+  updateUserEmail,
+  updateUserPassword,
+  updateUserAvatar,
+} from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
 import {
@@ -49,6 +62,12 @@ const getUserId = (request: express.Request): string => {
   return decoded.id;
 };
 
+const uploadsDirectory =
+  process.env.UPLOADS_DIR ?? path.resolve(__dirname, "../data/uploads");
+if (!fs.existsSync(uploadsDirectory)) {
+  fs.mkdirSync(uploadsDirectory, { recursive: true });
+}
+
 app.use(
   cors({
     origin: "*",
@@ -56,6 +75,43 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use("/uploads", express.static(uploadsDirectory));
+
+const storage = multer.diskStorage({
+  destination: (
+    request: Request,
+    file: Express.Multer.File,
+    callback: (error: Error | null, destination: string) => void,
+  ) => {
+    callback(null, uploadsDirectory);
+  },
+  filename: (
+    request: Request,
+    file: Express.Multer.File,
+    callback: (error: Error | null, filename: string) => void,
+  ) => {
+    const extension = path.extname(file.originalname);
+    const uniqueName = `${randomUUID()}${extension}`;
+    callback(null, uniqueName);
+  },
+});
+
+const uploadAvatar = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+  fileFilter: (
+    request: Request,
+    file: Express.Multer.File,
+    callback: FileFilterCallback,
+  ) => {
+    const allowedMimes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (allowedMimes.includes(file.mimetype)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Only JPEG, PNG, WEBP, GIF images are allowed"));
+    }
+  },
+});
 
 /** GET /api/health - Check server state */
 app.get("/api/health", (_request, response) => {
@@ -165,6 +221,245 @@ app.get("/api/auth/me", (request, response) => {
     response.status(status).json({ success: false, status, message });
   }
 });
+
+/** PATCH /api/profile/name - Update current user's name */
+app.patch("/api/auth/name", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { name } = request.body;
+
+    if (!name || typeof name !== "string") {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.name_required,
+      });
+    }
+
+    const updatedUser = updateUserName(userId, name);
+
+    response.status(200).json({
+      success: true,
+      data: {
+        name: updatedUser.name,
+      },
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    if (isAuthError) {
+      return response.status(401).json({
+        success: false,
+        status: 401,
+        message:
+          error instanceof Error ? error.message : LANG.errors.unauthorized,
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message === LANG.errors.name_empty ||
+        error.message === LANG.errors.name_length ||
+        error.message === LANG.errors.name_invalid)
+    ) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: error.message,
+      });
+    }
+
+    console.error("Update name error:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message: LANG.errors.internal_error,
+    });
+  }
+});
+
+/** PATCH /api/auth/email - Update current user's email */
+app.patch("/api/auth/email", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { email } = request.body;
+
+    if (!email || typeof email !== "string") {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.email_required,
+      });
+    }
+
+    const updatedUser = updateUserEmail(userId, email);
+
+    response.status(200).json({
+      success: true,
+      data: { email: updatedUser.email },
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    if (isAuthError) {
+      return response.status(401).json({
+        success: false,
+        status: 401,
+        message: error.message,
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message === LANG.errors.email_empty ||
+        error.message === LANG.errors.email_too_long ||
+        error.message === LANG.errors.email_invalid ||
+        error.message === LANG.errors.email_already_used)
+    ) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: error.message,
+      });
+    }
+
+    console.error("Update email error:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message: LANG.errors.internal_error,
+    });
+  }
+});
+
+/** PATCH /api/auth/password - Update current user's password */
+app.patch("/api/auth/password", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { password } = request.body;
+
+    if (!password || typeof password !== "string") {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.password_required,
+      });
+    }
+
+    updateUserPassword(userId, password);
+
+    response.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    if (isAuthError) {
+      return response.status(401).json({
+        success: false,
+        status: 401,
+        message: error.message,
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message === LANG.errors.password_empty ||
+        error.message === LANG.errors.password_length ||
+        error.message === LANG.errors.password_invalid)
+    ) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: error.message,
+      });
+    }
+
+    console.error("Update password error:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message: LANG.errors.internal_error,
+    });
+  }
+});
+
+/** POST /api/auth/avatar - Update current user's avatar */
+app.post(
+  "/api/auth/avatar",
+  uploadAvatar.single("avatar"),
+  (request, response) => {
+    try {
+      const userId = getUserId(request);
+      const file = request.file;
+      if (!file) {
+        return response.status(400).json({
+          success: false,
+          status: 400,
+          message: LANG.errors.avatar_required,
+        });
+      }
+
+      const avatarUrl = `/uploads/${file.filename}`;
+
+      const currentUser = getUserById(userId);
+      if (currentUser?.avatarUrl) {
+        const oldFileName = path.basename(currentUser.avatarUrl);
+        const oldFilePath = path.resolve(uploadsDirectory, oldFileName);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+
+      const updatedUser = updateUserAvatar(userId, avatarUrl);
+
+      response.status(200).json({
+        success: true,
+        data: { avatarUrl: updatedUser.avatarUrl },
+      });
+    } catch (error) {
+      if (
+        error instanceof multer.MulterError &&
+        error.code === "LIMIT_FILE_SIZE"
+      ) {
+        return response.status(400).json({
+          success: false,
+          status: 400,
+          message: LANG.errors.avatar_too_large,
+        });
+      }
+
+      const isAuthenticationError =
+        error instanceof Error &&
+        (error.message === LANG.errors.unauthorized ||
+          error.message === LANG.errors.invalid_token);
+
+      if (isAuthenticationError) {
+        return response.status(401).json({
+          success: false,
+          status: 401,
+          message: error.message,
+        });
+      }
+
+      console.error("Upload avatar error:", error);
+      response.status(500).json({
+        success: false,
+        status: 500,
+        message: LANG.errors.internal_error,
+      });
+    }
+  },
+);
 
 // Widget EndPoints
 /** GET /api/topics - Get all topics */

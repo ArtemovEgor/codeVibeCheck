@@ -73,6 +73,45 @@ class AuthApi {
     }
     apiService.clearToken();
   }
+
+  public async updateName(name: string): Promise<{ name: string }> {
+    const response = await apiService.send<IApiResponse<{ name: string }>>(
+      ENDPOINTS.AUTH.UPDATE_NAME,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ name }),
+      },
+    );
+    return response.data;
+  }
+
+  public async updateEmail(email: string): Promise<{ email: string }> {
+    const response = await apiService.send<IApiResponse<{ email: string }>>(
+      ENDPOINTS.AUTH.UPDATE_EMAIL,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ email }),
+      },
+    );
+    return response.data;
+  }
+
+  public async updatePassword(password: string): Promise<void> {
+    await apiService.send<IApiResponse<void>>(ENDPOINTS.AUTH.UPDATE_PASSWORD, {
+      method: "PATCH",
+      body: JSON.stringify({ password }),
+    });
+  }
+
+  public async updateAvatar(file: File): Promise<{ avatarUrl: string }> {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const response = await apiService.send<IApiResponse<{ avatarUrl: string }>>(
+      ENDPOINTS.AUTH.UPDATE_AVATAR,
+      { method: "POST", body: formData },
+    );
+    return response.data;
+  }
 }
 
 export const authApi = new AuthApi();
