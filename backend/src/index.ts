@@ -8,6 +8,7 @@ import {
   getUserById,
   updateUserName,
   updateUserEmail,
+  updateUserPassword,
 } from "./auth.service";
 import { IRegisterCredentials, ILoginCredentials } from "./types";
 import { EN } from "./locale/en";
@@ -280,6 +281,61 @@ app.patch("/api/auth/email", (request, response) => {
     }
 
     console.error("Update email error:", error);
+    response.status(500).json({
+      success: false,
+      status: 500,
+      message: LANG.errors.internal_error,
+    });
+  }
+});
+
+/** PATCH /api/auth/password - Update current user's password */
+app.patch("/api/auth/password", (request, response) => {
+  try {
+    const userId = getUserId(request);
+    const { password } = request.body;
+
+    if (!password || typeof password !== "string") {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: LANG.errors.password_required,
+      });
+    }
+
+    updateUserPassword(userId, password);
+
+    response.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    const isAuthError =
+      error instanceof Error &&
+      (error.message === LANG.errors.unauthorized ||
+        error.message === LANG.errors.invalid_token);
+
+    if (isAuthError) {
+      return response.status(401).json({
+        success: false,
+        status: 401,
+        message: error.message,
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message === LANG.errors.password_empty ||
+        error.message === LANG.errors.password_length ||
+        error.message === LANG.errors.password_invalid)
+    ) {
+      return response.status(400).json({
+        success: false,
+        status: 400,
+        message: error.message,
+      });
+    }
+
+    console.error("Update password error:", error);
     response.status(500).json({
       success: false,
       status: 500,

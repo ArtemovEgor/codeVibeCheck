@@ -52,6 +52,7 @@ export class ProfilePage extends BaseComponent implements Page {
     this.confirmPasswordEventInit();
     this.changeNameInit();
     this.changeMailInit();
+    this.changePasswordInit();
   }
 
   private async loadUser(): Promise<void> {
@@ -563,6 +564,103 @@ export class ProfilePage extends BaseComponent implements Page {
     this.mailChangeBtn.toggleClass("disabled", false);
   }
 
+  // Password Change
+  private async processPasswordChange(): Promise<void> {
+    const newPassword = this.getPasswordValue();
+    const confirmPassword = this.getConfirmPasswordValue();
+
+    if (!this.isPasswordValidForSubmit(newPassword)) return;
+    if (!this.isConfirmPasswordValidForSubmit(newPassword, confirmPassword))
+      return;
+
+    this.setPasswordChangeButtonLoading(true);
+    try {
+      await authApi.updatePassword(newPassword);
+      this.applyPasswordUpdate();
+      Notification.show(
+        i18n.t().profile.passwordUpdateSuccess,
+        NotificationType.SUCCESS,
+      );
+    } catch (error) {
+      this.onPasswordChangeError(error as Error);
+    } finally {
+      this.setPasswordChangeButtonLoading(false);
+    }
+  }
+
+  private getPasswordValue(): string {
+    return this.passwdInput.getNode().value;
+  }
+
+  private getConfirmPasswordValue(): string {
+    return this.confirmPasswdInput.getNode().value;
+  }
+
+  private isPasswordValidForSubmit(password: string): boolean {
+    const validation = this.validatePassword(password);
+    if (!validation.success) {
+      this.passwdWrapper.toggleClass("error", true);
+      this.passwdError.setText(validation.message);
+      return false;
+    }
+    return true;
+  }
+
+  private isConfirmPasswordValidForSubmit(
+    password: string,
+    confirm: string,
+  ): boolean {
+    const validation = this.validatePasswordConfirm(password, confirm);
+    if (!validation.success) {
+      this.confirmPasswdWrapper.toggleClass("error", true);
+      this.confirmPasswdError.setText(validation.message);
+      return false;
+    }
+    return true;
+  }
+
+  private setPasswordChangeButtonLoading(isLoading: boolean): void {
+    const button = this.changePasswd.getNode();
+    if (isLoading) {
+      button.textContent = i18n.t().profile.saving;
+      this.changePasswd.toggleClass("disabled", true);
+    } else {
+      button.textContent = i18n.t().profile.changePassword;
+    }
+  }
+
+  private applyPasswordUpdate(): void {
+    this.passwdInput.getNode().value = "";
+    this.confirmPasswdInput.getNode().value = "";
+    this.newPassValue = "";
+
+    this.passwdWrapper.toggleClass("error", false);
+    this.passwdError.setText("");
+    this.confirmPasswdWrapper.toggleClass("error", false);
+    this.confirmPasswdError.setText("");
+
+    this.changePasswd.toggleClass("disabled", true);
+  }
+
+  private onPasswordChangeError(error: Error): void {
+    Notification.show(
+      error.message || i18n.t().profile.passwordUpdateError,
+      NotificationType.ERROR,
+    );
+
+    const isPasswordValid = this.validatePassword(
+      this.getPasswordValue(),
+    ).success;
+    const isConfirmValid = this.validatePasswordConfirm(
+      this.getPasswordValue(),
+      this.getConfirmPasswordValue(),
+    ).success;
+    this.changePasswd.toggleClass(
+      "disabled",
+      !(isPasswordValid && isConfirmValid),
+    );
+  }
+
   // Events
   private nameEventInit() {
     this.nameInput.on("input", () => {
@@ -603,10 +701,6 @@ export class ProfilePage extends BaseComponent implements Page {
       } else {
         this.mailChangeBtn.toggleClass("disabled", false);
       }
-    });
-
-    this.changePasswd.on("click", () => {
-      console.log("Change Password");
     });
   }
 
@@ -656,6 +750,12 @@ export class ProfilePage extends BaseComponent implements Page {
   private changeMailInit() {
     this.mailChangeBtn.on("click", async () => {
       await this.processEmailChange();
+    });
+  }
+
+  private changePasswordInit(): void {
+    this.changePasswd.on("click", async () => {
+      await this.processPasswordChange();
     });
   }
 

@@ -195,6 +195,8 @@ Can a human understand machine code? Can a human... vibe code a major bug and pu
     nameUpdateError: "Failed to update name",
     emailUpdateSuccess: "Email updated successfully",
     emailUpdateError: "Failed to update email",
+    passwordUpdateSuccess: "Password updated successfully",
+    passwordUpdateError: "Failed to update password",
   },
   breadcrumbs: {
     separator: " › ",

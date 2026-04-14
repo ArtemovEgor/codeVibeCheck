@@ -42,5 +42,9 @@ export const EN = {
     email_too_long: "Email is too long (max 254 characters)",
     email_invalid: "Please enter a valid email address",
     email_already_used: "This email is already registered",
+    password_required: "Password is required",
+    password_empty: "Password cannot be empty",
+    password_invalid:
+      "Password must contain at least one letter and one number",
   },
 };

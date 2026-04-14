@@ -220,3 +220,31 @@ export function updateUserEmail(id: string, newEmail: string): IUser {
     totalScore: updated.totalScore || 0,
   };
 }
+
+export function updateUserPassword(id: string, newPassword: string): void {
+  const MIN_LENGTH = 6;
+  const MAX_LENGTH = 50;
+  const PASSWORD_REGEX = /^.{6,50}$/;
+
+  if (!newPassword) {
+    throw new Error(LANG.errors.password_empty);
+  }
+  if (newPassword.length < MIN_LENGTH || newPassword.length > MAX_LENGTH) {
+    throw new Error(LANG.errors.password_length);
+  }
+  if (!PASSWORD_REGEX.test(newPassword)) {
+    throw new Error(LANG.errors.password_invalid);
+  }
+
+  const salt = bcrypt.genSaltSync(SALT_ROUNDS);
+  const passwordHash = bcrypt.hashSync(newPassword, salt);
+
+  const updateStmt = dataBase.prepare(`
+    UPDATE users SET passwordHash = ? WHERE id = ?
+  `);
+  const result = updateStmt.run(passwordHash, id);
+
+  if (result.changes === 0) {
+    throw new Error(LANG.errors.user_not_found);
+  }
+}

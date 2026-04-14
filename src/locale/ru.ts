@@ -196,6 +196,8 @@ function curry(func) {
     nameUpdateError: "Не удалось обновить имя",
     emailUpdateSuccess: "Email успешно обновлен",
     emailUpdateError: "Ошибка обновления email",
+    passwordUpdateSuccess: "Пароль обновлен",
+    passwordUpdateError: "Ошибка обновления пароля",
   },
   breadcrumbs: {
     separator: " › ",

@@ -95,6 +95,13 @@ class AuthApi {
     );
     return response.data;
   }
+
+  public async updatePassword(password: string): Promise<void> {
+    await apiService.send<IApiResponse<void>>(ENDPOINTS.AUTH.UPDATE_PASSWORD, {
+      method: "PATCH",
+      body: JSON.stringify({ password }),
+    });
+  }
 }
 
 export const authApi = new AuthApi();
