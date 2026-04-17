@@ -60,7 +60,8 @@ class ApiService {
     options: RequestInit = {},
     signal?: AbortSignal,
   ): Promise<ReadableStream<Uint8Array> | undefined> {
-    const request = this.prepareRequest(options, signal);
+    const effectiveSignal = signal ?? options.signal ?? undefined;
+    const request = this.prepareRequest(options, effectiveSignal);
 
     try {
       const result = await fetch(`${this.apiUrl}${endpoint}`, request);

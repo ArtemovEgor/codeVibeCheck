@@ -264,8 +264,14 @@ export function submitWidgetAnswer(
     }
     case "code-completion": {
       const answer = userAnswer as ICodeCompletionAnswer;
-      isCorrect =
-        JSON.stringify(answer.values) === JSON.stringify(correctAnswer);
+      const userValues = answer.values.map((v) =>
+        String(v).toLowerCase().trim(),
+      );
+      const correctValues = (correctAnswer as string[]).map((v) =>
+        String(v).toLowerCase().trim(),
+      );
+
+      isCorrect = JSON.stringify(userValues) === JSON.stringify(correctValues);
       break;
     }
     case "code-ordering": {
@@ -379,7 +385,7 @@ export function getUserProgressByTopicId(
       }
     >(
       `
-      SELECT topicId, completedWidgetIds, xpEarned, isCompleted, isUnlocked
+      SELECT topicId, completedWidgetIds, xpEarned, isCompleted, everCompleted, isUnlocked
       FROM user_topic_progress
       WHERE userId = ? AND topicId = ?
     `,

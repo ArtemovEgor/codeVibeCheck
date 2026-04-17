@@ -64,6 +64,7 @@ export class ProfilePage extends BaseComponent implements Page {
       this.user = await authApi.getCurrentUser();
       this.getUserInitials();
       console.log(this.user);
+      // console.log(this.user);
     } catch (error) {
       const apiError = error as IApiError;
       Notification.show(apiError.message, NotificationType.ERROR);
