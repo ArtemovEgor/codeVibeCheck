@@ -15,6 +15,8 @@ export class ProfilePage extends BaseComponent implements Page {
   private user: IUser | undefined = undefined;
   private userInitials = "";
 
+  private avatarWrapper!: BaseComponent<HTMLButtonElement>;
+
   private NAME_REGEX = new RegExp(INPUT_VALIDATION.NAME, "u");
   private MAIL_REGEX = new RegExp(INPUT_VALIDATION.EMAIL, "u");
   private PASSWORD_REGEX = new RegExp(INPUT_VALIDATION.PASSWORD, "u");
@@ -61,6 +63,7 @@ export class ProfilePage extends BaseComponent implements Page {
     try {
       this.user = await authApi.getCurrentUser();
       this.getUserInitials();
+      console.log(this.user);
       // console.log(this.user);
     } catch (error) {
       const apiError = error as IApiError;
@@ -120,13 +123,13 @@ export class ProfilePage extends BaseComponent implements Page {
       parent: parent,
     });
 
-    new BaseComponent({
+    this.avatarWrapper = new BaseComponent({
       className: "profile__avatar",
       parent: avatarBlock,
       text: this.userInitials,
     });
 
-    const changeAvatar = new BaseComponent({
+    new BaseComponent({
       tag: "label",
       className: "profile__avatar-button",
       text: i18n.t().profile.changeAvatar,
@@ -146,9 +149,23 @@ export class ProfilePage extends BaseComponent implements Page {
       parent: avatarBlock,
     });
 
-    changeAvatar.on("click", () => {
-      console.log("Change Avatar");
-    });
+    this.setAvatar();
+  }
+
+  private setAvatar() {
+    if (this.user?.avatarUrl && this.user?.avatarUrl.length > 0) {
+      const fullAvatarUrl = `${apiService.getBaseUrl()}${this.user.avatarUrl}`;
+      this.avatarWrapper.getNode().textContent = "";
+
+      new BaseComponent({
+        tag: "img",
+        className: "profile__avatar-img",
+        parent: this.avatarWrapper,
+        attributes: {
+          src: fullAvatarUrl,
+        },
+      });
+    }
   }
 
   private renderDivider(parent: BaseComponent): void {
