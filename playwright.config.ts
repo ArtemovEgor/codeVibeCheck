@@ -98,6 +98,9 @@ export default defineConfig({
       cwd: "./backend",
       url: "http://localhost:3001/api/health",
       reuseExistingServer: !process.env.CI,
+      env: {
+        PORT: "3001",
+      },
     },
     {
       command: "npm run dev",
