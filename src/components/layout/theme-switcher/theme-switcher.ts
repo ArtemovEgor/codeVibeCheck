@@ -17,7 +17,12 @@ export class ThemeSwitcher extends BaseComponent {
   private darkBtn!: Button;
 
   constructor() {
-    super({ className: "theme-switcher" });
+    super({
+      className: "theme-switcher",
+      attributes: {
+        "data-testid": "theme-switcher",
+      },
+    });
     this.render();
     this.initEvents();
   }
@@ -28,6 +33,9 @@ export class ThemeSwitcher extends BaseComponent {
       variant: "ghost",
       className: "theme-switcher__btn",
       parent: this,
+      attributes: {
+        "data-testid": "theme-switcher__light",
+      },
     });
 
     new BaseComponent({
@@ -42,6 +50,9 @@ export class ThemeSwitcher extends BaseComponent {
       variant: "ghost",
       className: "theme-switcher__btn",
       parent: this,
+      attributes: {
+        "data-testid": "theme-switcher__dark",
+      },
     });
   }
 

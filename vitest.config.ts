@@ -7,6 +7,10 @@ export default mergeConfig(
     test: {
       environment: "jsdom",
       globals: true,
+      coverage: {
+        provider: "istanbul",
+        reportsDirectory: "./coverage/unit",
+      },
     },
   }),
 );

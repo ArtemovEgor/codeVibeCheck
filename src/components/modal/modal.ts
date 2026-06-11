@@ -8,6 +8,9 @@ export default class Modal extends BaseComponent<HTMLDialogElement> {
     super({
       tag: "dialog",
       className,
+      attributes: {
+        "data-testid": "modal-overlay",
+      },
     });
 
     this.content = new BaseComponent({

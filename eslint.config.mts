@@ -6,7 +6,14 @@ import unicorn from "eslint-plugin-unicorn";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "node_modules", "public", "backend/dist"],
+    ignores: [
+      "dist",
+      "node_modules",
+      "public",
+      "backend/dist",
+      "coverage",
+      ".nyc_output",
+    ],
   },
 
   js.configs.recommended,

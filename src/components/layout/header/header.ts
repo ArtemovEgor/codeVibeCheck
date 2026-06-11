@@ -24,6 +24,9 @@ export class Header extends BaseComponent {
       href: `#${ROUTES.LANDING}`,
       className: "logo",
       parent: container,
+      attributes: {
+        "data-testid": "logo",
+      },
     });
 
     new BaseComponent({
@@ -69,12 +72,18 @@ export class Header extends BaseComponent {
       href: `#${ROUTES.LOGIN}`,
       variant: "ghost",
       parent: actions,
+      attributes: {
+        "data-testid": "header-login-btn",
+      },
     });
     new Link({
       text: i18n.t().common.auth.signup,
       href: `#${ROUTES.REGISTER}`,
       variant: "primary",
       parent: actions,
+      attributes: {
+        "data-testid": "header-register-btn",
+      },
     });
   }
 

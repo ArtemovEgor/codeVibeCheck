@@ -14,7 +14,12 @@ export class LangSwitcher extends BaseComponent {
   private ruBtn!: Button;
 
   constructor() {
-    super({ className: "lang-switcher" });
+    super({
+      className: "lang-switcher",
+      attributes: {
+        "data-testid": "lang-switcher",
+      },
+    });
     this.render();
     this.initEvents();
   }
@@ -25,6 +30,9 @@ export class LangSwitcher extends BaseComponent {
       variant: "ghost",
       className: "lang-switcher__btn",
       parent: this,
+      attributes: {
+        "data-testid": "lang-switcher__en",
+      },
     });
 
     new BaseComponent({
@@ -39,6 +47,9 @@ export class LangSwitcher extends BaseComponent {
       variant: "ghost",
       className: "lang-switcher__btn",
       parent: this,
+      attributes: {
+        "data-testid": "lang-switcher__ru",
+      },
     });
   }
 

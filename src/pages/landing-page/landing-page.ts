@@ -192,6 +192,9 @@ export class LandingPage extends BaseComponent implements Page {
       className: "action__btn",
       href: `#${ROUTES.REGISTER}`,
       parent,
+      attributes: {
+        "data-testid": "landing-cta-btn",
+      },
     });
   }
 }
