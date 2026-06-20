@@ -22,10 +22,13 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
     super({
       tag: "form",
       className,
+      attributes: {
+        "data-testid": className,
+      },
     });
 
     this.renderFields();
-    this.renderSubmitButton();
+    this.renderSubmitButton(className);
     this.initListeners();
   }
 
@@ -68,11 +71,14 @@ export abstract class BaseAuthForm extends BaseComponent<HTMLFormElement> {
     }
   }
 
-  private renderSubmitButton(): void {
+  private renderSubmitButton(className: string): void {
     this.submitButton = new Button({
       text: this.getSubmitButtonText(),
       className: "button--submit",
-      attributes: { disabled: "" },
+      attributes: {
+        disabled: "",
+        "data-testid": `${className}-btn`,
+      },
       parent: this,
     });
   }

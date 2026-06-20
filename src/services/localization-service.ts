@@ -14,8 +14,17 @@ class LocalizationService {
     DEFAULT_LANG,
   );
 
+  constructor() {
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.lang = this.currentLang;
+    }
+  }
+
   public setLang(lang: Language): void {
     storageService.setStorage(STORAGE_KEYS.LANG, lang);
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.lang = lang;
+    }
     this.currentLang = lang;
     location.reload();
   }

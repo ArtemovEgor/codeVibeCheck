@@ -1,29 +1,37 @@
-import { test, expect } from "./fixtures/fixtures";
+import { test } from "./fixtures/fixtures";
 
 test.describe("landing page", () => {
   test("opening and closing login popup", async ({ landingPage }) => {
     await landingPage.goToLogin();
-    await expect(landingPage.modalOverlay).toBeVisible();
-    await expect(landingPage.page).toHaveURL(/\/login$/);
+    await landingPage.verifyLoginOpen();
 
     await landingPage.clickModalOverlay();
-    await expect(landingPage.modalOverlay).toBeHidden();
-    await expect(landingPage.page).toHaveURL(/#\//);
+    await landingPage.verifyModalClose();
   });
 
   test("opening and closing registration popup", async ({ landingPage }) => {
     await landingPage.goToRegister();
-    await expect(landingPage.modalOverlay).toBeVisible();
-    await expect(landingPage.page).toHaveURL(/\/register$/);
+    await landingPage.verifyRegistrationOpen();
 
     await landingPage.clickModalOverlay();
-    await expect(landingPage.modalOverlay).toBeHidden();
-
-    await expect(landingPage.page).toHaveURL(/#\//);
+    await landingPage.verifyModalClose();
   });
 
-  test("CTA buttons", async ({ landingPage }) => {
-    await landingPage.verifyHeroCTA();
-    await landingPage.verifyFooterCTA();
+  test.describe("CTA buttons", () => {
+    test("hero CTA button", async ({ landingPage }) => {
+      await landingPage.clickHeroCTA();
+      await landingPage.verifyRegistrationOpen();
+
+      await landingPage.clickModalOverlay();
+      await landingPage.verifyModalClose();
+    });
+
+    test("footer CTA button", async ({ landingPage }) => {
+      landingPage.clickFooterCTA();
+      await landingPage.verifyRegistrationOpen();
+
+      await landingPage.clickModalOverlay();
+      await landingPage.verifyModalClose();
+    });
   });
 });

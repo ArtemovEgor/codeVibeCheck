@@ -1,35 +1,21 @@
 import { expect } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
+import { BasePage } from "./base-page";
 
-export class LandingPage {
-  readonly page: Page;
-  readonly loginButton: Locator;
-  readonly registerButton: Locator;
-  readonly langSwitcher: { en: Locator; ru: Locator };
-  readonly themeSwitcher: { light: Locator; dark: Locator };
-  readonly heroCTA: Locator;
-  readonly footerCTA: Locator;
-  readonly modalOverlay: Locator;
-  readonly html: Locator;
-  readonly header: Locator;
+export class LandingPage extends BasePage {
+  private readonly loginButton: Locator;
+  private readonly registerButton: Locator;
+  private readonly heroCTA: Locator;
+  private readonly footerCTA: Locator;
+  private readonly modalOverlay: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.loginButton = page.getByTestId("header-login-btn");
     this.registerButton = page.getByTestId("header-register-btn");
-    this.langSwitcher = {
-      en: page.getByTestId("lang-switcher__en"),
-      ru: page.getByTestId("lang-switcher__ru"),
-    };
-    this.themeSwitcher = {
-      light: page.getByTestId("theme-switcher__light"),
-      dark: page.getByTestId("theme-switcher__dark"),
-    };
     this.heroCTA = page.locator(".hero").getByTestId("landing-cta-btn");
     this.footerCTA = page.locator(".cta").getByTestId("landing-cta-btn");
     this.modalOverlay = page.getByTestId("modal-overlay");
-    this.html = page.locator("html");
-    this.header = page.locator("h1");
   }
 
   async goToLogin() {
@@ -40,23 +26,19 @@ export class LandingPage {
     await this.registerButton.click();
   }
 
-  private async verifyCTAUrls() {
+  async verifyLoginOpen() {
+    await expect(this.page).toHaveURL(/\/login$/);
+    await expect(this.modalOverlay).toBeVisible();
+  }
+
+  async verifyRegistrationOpen() {
     await expect(this.page).toHaveURL(/\/register$/);
     await expect(this.modalOverlay).toBeVisible();
+  }
 
-    await this.clickModalOverlay();
+  async verifyModalClose() {
     await expect(this.modalOverlay).toBeHidden();
     await expect(this.page).toHaveURL(/#\//);
-  }
-
-  async verifyHeroCTA() {
-    await this.heroCTA.click();
-    await this.verifyCTAUrls();
-  }
-
-  async verifyFooterCTA() {
-    await this.footerCTA.click();
-    await this.verifyCTAUrls();
   }
 
   async clickModalOverlay() {
@@ -64,19 +46,11 @@ export class LandingPage {
     await this.page.mouse.click(50, height - 50);
   }
 
-  async switchLanguageAndVerify(lang: "ru" | "en") {
-    await this.langSwitcher[lang].click();
-
-    if (lang === "en") {
-      await expect(this.header).toHaveText(/^[^а-яА-ЯёЁ]*$/);
-      await expect(this.header).toHaveText(/[a-zA-Z]/);
-    } else {
-      await expect(this.header).toHaveText(/[а-яА-ЯёЁ]/);
-    }
+  async clickHeroCTA() {
+    await this.heroCTA.click();
   }
 
-  async switchThemeAndVerify(theme: "light" | "dark") {
-    await this.themeSwitcher[theme].click();
-    await expect(this.html).toHaveAttribute("data-theme", theme);
+  async clickFooterCTA() {
+    await this.footerCTA.click();
   }
 }

@@ -163,6 +163,9 @@ export class Sidebar extends BaseComponent {
       tag: "button",
       className: "sidebar__logout",
       parent: this.userWrap,
+      attributes: {
+        "data-testid": "logout-button",
+      },
     });
 
     logoutButton.getNode().innerHTML = ICONS.logout;

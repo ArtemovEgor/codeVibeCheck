@@ -32,8 +32,25 @@ export function renderAuthField(parameters: {
     parameters.classNames.label,
   );
 
+  return buildFieldComponents(inputWrapper, parameters);
+}
+
+function buildFieldComponents(
+  wrapper: BaseComponent<HTMLElement>,
+  parameters: {
+    id: string;
+    type: string;
+    placeholderText: string;
+    validationAttributes: IAuthFieldAttributes;
+    classNames: { input?: string; error?: string };
+  },
+): {
+  input: BaseComponent<HTMLInputElement>;
+  error: BaseComponent<HTMLElement>;
+} {
   const inputComponent = createInput(
-    inputWrapper,
+    wrapper,
+    parameters.id,
     parameters.id,
     parameters.type,
     parameters.placeholderText,
@@ -41,7 +58,11 @@ export function renderAuthField(parameters: {
     parameters.classNames.input,
   );
 
-  const errorComponent = createError(inputWrapper, parameters.classNames.error);
+  const errorComponent = createError(
+    wrapper,
+    parameters.classNames.error,
+    parameters.id,
+  );
 
   return {
     input: inputComponent,
@@ -67,6 +88,7 @@ function createLabel(
 function createInput(
   parent: BaseComponent,
   id: string,
+  testid: string,
   type: string,
   placeholder: string,
   attributes: IAuthFieldAttributes,
@@ -85,6 +107,7 @@ function createInput(
       minlength: String(attributes.minLength),
       maxLength: String(attributes.maxLength),
       "data-error-text": attributes.errorText || "",
+      "data-testid": testid,
     },
   });
 }
@@ -92,11 +115,15 @@ function createInput(
 function createError(
   parent: BaseComponent,
   className?: string,
+  testid?: string,
 ): BaseComponent<HTMLSpanElement> {
   return new BaseComponent<HTMLSpanElement>({
     tag: "span",
     className,
     parent: parent,
     text: "",
+    attributes: {
+      "data-testid": `${testid}-error`,
+    },
   });
 }

@@ -64,6 +64,9 @@ export class AppLayout extends BaseComponent {
         new BaseComponent({ tag: "span", className: "burger-line" }),
         new BaseComponent({ tag: "span", className: "burger-line" }),
       ],
+      attributes: {
+        "data-testid": "burger-button",
+      },
     });
 
     return bar;

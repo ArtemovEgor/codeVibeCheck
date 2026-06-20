@@ -9,11 +9,11 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+const dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(dirname, ".env") });
 
 import fs from "node:fs";
-const nycOutputDirectory = path.resolve(__dirname, ".nyc_output");
+const nycOutputDirectory = path.resolve(dirname, ".nyc_output");
 if (fs.existsSync(nycOutputDirectory)) {
   for (const file of fs.readdirSync(nycOutputDirectory)) {
     try {

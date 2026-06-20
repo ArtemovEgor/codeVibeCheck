@@ -40,6 +40,9 @@ export default class AuthModal extends Modal {
       tag: "button",
       text: i18n.t().common.auth.login,
       className: "auth-switch__tab",
+      attributes: {
+        "data-testid": "auth-switch__login",
+      },
     });
     this.loginTabButton.on("click", () => this.showTab("login"));
 
@@ -47,6 +50,9 @@ export default class AuthModal extends Modal {
       tag: "button",
       text: i18n.t().common.auth.signup,
       className: "auth-switch__tab",
+      attributes: {
+        "data-testid": "auth-switch__register",
+      },
     });
     this.registerTabButton.on("click", () => this.showTab("register"));
 

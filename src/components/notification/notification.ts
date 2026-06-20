@@ -35,6 +35,10 @@ export default class Notification extends BaseComponent {
       className: `notification notification-${type}`,
       text: message,
       parent: container,
+      attributes: {
+        "data-testid": `notification`,
+        "data-type": type,
+      },
     });
 
     container.hidePopover();
